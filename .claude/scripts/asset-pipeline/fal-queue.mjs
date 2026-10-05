@@ -2,12 +2,15 @@
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-let envLoaded = false;
+let envLoad;
 
-export async function loadDotEnv(envPath = ".env") {
-  if (envLoaded) return;
-  envLoaded = true;
+// One shared load: parallel callers wait for the same read instead of seeing a half-loaded env.
+export function loadDotEnv(envPath = ".env") {
+  envLoad ??= readDotEnv(envPath);
+  return envLoad;
+}
 
+async function readDotEnv(envPath) {
   let contents;
   try {
     contents = await readFile(envPath, "utf8");
