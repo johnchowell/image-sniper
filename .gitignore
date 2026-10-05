@@ -20,3 +20,4 @@ app/.vite/
 
 # Local model runtime
 .venv/
+third_party/

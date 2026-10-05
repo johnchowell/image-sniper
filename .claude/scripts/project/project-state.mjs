@@ -18,8 +18,8 @@ import {
   parseIndexedName
 } from "../asset-pipeline/request-metadata.mjs";
 
-const PROJECT_DIRS = ["source", "output", "output/world", "output/light", "output/layout", "output/sfx"];
-const RESERVED_OUTPUT_DIRS = new Set(["world", "light", "layout", "sfx"]);
+const PROJECT_DIRS = ["source", "output", "output/world", "output/light", "output/layout", "output/scene", "output/sfx"];
+const RESERVED_OUTPUT_DIRS = new Set(["world", "light", "layout", "scene", "sfx"]);
 const MODEL_EXTENSIONS = new Set([".glb", ".obj", ".fbx", ".usdz"]);
 const STAGE_EXTENSIONS = new Set([
   ".avif",

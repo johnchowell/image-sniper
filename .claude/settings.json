@@ -8,6 +8,7 @@
       "Skill(image-blast-sfx)",
       "Skill(image-blast-plate)",
       "Skill(image-blast-light)",
+      "Skill(image-blast-local)",
       "Skill(image-blast-layout)",
       "Skill(image-blast-image-edit)",
       "Skill(image-blast-wildcard)",

@@ -29,7 +29,7 @@ import { buildLayout, layoutDir } from "./build-layout.mjs";
 const DEPTH_ENDPOINT = "fal-ai/moge-2";
 const MASK_ENDPOINT = "fal-ai/sam-3/image";
 const IMAGE_EXTENSIONS = new Set([".avif", ".gif", ".heic", ".heif", ".jpeg", ".jpg", ".png", ".webp"]);
-const RESERVED_OUTPUT_DIRS = new Set(["world", "sfx", "light", "layout"]);
+const RESERVED_OUTPUT_DIRS = new Set(["world", "sfx", "light", "layout", "scene"]);
 const DONE = new Set(["completed", "failed", "cancelled", "canceled"]);
 
 async function readJsonIfExists(filePath) {

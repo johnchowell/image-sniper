@@ -22,6 +22,7 @@ worlds/
       world/
       light/
       layout/
+      scene/
       sfx/
       <object>/
         object.json
@@ -92,6 +93,8 @@ When doing an IMAGE-BLAST, it can be done in one-shot by following this order:
 9. Launch one 3D object agent per confirmed object to create 3D models. The reference edit automatically adds the lighting-free albedo image when a light estimate exists.
 10. Launch SFX agents for ambience and also for every object to create object-specific sounds.
 11. Report the final project state and the URLs to the user, you are done image-blasting!
+
+Without FAL or World Labs credit, `Agent(image-blast-local)` runs steps 6-9 on local open-weight models after step 5 and produces `output/scene/N-scene.glb` (environment mesh, placed object meshes, camera, lights). It needs the one-time `bash .claude/scripts/local/setup.sh`.
 
 Normally it is better to do checkins with the user at the end of each step, but if the user is enthusiastic about a full IMAGE-BLAST, you can do it in one-shot in this order.
 

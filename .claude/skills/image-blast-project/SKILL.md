@@ -36,6 +36,7 @@ worlds/<slug>/
     world/
     light/
     layout/
+    scene/
     sfx/
     <object-slug>/
 ```
@@ -62,6 +63,7 @@ Only minimal `project.json` and directories are created automatically. `/image-b
    - `Agent(image-blast-light)` for the lighting estimate (albedo, shading, light sources) after object confirmation
    - `Agent(image-blast-layout)` for metric depth and primitive layout (structure planes, object boxes, camera pose) after object confirmation
    - `Agent(image-blast-world)` for static 3D environment world generation
+   - `Agent(image-blast-local)` for the full pass on local open-weight models when FAL or World Labs are unavailable
    - `Agent(image-blast-3d)` per object 3D generation
    - `Agent(image-blast-sfx)` for ambient, object-impact, or arbitrary sound effects
    - `Agent(image-blast-image-edit)` for generic standalone prompt-based image editing

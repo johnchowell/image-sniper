@@ -30,9 +30,7 @@ async function resolvePython(explicit) {
   if (!(await pathExists(python))) {
     throw new Error(
       `Python for local models not found at ${python}. Set it up once with:\n` +
-      "  python3 -m venv .venv\n" +
-      "  .venv/bin/pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision\n" +
-      "  .venv/bin/pip install -r .claude/scripts/light/requirements.txt\n" +
+      "  bash .claude/scripts/local/setup.sh\n" +
       "or point IMAGE_BLAST_PYTHON (env or .env) at an existing interpreter."
     );
   }
