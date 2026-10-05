@@ -334,7 +334,8 @@ export async function buildLayout({ world, index }) {
   const rawPlanes = extractPlanes(points, normals, candidates, {
     minPoints: Math.max(200, Math.round(0.003 * validCount)),
     iterations: 400,
-    sampleSize: 15000
+    sampleSize: 15000,
+    gridWidth: gw
   }).map((plane) => (plane.d < 0 ? { ...plane, normal: scale(plane.normal, -1), d: -plane.d } : plane));
 
   // Gravity: the best-supported near-horizontal plane defines up; otherwise assume a level camera.
@@ -511,18 +512,6 @@ export async function buildLayout({ world, index }) {
         }
       }
 
-      const center = [rect.center[0], (bottom + top) / 2, rect.center[1]];
-      const size = [rect.sizeX, top - bottom, rect.sizeZ];
-      const localX = [Math.cos(rect.yaw), 0, -Math.sin(rect.yaw)];
-      const localZ = [Math.sin(rect.yaw), 0, Math.cos(rect.yaw)];
-      const view = normalize([center[0] - cameraPosition[0], 0, center[2] - cameraPosition[2]]);
-      const depthAxis = Math.abs(dot(view, localX)) > Math.abs(dot(view, localZ)) ? "x" : "z";
-      const corners = [];
-      for (const sy of [-1, 1]) {
-        for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-          corners.push(add(center, add(add(scale(localX, (sx * size[0]) / 2), [0, (sy * size[1]) / 2, 0]), scale(localZ, (sz * size[2]) / 2))));
-        }
-      }
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
       for (let cell = 0; cell < cellCount; cell += 1) {
         if (!instance.gridMask[cell]) continue;
@@ -534,25 +523,12 @@ export async function buildLayout({ world, index }) {
 
       instances.push({
         id: `${object.object_id}-${instances.length + 1}`,
-        type: "box",
-        class: "object",
         object_id: object.object_id,
-        center: roundVec(center),
-        size: roundVec(size),
-        yaw_deg: round(degrees(rect.yaw), 1),
-        rotation_quaternion: roundVec([0, Math.sin(rect.yaw / 2), 0, Math.cos(rect.yaw / 2)], 5),
-        size_basis: {
-          x: depthAxis === "x" ? "visible_lower_bound" : "observed",
-          y: support === "none_detected" ? "observed" : "observed_to_support",
-          z: depthAxis === "z" ? "visible_lower_bound" : "observed"
-        },
-        bottom_y_m: round(bottom),
-        support,
-        distance_from_camera_m: round(median),
-        corners: corners.map((corner) => roundVec(corner)),
+        rect, bottom, top, snap, support, median,
         image_bbox_px: [x0, y0, x1, y1],
-        mask_file: instance.file,
-        mask_score: instance.score === undefined ? undefined : round(instance.score, 3),
+        gridMask: instance.gridMask,
+        file: instance.file,
+        score: instance.score,
         point_count: kept.length
       });
     }
@@ -567,6 +543,91 @@ export async function buildLayout({ world, index }) {
       instances
     });
   }
+
+  // Objects resting on other objects (a laptop on a desk): the desk is excluded from plane fitting,
+  // so its box top is the support surface. Lower boxes resolve first so stacks chain correctly.
+  const drafts = objects.flatMap((object) => object.instances).sort((a, b) => a.bottom - b.bottom);
+  const insideFootprint = (base, x, z, margin = 0.05) => {
+    const c = Math.cos(base.rect.yaw);
+    const s = Math.sin(base.rect.yaw);
+    const dx = x - base.rect.center[0];
+    const dz = z - base.rect.center[1];
+    return Math.abs(dx * c - dz * s) <= base.rect.sizeX / 2 + margin && Math.abs(dx * s + dz * c) <= base.rect.sizeZ / 2 + margin;
+  };
+  // Image contact: below the object's resting band (its lowest rows, so an overhanging lamp shade
+  // does not count), the next cells belong to the base's mask.
+  const restsOnInImage = (top, base, reach = 4) => {
+    const lowestByColumn = [];
+    let topRow = gh, bottomRow = -1;
+    for (let gx = 0; gx < gw; gx += 1) {
+      for (let gy = gh - 1; gy >= 0; gy -= 1) {
+        if (!top.gridMask[gy * gw + gx]) continue;
+        lowestByColumn.push([gx, gy]);
+        bottomRow = Math.max(bottomRow, gy);
+        break;
+      }
+      for (let gy = 0; gy < gh; gy += 1) if (top.gridMask[gy * gw + gx]) { topRow = Math.min(topRow, gy); break; }
+    }
+    const band = Math.max(3, Math.round(0.1 * (bottomRow - topRow + 1)));
+    const resting = lowestByColumn.filter(([, gy]) => gy >= bottomRow - band);
+    const touching = resting.filter(([gx, gy]) => {
+      for (let dy = 1; dy <= reach && gy + dy < gh; dy += 1) if (base.gridMask[(gy + dy) * gw + gx]) return true;
+      return false;
+    });
+    return resting.length > 0 && touching.length / resting.length >= 0.5;
+  };
+  for (const draft of drafts) {
+    if (draft.support !== "none_detected") continue;
+    const base = drafts
+      .filter((other) => other !== draft && other.top < draft.top &&
+        Math.abs(draft.bottom - other.top) < draft.snap &&
+        (insideFootprint(other, draft.rect.center[0], draft.rect.center[1]) || restsOnInImage(draft, other)))
+      .sort((a, b) => Math.abs(draft.bottom - a.top) - Math.abs(draft.bottom - b.top))[0];
+    if (base) {
+      draft.bottom = base.top;
+      draft.support = base.id;
+    }
+  }
+
+  const finalizeBox = (draft) => {
+    const { rect, bottom, top, support } = draft;
+    const center = [rect.center[0], (bottom + top) / 2, rect.center[1]];
+    const size = [rect.sizeX, top - bottom, rect.sizeZ];
+    const localX = [Math.cos(rect.yaw), 0, -Math.sin(rect.yaw)];
+    const localZ = [Math.sin(rect.yaw), 0, Math.cos(rect.yaw)];
+    const view = normalize([center[0] - cameraPosition[0], 0, center[2] - cameraPosition[2]]);
+    const depthAxis = Math.abs(dot(view, localX)) > Math.abs(dot(view, localZ)) ? "x" : "z";
+    const corners = [];
+    for (const sy of [-1, 1]) {
+      for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        corners.push(add(center, add(add(scale(localX, (sx * size[0]) / 2), [0, (sy * size[1]) / 2, 0]), scale(localZ, (sz * size[2]) / 2))));
+      }
+    }
+    return {
+      id: draft.id,
+      type: "box",
+      class: "object",
+      object_id: draft.object_id,
+      center: roundVec(center),
+      size: roundVec(size),
+      yaw_deg: round(degrees(rect.yaw), 1),
+      rotation_quaternion: roundVec([0, Math.sin(rect.yaw / 2), 0, Math.cos(rect.yaw / 2)], 5),
+      size_basis: {
+        x: depthAxis === "x" ? "visible_lower_bound" : "observed",
+        y: support === "none_detected" ? "observed" : "observed_to_support",
+        z: depthAxis === "z" ? "visible_lower_bound" : "observed"
+      },
+      bottom_y_m: round(bottom),
+      support,
+      distance_from_camera_m: round(draft.median),
+      corners: corners.map((corner) => roundVec(corner)),
+      image_bbox_px: draft.image_bbox_px,
+      mask_file: draft.file,
+      mask_score: draft.score === undefined ? undefined : round(draft.score, 3),
+      point_count: draft.point_count
+    };
+  };
+  for (const object of objects) object.instances = object.instances.map(finalizeBox);
 
   // Raster outputs at grid resolution.
   const labelImage = new Uint8Array(cellCount * 3);
