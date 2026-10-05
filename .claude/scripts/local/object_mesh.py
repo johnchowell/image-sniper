@@ -75,7 +75,7 @@ def main():
     for obj, instance in object_instances(layout):
         if args.object and obj["object_id"] not in args.object:
             continue
-        if obj["object_id"] in seen:  # one asset per object; extra instances reuse it in the scene
+        if obj["object_id"] in seen:  # one asset per object; every instance gets its own placement
             continue
         seen.add(obj["object_id"])
         started = time.time()
@@ -101,18 +101,32 @@ def main():
         mesh.vertices = vertices
         extent = vertices.max(0) - vertices.min(0)
 
-        # Placement: front (+Z) toward the source camera; front face on the box's front face.
-        center = np.array(instance["center"], dtype=np.float64)
-        toward = camera - center
-        toward[1] = 0
-        toward /= max(np.linalg.norm(toward), 1e-9)
-        yaw = math.atan2(toward[0], toward[2])
-        box_yaw = math.radians(instance["yaw_deg"])
-        local_x = np.array([math.cos(box_yaw), 0, -math.sin(box_yaw)])
-        local_z = np.array([math.sin(box_yaw), 0, math.cos(box_yaw)])
-        box_reach = abs(local_x @ toward) * instance["size"][0] / 2 + abs(local_z @ toward) * instance["size"][2] / 2
-        position = center + toward * (box_reach - extent[2] / 2)
-        position[1] = instance["bottom_y_m"]
+        # One placement per instance of this object: the asset scaled to the instance's measured height,
+        # front (+Z) toward the source camera, front face on the box's front face, base on its support.
+        placements = []
+        for other_obj, other in object_instances(layout):
+            if other_obj["object_id"] != obj["object_id"]:
+                continue
+            factor = other["size"][1] / max(extent[1], 1e-9)
+            center = np.array(other["center"], dtype=np.float64)
+            toward = camera - center
+            toward[1] = 0
+            toward /= max(np.linalg.norm(toward), 1e-9)
+            yaw = math.atan2(toward[0], toward[2])
+            box_yaw = math.radians(other["yaw_deg"])
+            local_x = np.array([math.cos(box_yaw), 0, -math.sin(box_yaw)])
+            local_z = np.array([math.sin(box_yaw), 0, math.cos(box_yaw)])
+            box_reach = abs(local_x @ toward) * other["size"][0] / 2 + abs(local_z @ toward) * other["size"][2] / 2
+            position = center + toward * (box_reach - factor * extent[2] / 2)
+            position[1] = other["bottom_y_m"]
+            placements.append({
+                "instance_id": other["id"],
+                "frame": "layout",
+                "translation": [round(float(v), 4) for v in position],
+                "yaw_deg": round(math.degrees(yaw), 2),
+                "rotation_quaternion": [0, round(math.sin(yaw / 2), 6), 0, round(math.cos(yaw / 2), 6)],
+                "scale": round(float(factor), 5),
+            })
 
         object_dir = world_path(args.world, "output", obj["object_id"])
         n = next_index(object_dir)
@@ -120,14 +134,6 @@ def main():
         reference = os.path.join(object_dir, f"{n}-{obj['object_id']}.png")
         mesh.export(glb)
         photo_crop.save(reference)
-        placement = {
-            "frame": "layout",
-            "translation": [round(float(v), 4) for v in position],
-            "yaw_deg": round(math.degrees(yaw), 2),
-            "rotation_quaternion": [0, round(math.sin(yaw / 2), 6), 0, round(math.cos(yaw / 2), 6)],
-            "scale": 1,
-            "instances": [i["id"] for o, i in object_instances(layout) if o["object_id"] == obj["object_id"]],
-        }
         summary = {
             "object_id": obj["object_id"],
             "model": glb,
@@ -147,7 +153,7 @@ def main():
             "input_files": [layout["source_image"], instance["mask_file"]] + ([light_json["files"]["albedo"]] if albedo is not None else []),
             "layout": layout_path,
             "asset_frame": "meters, +Y up, front +Z, base at y=0, centered on x/z",
-            "placement": placement,
+            "placements": placements,
             "output_files": [glb, reference],
             "result": summary,
         })

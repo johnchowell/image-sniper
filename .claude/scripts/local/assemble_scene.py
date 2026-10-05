@@ -82,15 +82,18 @@ def main():
         if not model:
             continue
         request = os.path.join(object_dir, f".{model[0]}-{obj['object_id']}__model-request.json")
-        placement = json.load(open(request))["placement"] if os.path.exists(request) else None
-        if not placement:
+        meta = json.load(open(request)) if os.path.exists(request) else {}
+        placements = meta.get("placements") or ([meta["placement"]] if meta.get("placement") else [])
+        if not placements:
             continue
-        yaw = math.radians(placement["yaw_deg"])
-        transform = trimesh.transformations.rotation_matrix(yaw, [0, 1, 0])
-        transform[:3, 3] = placement["translation"]
         mesh = trimesh.load(model[1], force="mesh")
-        scene.add_geometry(mesh, node_name=obj["object_id"], geom_name=obj["object_id"], transform=transform)
-        placed.append({"object_id": obj["object_id"], "model": model[1], "placement": placement})
+        for k, placement in enumerate(placements):
+            transform = trimesh.transformations.rotation_matrix(math.radians(placement["yaw_deg"]), [0, 1, 0])
+            transform[:3, :3] *= placement.get("scale", 1)
+            transform[:3, 3] = placement["translation"]
+            node = placement.get("instance_id", f"{obj['object_id']}-{k + 1}")
+            scene.add_geometry(mesh, node_name=node, geom_name=obj["object_id"], transform=transform)
+            placed.append({"object_id": obj["object_id"], "instance_id": node, "model": model[1], "placement": placement})
 
     cam = layout["camera"]
     camera = {
@@ -143,7 +146,7 @@ def main():
         "kind": "scene", "provider": "local/assemble", "endpoint": "local/assemble", "index": n, "status": "completed",
         "input_files": [environment[1], layout_path] + [p["model"] for p in placed], "output_files": [out],
     })
-    print(json.dumps({"scene": out, "objects": len(placed), "lights": manifest["lights"], "bytes": os.path.getsize(out)}))
+    print(json.dumps({"scene": out, "instances": len(placed), "lights": manifest["lights"], "bytes": os.path.getsize(out)}))
 
 
 if __name__ == "__main__":
