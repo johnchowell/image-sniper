@@ -17,7 +17,9 @@
       "Bash(bun run dev:*)",
       "Bash(lsof:*)",
       "Bash(mkdir:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(python3 -m venv:*)",
+      "Bash(pip install:*)"
     ]
   },
   "hooks": {
