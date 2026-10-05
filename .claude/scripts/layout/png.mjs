@@ -59,8 +59,9 @@ function unfilter(raw, width, height, bitsPerPixel) {
   return { data: out, stride };
 }
 
-// Decodes a non-interlaced PNG into 8-bit samples per channel (gray, gray+alpha, RGB, or RGBA).
-export function decodePng(buffer) {
+// Decodes a non-interlaced PNG into samples per channel (gray, gray+alpha, RGB, or RGBA).
+// 8-bit samples by default; keep16 returns full 16-bit samples (Uint16Array) for 16-bit files.
+export function decodePng(buffer, { keep16 = false } = {}) {
   if (!buffer.subarray(0, 8).equals(SIGNATURE)) throw new Error("Not a PNG file.");
   let offset = 8;
   let header;
@@ -98,16 +99,17 @@ export function decodePng(buffer) {
   if (!sourceChannels) throw new Error(`Unsupported PNG color type ${colorType}.`);
   const { data, stride } = unfilter(inflateSync(Buffer.concat(idat)), width, height, sourceChannels * bitDepth);
 
+  const wide = keep16 && bitDepth === 16;
   const sample = (row, index) => {
     if (bitDepth === 8) return data[row + index];
-    if (bitDepth === 16) return data[row + index * 2];
+    if (bitDepth === 16) return wide ? (data[row + index * 2] << 8) | data[row + index * 2 + 1] : data[row + index * 2];
     const bitOffset = index * bitDepth;
     const value = (data[row + (bitOffset >> 3)] >> (8 - bitDepth - (bitOffset & 7))) & ((1 << bitDepth) - 1);
     return colorType === 3 ? value : Math.round((value * 255) / ((1 << bitDepth) - 1));
   };
 
   const channels = colorType === 3 ? (transparency ? 4 : 3) : sourceChannels;
-  const pixels = new Uint8Array(width * height * channels);
+  const pixels = wide ? new Uint16Array(width * height * channels) : new Uint8Array(width * height * channels);
   for (let y = 0; y < height; y += 1) {
     const row = y * stride;
     for (let x = 0; x < width; x += 1) {
@@ -123,7 +125,7 @@ export function decodePng(buffer) {
       }
     }
   }
-  return { width, height, channels, data: pixels };
+  return { width, height, channels, bitDepth: wide ? 16 : 8, data: pixels };
 }
 
 // Binary mask from a decoded PNG: alpha when the alpha channel carries information, otherwise luminance.

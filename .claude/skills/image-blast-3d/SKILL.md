@@ -41,6 +41,7 @@ The arguments must identify one object clearly enough for this forked skill to w
 - Write a natural image-edit prompt for this specific object and pass it as `--image-edit-prompt`. Use this as the base prompt, filling in the target object and then elaborating with object-specific details: "Isolate the <target object> from this image. Reproduce it exactly as shown -- same colors, materials, and proportions. White background, centered, tight crop, studio lighting. No other objects, no scene, no people, no text, no shadows on the ground. Isolate the object and remove all clustered, adjacent, overlapping, or items resting on the target object. Create a clean render of that one single object that is true to the source image."
 - The prompt must ask for one atomic physical instance only: not a pair, set, cluster, category example, or adjacent duplicate. If the source contains similar objects, identify the target by location and exclude the others.
 - Do not write generated status, jobs, file lists, or request lifecycle into `object.json`.
+- If `worlds/$0/output/light/` has a light estimate of the object's source photo, the generator adds its albedo image (lighting removed) as the last edit input and appends an instruction to take surface colors from it, so the reference and textures do not bake in shadows or highlights. The request metadata records it as `albedo_reference`. Run `Agent(image-blast-light)` first to get this.
 
 Run the generator and wait for it to finish:
 

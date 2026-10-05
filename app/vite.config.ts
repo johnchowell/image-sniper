@@ -144,7 +144,7 @@ function worldsPlugin(): Plugin {
   const WORLD_CHANGE_EVENT = 'worlds-changed'
   const repoRoot = path.resolve(__dirname, '..')
   const worldsDir = path.resolve(__dirname, '../worlds')
-  const RESERVED_OUTPUT_DIRS = new Set(['world', 'layout', 'sfx'])
+  const RESERVED_OUTPUT_DIRS = new Set(['world', 'light', 'layout', 'sfx'])
   const MODEL_EXTENSIONS = new Set(['.glb'])
   const AUDIO_EXTENSIONS = new Set(['.mp3', '.ogg', '.wav', '.m4a', '.opus'])
   const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.avif'])

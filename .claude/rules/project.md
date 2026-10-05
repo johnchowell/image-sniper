@@ -20,6 +20,7 @@ worlds/
       <image>.json
     output/
       world/
+      light/
       layout/
       sfx/
       <object>/
@@ -85,11 +86,12 @@ When doing an IMAGE-BLAST, it can be done in one-shot by following this order:
 3. Immediately after staging input, check if something is already running on port 5173 with `lsof -i :5173 -sTCP:LISTEN -n -P`. If not, run `bun install && bun run dev` from the repository root to start the asset viewer. Then open the viewer for the user with `node .claude/scripts/project/show-url.mjs <world-slug>` and report the printed URL.
 4. Uncover/analyze the source image.
 5. Finish analysis, confirm objects, and write `object.json` per object. This is also the clean plate decision point: in one-shot mode, run `Agent(image-blast-plate)` and wait; otherwise ask whether to remove confirmed objects or anything else from the source image.
-6. Estimate depth and fit primitives with `Agent(image-blast-layout)`. It reads the original source image (objects visible) and the confirmed `object.json` files, so it can run in parallel with the plate agent. Wait for it before world generation.
-7. Create a world with `Agent(image-blast-world)` from the newest source image, which may be the generated plate. The world prompt uses the layout's `prompts.structure`.
-8. Launch one 3D object agent per confirmed object to create 3D models
-9. Launch SFX agents for ambience and also for every object to create object-specific sounds.
-10. Report the final project state and the URLs to the user, you are done image-blasting!
+6. Estimate lighting with `Agent(image-blast-light)`. A local intrinsic-decomposition model splits the original source image into albedo, diffuse shading, and non-diffuse light, and finds light sources. It can run in parallel with the plate agent. Wait for it before the layout.
+7. Estimate depth and fit primitives with `Agent(image-blast-layout)`. It reads the original source image (objects visible), the confirmed `object.json` files, and the light estimate, and adds the lighting (light sources, dominant direction) to the layout. Wait for it before world generation.
+8. Create a world with `Agent(image-blast-world)` from the newest source image, which may be the generated plate. The world prompt uses the layout's `prompts.structure` and `prompts.lighting`.
+9. Launch one 3D object agent per confirmed object to create 3D models. The reference edit automatically adds the lighting-free albedo image when a light estimate exists.
+10. Launch SFX agents for ambience and also for every object to create object-specific sounds.
+11. Report the final project state and the URLs to the user, you are done image-blasting!
 
 Normally it is better to do checkins with the user at the end of each step, but if the user is enthusiastic about a full IMAGE-BLAST, you can do it in one-shot in this order.
 

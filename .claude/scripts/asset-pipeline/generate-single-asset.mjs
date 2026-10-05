@@ -50,6 +50,10 @@ import {
 const IMAGE_EXTENSIONS = new Set([".avif", ".gif", ".jpeg", ".jpg", ".png", ".webp"]);
 const MODEL_EXTENSIONS = new Set([".blend", ".fbx", ".glb", ".obj", ".stl", ".usdz"]);
 const GENERATED_OBJECT_FIELDS = new Set(["status"]);
+const ALBEDO_INSTRUCTION =
+  "The last input image is the same photo with the lighting removed (albedo). Take the object's true surface colors from it, " +
+  "and do not copy shadows, highlights, reflections, or color casts that the lighting puts on the object in the original photo. " +
+  "Take shape, proportions, and material detail from the original photo.";
 export const DEFAULT_3D_PROVIDER = HUNYUAN_3D_PROVIDER;
 const MODEL_PROVIDER_ALIASES = new Map([
   ["meshy", MESHY_3D_PROVIDER],
@@ -92,6 +96,22 @@ function collectSourceImages(object, directImage) {
   }
 
   return [...images];
+}
+
+// Lighting-free albedo of one of the object's source photos, from the latest image-blast-light estimate.
+async function albedoReference(world, sourceImages) {
+  const dir = path.join("worlds", world, "output", "light");
+  const sources = new Set(sourceImages.map((image) => path.normalize(image)));
+  const estimates = (await readdir(dir).catch(() => []))
+    .map((name) => parseIndexedName(name))
+    .filter((parsed) => parsed && !parsed.hidden && parsed.slug === "light" && parsed.extension === ".json")
+    .sort((a, b) => b.index - a.index);
+  for (const estimate of estimates) {
+    const json = await readJsonIfExists(path.join(dir, estimate.name));
+    const albedo = json?.files?.albedo;
+    if (json && sources.has(path.normalize(json.source_image)) && albedo && await pathExists(albedo)) return albedo;
+  }
+  return undefined;
 }
 
 function firstGeneratedImage(imageEditSummary) {
@@ -399,6 +419,10 @@ export async function generateSingleObject(options) {
     throw new Error(`Object ${object.id} does not have source images for image editing.`);
   }
 
+  const albedo = await albedoReference(world, sourceImages);
+  const editImages = albedo ? [...sourceImages, albedo] : sourceImages;
+  const editPrompt = albedo && imageEditPrompt ? `${imageEditPrompt} ${ALBEDO_INSTRUCTION}` : imageEditPrompt;
+
   const imageRequests = regenerateReference ? [] : await requestMetadataFiles(resolved.objectDir, object.id, "image");
   const modelRequests = regenerateModel ? [] : await requestMetadataFiles(resolved.objectDir, object.id, "model");
   const activeImageRequest = latestByIndex(imageRequests.filter(isActiveRequest));
@@ -452,11 +476,11 @@ export async function generateSingleObject(options) {
         ? await resumeFalRequest(imageRequest, "image-edit", resolved.objectDir)
         : await runImageEdit({
             provider: imageEditProvider || object.image_edit_provider,
-            prompt: imageEditPrompt,
-            images: sourceImages,
+            prompt: editPrompt,
+            images: editImages,
             outputDir: resolved.objectDir,
             metadataPath: imageMetadataPath,
-            metadata: { index: requestIndex },
+            metadata: { index: requestIndex, ...(albedo ? { albedo_reference: albedo } : {}) },
             numImages: 1,
             resolution: "1K",
             aspectRatio: "1:1",

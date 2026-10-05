@@ -34,6 +34,7 @@ worlds/<slug>/
     <image-name>.json
   output/
     world/
+    light/
     layout/
     sfx/
     <object-slug>/
@@ -48,6 +49,7 @@ Only minimal `project.json` and directories are created automatically. `/image-b
    - per-image JSON count
    - staged files moved from `input/`, if any
    - whether World Labs output exists
+   - whether a light estimate exists
    - whether a primitive layout exists
    - whether `image.json` exists
    - derived object count
@@ -57,6 +59,7 @@ Only minimal `project.json` and directories are created automatically. `/image-b
 
 7. Recommend downstream actions only after no-cost setup/analysis is complete, in this order:
    - `Agent(image-blast-plate)` for clean plate/source cleanup after object confirmation, when requested or one-shotting
+   - `Agent(image-blast-light)` for the lighting estimate (albedo, shading, light sources) after object confirmation
    - `Agent(image-blast-layout)` for metric depth and primitive layout (structure planes, object boxes, camera pose) after object confirmation
    - `Agent(image-blast-world)` for static 3D environment world generation
    - `Agent(image-blast-3d)` per object 3D generation

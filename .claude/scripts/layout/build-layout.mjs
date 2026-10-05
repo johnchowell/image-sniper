@@ -20,6 +20,7 @@ import {
   transpose3
 } from "./geometry.mjs";
 import { writeLayoutGlb } from "./glb.mjs";
+import { analyzeLighting, lightingPrompt, loadLightEstimate } from "./lighting.mjs";
 import { decodePng, encodePng, maskFromPng } from "./png.mjs";
 import { parsePly } from "./ply.mjs";
 
@@ -629,6 +630,16 @@ export async function buildLayout({ world, index }) {
   };
   for (const object of objects) object.instances = object.instances.map(finalizeBox);
 
+  // Lighting from the intrinsic light estimate of the same photo, when one exists.
+  const lightEstimate = await loadLightEstimate(world, depthRequest.input_files?.[0]);
+  const planeNormalOf = new Map();
+  rawPlanes.forEach((plane, k) => { for (const cell of plane.inliers) planeNormalOf.set(cell, structure[k].normal); });
+  const lightResult = lightEstimate
+    ? analyzeLighting({ light: lightEstimate, grid, normals, hasNormal, planeNormalOf, R, toLayout, labels, palette, structure, width, height, cameraPosition })
+    : undefined;
+  const lighting = lightResult?.lighting || { status: "no_light_estimate", hint: "Run image-blast-light before the layout for lighting." };
+  const emitterPrimitives = lightResult?.emitters || [];
+
   // Raster outputs at grid resolution.
   const labelImage = new Uint8Array(cellCount * 3);
   const guideImage = new Uint8Array(cellCount * 3);
@@ -668,6 +679,7 @@ export async function buildLayout({ world, index }) {
   };
   for (const plane of structure) drawPolyline(plane.corners, [[0, 1], [1, 2], [2, 3], [3, 0]], CLASS_COLORS[plane.class]);
   const boxEdges = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
+  for (const emitter of emitterPrimitives) drawPolyline(emitter.corners, [[0, 1], [1, 2], [2, 3], [3, 0], [0, 2], [1, 3]], [255, 236, 120]);
   for (const object of objects) {
     const bright = object.color.map((c) => Math.min(255, Math.round(c * 0.5 + 128)));
     for (const instance of object.instances) drawPolyline(instance.corners, boxEdges, bright);
@@ -723,9 +735,39 @@ export async function buildLayout({ world, index }) {
       extras: { id: instance.id, class: "object", object_id: object.object_id, name: object.name, size_basis: instance.size_basis }
     })))
   ];
+  // Lights: emissive quads for light sources plus a KHR_lights_punctual directional light along the
+  // fitted dominant direction (intensities are relative, not photometric).
+  const lights = [];
+  for (const emitter of emitterPrimitives) {
+    const material = materialFor("light-source", [255, 236, 170], true);
+    materials[material].emissive = emitter.color_linear_rgb.map((c) => Math.min(1, c));
+    nodes.push({
+      name: emitter.id,
+      shape: "quad",
+      material,
+      translation: emitter.center,
+      rotation: emitter.rotation_quaternion,
+      scale: [Math.max(emitter.size[0], 1e-3), Math.max(emitter.size[1], 1e-3), 1],
+      extras: { id: emitter.id, class: "light_source", on_surface: emitter.on_surface }
+    });
+  }
+  if (lighting.status === "fitted" && lighting.dominant_light.confidence !== "low") {
+    const z = lighting.dominant_light.direction;
+    const x = Math.abs(z[1]) > 0.999 ? [1, 0, 0] : normalize(cross([0, 1, 0], z));
+    lights.push({ name: "dominant-light", type: "directional", color: lighting.light_color.linear_rgb.map((c) => Math.min(1, c)), intensity: 1 });
+    nodes.push({
+      name: "dominant-light",
+      light: 0,
+      translation: roundVec(add([0, 1.5, -3], scale(z, 3))),
+      rotation: roundVec(quaternionFromBasis(x, cross(z, x), z), 6),
+      extras: { class: "dominant_light", direction: z, directionality: lighting.dominant_light.directionality }
+    });
+  }
+
   await writeFile(files.layout_glb, writeLayoutGlb({
     nodes,
     materials,
+    lights,
     camera: {
       name: "source-camera",
       yfov: fovY,
@@ -815,6 +857,7 @@ export async function buildLayout({ world, index }) {
     },
     structure,
     objects,
+    lighting,
     labels: {
       file: files.labels_png,
       size: [gw, gh],
@@ -837,7 +880,8 @@ export async function buildLayout({ world, index }) {
     },
     prompts: {
       structure: structureLines.join(" "),
-      objects: objectLines.join(" ")
+      objects: objectLines.join(" "),
+      lighting: lightingPrompt(lighting)
     },
     warnings
   };
@@ -852,6 +896,9 @@ export async function buildLayout({ world, index }) {
     camera: { height_m: layout.camera.height_m, pitch_deg: layout.camera.pitch_deg, fov_x_deg: layout.camera.fov_x_deg },
     structure: structure.map((plane) => `${plane.id} ${plane.size.join("x")} m`),
     objects: objects.map((object) => `${object.object_id}: ${object.instances.length} instance(s)`),
+    lighting: lighting.status === "fitted"
+      ? { dominant: lighting.dominant_light, sh_fit_r2: lighting.irradiance_sh.fit_r2, emitters: lighting.emitters.map((e) => `${e.id} ${e.size.join("x")} m on ${e.on_surface}`) }
+      : lighting,
     warnings
   };
 }

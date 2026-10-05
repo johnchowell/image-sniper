@@ -17,3 +17,6 @@ app/.vite/
 
 # OS
 .DS_Store
+
+# Local model runtime
+.venv/

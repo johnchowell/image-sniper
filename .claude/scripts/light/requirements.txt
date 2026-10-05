@@ -1,0 +1,8 @@
+# Local model runtime for image-blast-light. Install torch first from the CPU index:
+#   .venv/bin/pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+diffusers>=0.33
+transformers
+accelerate
+numpy
+pillow
+opencv-python-headless

@@ -13,6 +13,7 @@ Create one depth-based primitive layout for project `$0`.
 
 - If `$0` is missing, ask for the world slug.
 - Use `ls -a` before reading generated state.
+- Run `Agent(image-blast-light)` first when possible; the layout reads its estimate for the same source image and adds the lighting.
 - Confirmed objects are `worlds/$0/output/<object>/object.json`. Each one gets one segmentation request with `object.name` as the text prompt. Make sure the object files exist before you run the layout; objects added later need `--regenerate`.
 - Without `--image`, the helper uses the lowest-index source image (the original photo). The objects must be visible in that image, so do not pass a clean plate unless the user asks for a structure-only layout.
 - The helper sends the image to `fal-ai/moge-2` for metric depth, camera intrinsics, and a point cloud. At the same time, it sends one `fal-ai/sam-3/image` request per confirmed object for instance masks. Then it fits primitives locally. It resumes unfinished requests and skips when the latest `N-layout.json` exists.
@@ -49,9 +50,10 @@ All files are in `worlds/$0/output/layout/` with index `N`:
   - `camera`: image size, pixel intrinsics, FOV, height above floor, pitch, roll, pose quaternion (OpenGL camera), and the `matrix_world_from_camera_opencv` matrix.
   - `structure[]`: `plane` primitives with `class` `floor | ceiling | wall | vertical_surface | horizontal_surface | inclined_surface`, plus `center`, `normal`, `u_axis`, `v_axis`, `size`, `corners`, and `rotation_quaternion`. Extents cover the visible points only.
   - `objects[]`: one entry per confirmed object, with `instances[]` of `box` primitives (`center`, `size`, `yaw_deg`, `rotation_quaternion`, `corners`, `support`, `image_bbox_px`, `mask_file`). `support` is `floor`, a structure plane id, another instance id (for example a laptop on `l-shaped-desk-1`), or `none_detected`. In `size_basis`, the axis along the view direction is `visible_lower_bound`, because the back of the object is not visible.
+  - `lighting`: present when `Agent(image-blast-light)` ran on the same photo first. Contains `dominant_light` (direction toward the light, azimuth, elevation, `fit_r2`, `confidence`, `uncertainty_deg`), `irradiance_sh` (9-term spherical-harmonic irradiance coefficients per RGB channel, for renderers), `emitters[]` (`area_light` primitives such as windows, merged per surface, with corners and color), and `highlights_on_objects[]`. With `confidence: low`, one distant light does not explain the shading; use the emitters, not the direction.
   - `prompts.structure`: an empty-environment spatial description (camera, floor, walls, ceiling, surfaces). It names no objects. `prompts.objects`: per-instance size and placement text.
   - `labels.palette`: label map colors. Floor, wall, and ceiling use the ADE20K colors.
-- `N-layout.glb`: blockout with one named node per primitive (`extras` carry `id`, `class`, `object_id`) and a `source-camera` node.
+- `N-layout.glb`: blockout with one named node per primitive (`extras` carry `id`, `class`, `object_id`), emissive quads for light sources, a `KHR_lights_punctual` directional light when the direction confidence is not low, and a `source-camera` node.
 - `N-layout-labels.png`: flat per-primitive label colors, for segmentation-conditioned models.
 - `N-layout-guide.png`: dimmed source with label tint and projected primitive wireframes, for vision models and humans.
 - `N-layout-depth.png`: uint16 depth in millimeters along the optical axis. `N-layout-depth-control.png`: 8-bit inverse depth, near = white.

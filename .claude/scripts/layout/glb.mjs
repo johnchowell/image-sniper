@@ -51,10 +51,12 @@ function pad4(buffer, fill = 0) {
 
 /**
  * nodes: [{ name, shape: "box" | "quad", material, translation, rotation, scale, extras }]
- * materials: [{ name, color: [r, g, b] (0-1), doubleSided }]
+ *        or light nodes [{ name, light: index into lights, translation, rotation, extras }]
+ * materials: [{ name, color: [r, g, b] (0-1), emissive: [r, g, b] (optional), doubleSided }]
+ * lights: KHR_lights_punctual lights [{ name, type, color, intensity }] (optional)
  * camera: { name, yfov, aspectRatio, znear, translation, rotation, extras } or undefined
  */
-export function writeLayoutGlb({ nodes, materials, camera, extras }) {
+export function writeLayoutGlb({ nodes, materials, lights = [], camera, extras }) {
   const shapes = { box: unitCube(), quad: unitQuad() };
   const chunks = [];
   const bufferViews = [];
@@ -99,10 +101,10 @@ export function writeLayoutGlb({ nodes, materials, camera, extras }) {
 
   const gltfNodes = nodes.map((node) => ({
     name: node.name,
-    mesh: meshFor(node.shape, node.material),
+    ...(node.shape ? { mesh: meshFor(node.shape, node.material), scale: node.scale } : {}),
+    ...(node.light !== undefined ? { extensions: { KHR_lights_punctual: { light: node.light } } } : {}),
     translation: node.translation,
     rotation: node.rotation,
-    scale: node.scale,
     ...(node.extras ? { extras: node.extras } : {})
   }));
 
@@ -125,6 +127,7 @@ export function writeLayoutGlb({ nodes, materials, camera, extras }) {
   const binary = Buffer.concat(chunks);
   const gltf = {
     asset: { version: "2.0", generator: "image-blaster layout" },
+    ...(lights.length ? { extensionsUsed: ["KHR_lights_punctual"], extensions: { KHR_lights_punctual: { lights } } } : {}),
     scene: 0,
     scenes: [{ name: "layout", nodes: gltfNodes.map((_, index) => index), ...(extras ? { extras } : {}) }],
     nodes: gltfNodes,
@@ -132,6 +135,7 @@ export function writeLayoutGlb({ nodes, materials, camera, extras }) {
     materials: materials.map((material) => ({
       name: material.name,
       doubleSided: Boolean(material.doubleSided),
+      ...(material.emissive ? { emissiveFactor: material.emissive } : {}),
       pbrMetallicRoughness: { baseColorFactor: [...material.color, 1], metallicFactor: 0, roughnessFactor: 1 }
     })),
     ...(cameras.length ? { cameras } : {}),
