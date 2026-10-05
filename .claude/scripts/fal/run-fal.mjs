@@ -9,6 +9,7 @@ import {
   one,
   parseArgs,
   pathExists,
+  providerReason,
   readJson,
   requireEnv,
   sanitizeForMetadata,
@@ -143,7 +144,7 @@ async function callFalRun(endpoint, input, options) {
       completed_at: new Date().toISOString(),
       error: sanitizeForMetadata(body)
     });
-    throw new Error(`FAL run failed (${response.status}).`);
+    throw new Error(`FAL run failed (${response.status})${providerReason(body)}.`);
   }
 
   return {
