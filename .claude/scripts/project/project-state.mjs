@@ -18,8 +18,8 @@ import {
   parseIndexedName
 } from "../asset-pipeline/request-metadata.mjs";
 
-const PROJECT_DIRS = ["source", "output", "output/world", "output/sfx"];
-const RESERVED_OUTPUT_DIRS = new Set(["world", "sfx"]);
+const PROJECT_DIRS = ["source", "output", "output/world", "output/layout", "output/sfx"];
+const RESERVED_OUTPUT_DIRS = new Set(["world", "layout", "sfx"]);
 const MODEL_EXTENSIONS = new Set([".glb", ".obj", ".fbx", ".usdz"]);
 const STAGE_EXTENSIONS = new Set([
   ".avif",
@@ -202,6 +202,7 @@ export async function ensureProjectState(options) {
   const imagePath = path.join(worldDir, "image.json");
   const worldOutputPath = path.join(worldDir, "output", "world");
   const worldSfxPath = path.join(worldDir, "output", "sfx");
+  const layoutPath = path.join(worldDir, "output", "layout");
   const scenePath = path.join(worldDir, "scene.json");
   const objects = await scanObjects(worldDir);
   const sourceFiles = await listDirFiles(path.join(worldDir, "source"));
@@ -222,11 +223,13 @@ export async function ensureProjectState(options) {
       source: path.join(worldDir, "source"),
       output: path.join(worldDir, "output"),
       world: path.join(worldDir, "output", "world"),
+      layout: layoutPath,
       sfx: worldSfxPath,
       scene_json: scenePath,
       image: imagePath
     },
     state: {
+      has_layout: Boolean(await latestIndexed(layoutPath, "layout")),
       has_world: Boolean(await latestIndexed(worldOutputPath, "world")),
       has_world_operation: worldOutputFiles.some(isWorldRequest) || await pathExists(path.join(worldOutputPath, "operation.json")),
       has_image: await pathExists(imagePath),
