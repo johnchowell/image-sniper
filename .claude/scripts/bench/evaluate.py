@@ -187,6 +187,7 @@ def score_view(view_dir, layout_index=None):
             instances.setdefault(obj["object_id"], []).append(inst)
     pred_by_gt = {}
     objects = []
+    false_positives = 0
     for obj in gt["objects"]:
         gt_mask = arrays["instance"] == obj["pass_index"]
         if gt_mask.mean() < 0.002:
@@ -198,6 +199,8 @@ def score_view(view_dir, layout_index=None):
             iou = (mask & gt_mask).sum() / max((mask | gt_mask).sum(), 1)
             if iou > best_iou:
                 best, best_iou = inst, iou
+        # Every predicted instance of this object other than a correct match is a false positive.
+        false_positives += len(candidates) - (1 if best is not None and best_iou >= 0.25 else 0)
         record = {"gt": obj["id"], "name": obj["name"], "found": best is not None and best_iou >= 0.25, "mask_iou": float(best_iou)}
         if best is not None:
             pred_center = to_cam(np.array(best["center"]), R_pc, t_pc)
@@ -219,6 +222,7 @@ def score_view(view_dir, layout_index=None):
             mapped = "floor" if pred in ("floor", "floor_estimate") else pred_by_gt.get(pred, pred)
             record["support_correct"] = mapped == record["gt_support"]
     out["objects"] = objects
+    out["object_false_positives"] = false_positives
 
     # Lighting: decomposition vs true albedo/shading, window regions and 3D positions.
     light_json = latest(os.path.join(world, "output", "light"), "[0-9]*-light.json")
@@ -282,6 +286,7 @@ def summarize(results):
         },
         "objects": {
             "recall": mean([o["found"] for o in objects]),
+            "precision": round(sum(o["found"] for o in objects) / max(sum(o["found"] for o in objects) + sum(r["object_false_positives"] for r in scored), 1), 4),
             "mask_iou_mean": mean([o["mask_iou"] for o in objects]),
             "center_err_m_median": median_abs([o.get("center_err_m") for o in found]),
             "center_err_aligned_m_median": median_abs([o.get("center_err_aligned_m") for o in found]),
