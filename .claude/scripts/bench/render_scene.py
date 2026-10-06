@@ -133,6 +133,8 @@ def main():
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--views", type=int, default=2)
     parser.add_argument("--samples", type=int, default=64)
+    parser.add_argument("--objects", type=int, nargs=2, default=[5, 8], metavar=("MIN", "MAX"), help="furniture and props tried")
+    parser.add_argument("--windows", type=int, nargs="+", default=[1, 2], help="window counts to choose from")
     args = parser.parse_args()
     rng = random.Random(args.seed)
     manifest = json.load(open(args.assets))
@@ -175,7 +177,7 @@ def main():
     emit.inputs["Strength"].default_value = rng.uniform(10, 25)
     emission.node_tree.links.new(emit.outputs["Emission"], nodes["Material Output"].inputs["Surface"])
     windows = []
-    for wall in rng.sample([s for s in structure if s["id"] in ("wall-back", "wall-left", "wall-right")], rng.choice([1, 2])):
+    for wall in rng.sample([s for s in structure if s["id"] in ("wall-back", "wall-left", "wall-right")], rng.choice(args.windows)):
         width = rng.uniform(1.0, min(2.4, wall["size"][0] - 1.0))
         height = rng.uniform(1.1, min(1.7, H - 1.2))
         along = rng.uniform(-(wall["size"][0] - width) / 2 + 0.3, (wall["size"][0] - width) / 2 - 0.3)
@@ -204,7 +206,7 @@ def main():
     rng.shuffle(models)
     placed, boxes = [], []
     pass_index = 0
-    for model in models[: rng.randint(5, 8)]:
+    for model in models[: rng.randint(*args.objects)]:
         root, meshes, size = import_model(model["path"])
         if max(size) > 2.6 or max(size) < 0.08:
             continue
