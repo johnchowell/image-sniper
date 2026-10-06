@@ -40,6 +40,41 @@ def original_source(world):
     return os.path.join(src, min(images, key=lambda f: (int(f.split("-")[0]), f)))
 
 
+def detect_jointly(processor, detector, image, objects, threshold):
+    """One Grounding DINO pass with every object name as a competing phrase.
+
+    A box's score for a phrase is the max token probability over that phrase's tokens. Each box goes to its best
+    phrase; overlapping boxes keep the higher score across all phrases (one image region, one object); each object
+    keeps at most count_estimate boxes. Independent per-name queries let similar names claim the same region.
+    """
+    phrases = [obj["name"].lower().strip().rstrip(".") for obj in objects]
+    prompt = " ".join(f"{p}." for p in phrases)
+    W, H = image.size
+    with torch.no_grad():
+        inputs = processor(images=image, text=prompt, return_tensors="pt")
+        outputs = detector(**inputs)
+    offsets = processor.tokenizer(prompt, return_offsets_mapping=True)["offset_mapping"]
+    probs = outputs.logits[0].sigmoid().numpy()  # queries x text positions
+    spans, cursor = [], 0
+    for phrase in phrases:
+        start = prompt.index(phrase, cursor)
+        end = start + len(phrase)
+        cursor = end
+        spans.append([i for i, (a, b) in enumerate(offsets) if b > a and a >= start and b <= end and i < probs.shape[1]])
+    class_scores = np.stack([probs[:, span].max(1) if span else np.zeros(len(probs)) for span in spans], 1)
+    best = class_scores.argmax(1)
+    score = class_scores.max(1)
+    cx, cy, w, h = outputs.pred_boxes[0].numpy().T
+    boxes = np.stack([(cx - w / 2) * W, (cy - h / 2) * H, (cx + w / 2) * W, (cy + h / 2) * H], 1)
+    keep = [i for i in nms(boxes, score, iou=0.6) if score[i] >= threshold]
+    detections = {obj["id"]: [] for obj in objects}
+    for i in keep:
+        obj = objects[best[i]]
+        if len(detections[obj["id"]]) < max(1, obj["count"]):
+            detections[obj["id"]].append((boxes[i].clip([0, 0, 0, 0], [W, H, W, H]), float(score[i])))
+    return prompt, detections
+
+
 def nms(boxes, scores, iou=0.5):
     order = np.argsort(-scores)
     keep = []
@@ -61,7 +96,6 @@ def main():
     parser.add_argument("--world", required=True)
     parser.add_argument("--image")
     parser.add_argument("--box-threshold", type=float, default=0.3)
-    parser.add_argument("--text-threshold", type=float, default=0.25)
     args = parser.parse_args()
 
     source = args.image or original_source(args.world)
@@ -119,28 +153,23 @@ def main():
     predictor = SAM2ImagePredictor.from_pretrained(SEGMENTER, device="cpu")
     predictor.set_image(rgb)
     found = {}
-    for obj in confirmed_objects(args.world):
-        prompt = obj["name"].lower().strip().rstrip(".") + "."
-        with torch.no_grad():
-            inputs = processor(images=image, text=prompt, return_tensors="pt")
-            detection = processor.post_process_grounded_object_detection(
-                detector(**inputs), inputs.input_ids, threshold=args.box_threshold, text_threshold=args.text_threshold, target_sizes=[(H, W)])[0]
-        boxes = detection["boxes"].numpy()
-        scores = detection["scores"].numpy()
-        keep = nms(boxes, scores)[: max(1, obj["count"]) * 2] if len(boxes) else []
+    objects = confirmed_objects(args.world)
+    prompt, detections = detect_jointly(processor, detector, image, objects, args.box_threshold) if objects else ("", {})
+    for obj in objects:
         downloaded, kept_scores, kept_boxes = [], [], []
-        for k, i in enumerate(keep, start=1):
+        for k, (box, box_score) in enumerate(detections[obj["id"]], start=1):
             with torch.no_grad():
-                masks, _, _ = predictor.predict(box=boxes[i], multimask_output=False)
+                masks, _, _ = predictor.predict(box=box, multimask_output=False)
             path = f"{out_rel}/{index}-layout-mask-{obj['id']}-{k}.png"
             Image.fromarray((masks[0] > 0).astype(np.uint8) * 255).save(path)
             downloaded.append({"label": f"mask-{k}", "path": path})
-            kept_scores.append(round(float(scores[i]), 4))
-            kept_boxes.append([round(float(v), 1) for v in boxes[i]])
+            kept_scores.append(round(box_score, 4))
+            kept_boxes.append([round(float(v), 1) for v in box])
         write_request(os.path.join(out_rel, f".{index}-layout__mask-{obj['id']}-request.json"), {
             "kind": "layout-mask", "provider": f"local/{DETECTOR.split('/')[-1]}+{SEGMENTER.split('/')[-1]}",
             "endpoint": "local/grounded-sam2", "index": index, "status": "completed",
-            "object_id": obj["id"], "object_name": obj["name"], "prompt": prompt, "mask_threshold": args.box_threshold,
+            "object_id": obj["id"], "object_name": obj["name"], "prompt": prompt, "detection": "joint (all names compete)",
+            "mask_threshold": args.box_threshold,
             "input_files": [source], "output_files": [d["path"] for d in downloaded], "downloaded_files": downloaded,
             "result": {"scores": kept_scores, "boxes_px": kept_boxes},
         })

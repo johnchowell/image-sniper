@@ -71,28 +71,37 @@ def main():
     parser.add_argument("--ensemble", type=int, default=1)
     parser.add_argument("--resolution", type=int, default=768)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--postprocess-only", action="store_true", help="reuse the cached model prediction of this index")
+    parser.add_argument("--dominance", type=float, default=0.6, help="residual share above which a bright pixel is non-diffuse")
+    parser.add_argument("--min-luminance", type=float, default=0.5, help="linear photo luminance for emitter candidates")
+    parser.add_argument("--source-clipped", type=float, default=0.5, help="clipped share that makes a region a light source")
     args = parser.parse_args()
 
-    import torch
-    from diffusers import MarigoldIntrinsicsPipeline
-
-    torch.set_num_threads(max(1, torch.get_num_threads()))
     image = Image.open(args.image).convert("RGB")
     photo = srgb_to_linear(np.asarray(image, dtype=np.float64) / 255.0)
+    cache = f"{args.out_dir.rstrip('/')}/.{args.index}-light-prediction.npz"
 
     started = time.time()
-    pipe = MarigoldIntrinsicsPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
-    result = pipe(
-        image,
-        num_inference_steps=args.steps,
-        ensemble_size=args.ensemble,
-        processing_resolution=args.resolution,
-        output_type="np",
-        generator=torch.Generator().manual_seed(args.seed),
-    )
-    names = pipe.target_properties["target_names"]
-    prediction = {name: result.prediction[k].astype(np.float64) for k, name in enumerate(names)}
-    albedo, shading, residual = prediction["albedo"], prediction["shading"], prediction["residual"]
+    if args.postprocess_only:
+        cached = np.load(cache)
+        albedo, shading, residual = (cached[k].astype(np.float64) for k in ("albedo", "shading", "residual"))
+    else:
+        import torch
+        from diffusers import MarigoldIntrinsicsPipeline
+
+        pipe = MarigoldIntrinsicsPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
+        result = pipe(
+            image,
+            num_inference_steps=args.steps,
+            ensemble_size=args.ensemble,
+            processing_resolution=args.resolution,
+            output_type="np",
+            generator=torch.Generator().manual_seed(args.seed),
+        )
+        names = pipe.target_properties["target_names"]
+        prediction = {name: result.prediction[k].astype(np.float32) for k, name in enumerate(names)}
+        np.savez_compressed(cache, **prediction)  # raw model output, so thresholds can be refit without inference
+        albedo, shading, residual = (prediction[k].astype(np.float64) for k in ("albedo", "shading", "residual"))
     seconds = time.time() - started
 
     # Shading and residual are up to scale: fit photo ~= a * albedo * shading + b * residual.
@@ -122,7 +131,7 @@ def main():
 
     diffuse_luma = (albedo * shading_lin) @ LUMA
     residual_dominance = residual_luma / np.maximum(diffuse_luma + residual_luma, 1e-9)
-    candidates = ((residual_dominance > 0.6) & (photo_luma >= 0.5)).astype(np.uint8)
+    candidates = ((residual_dominance > args.dominance) & (photo_luma >= args.min_luminance)).astype(np.uint8)
     candidates = cv2.morphologyEx(candidates, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
     count, labels, stats, centroids = cv2.connectedComponentsWithStats(candidates, connectivity=8)
     min_area = 0.001 * labels.size
@@ -141,7 +150,7 @@ def main():
         emitters.append({
             "id": emitter_id,
             # A source exceeds the sensor range; a reflection in glass or a highlight mostly does not.
-            "kind": "light_source" if clipped >= 0.5 else "reflection",
+            "kind": "light_source" if clipped >= args.source_clipped else "reflection",
             "image_bbox_px": [x, y, x + w, y + h],
             "area_fraction": round(area / labels.size, 5),
             "centroid_px": [round(float(c), 1) for c in centroids[k]],
@@ -176,7 +185,9 @@ def main():
         "decomposition": "photo_linear = albedo * shading + residual",
         "source_image": args.image,
         "image_size": [image.width, image.height],
-        "settings": {"steps": args.steps, "ensemble": args.ensemble, "processing_resolution": args.resolution, "seed": args.seed},
+        "settings": {"steps": args.steps, "ensemble": args.ensemble, "processing_resolution": args.resolution, "seed": args.seed,
+                     "dominance": args.dominance, "min_luminance": args.min_luminance, "source_clipped": args.source_clipped},
+        "prediction_cache": cache,
         "inference_seconds": round(seconds, 1),
         "scales": {"shading": round(a, 6), "residual": round(b, 6)},
         "reconstruction_r2": round(float(r2), 4),

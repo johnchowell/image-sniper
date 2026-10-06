@@ -579,7 +579,7 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
   };
   // Image contact: below the object's resting band (its lowest rows, so an overhanging lamp shade
   // does not count), the next cells belong to the base's mask.
-  const restsOnInImage = (top, base, reach = 4) => {
+  const contactBelow = (top, isBase, reach = 4) => {
     const lowestByColumn = [];
     let topRow = gh, bottomRow = -1;
     for (let gx = 0; gx < gw; gx += 1) {
@@ -593,12 +593,27 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
     }
     const band = Math.max(3, Math.round(0.1 * (bottomRow - topRow + 1)));
     const resting = lowestByColumn.filter(([, gy]) => gy >= bottomRow - band);
+    const contacts = [];
     const touching = resting.filter(([gx, gy]) => {
-      for (let dy = 1; dy <= reach && gy + dy < gh; dy += 1) if (base.gridMask[(gy + dy) * gw + gx]) return true;
+      for (let dy = 1; dy <= reach && gy + dy < gh; dy += 1) {
+        const cell = (gy + dy) * gw + gx;
+        if (isBase(cell)) { contacts.push(cell); return true; }
+      }
       return false;
     });
-    return resting.length > 0 && touching.length / resting.length >= 0.5;
+    return { touching: resting.length > 0 && touching.length / resting.length >= 0.5, resting, contacts };
   };
+  const restsOnInImage = (top, base) => contactBelow(top, (cell) => base.gridMask[cell]).touching;
+  // A contact counts only if the support cells are near the object's resting band in 3D (not a far background patch).
+  const nearInPlan = (draft, contact) => {
+    if (!contact.contacts.length) return false;
+    const centroid = (cells) => scale(cells.reduce((sum, cell) => add(sum, toLayout(cellPoint(cell))), [0, 0, 0]), 1 / cells.length);
+    const a = centroid(contact.resting.map(([gx, gy]) => gy * gw + gx).filter((cell) => valid[cell]));
+    const b = centroid(contact.contacts.filter((cell) => valid[cell]));
+    return Math.hypot(a[0] - b[0], a[2] - b[2]) < Math.max(0.5, 0.75 * Math.max(draft.rect.sizeX, draft.rect.sizeZ));
+  };
+  const floorLabel = palette.find((entry) => entry.class === "floor")?.label;
+  const surfaceLabels = palette.filter((entry) => entry.class === "horizontal_surface");
   for (const draft of drafts) {
     if (draft.support !== "none_detected") continue;
     const base = drafts
@@ -609,6 +624,29 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
     if (base) {
       draft.bottom = base.top;
       draft.support = base.id;
+      draft.support_basis = "object_contact";
+      continue;
+    }
+    // Thin or hidden legs leave the lowest visible points above the support; the image contact below the
+    // resting band still shows what the object stands on.
+    if (floorLabel) {
+      const contact = contactBelow(draft, (cell) => labels[cell] === floorLabel);
+      if (contact.touching && nearInPlan(draft, contact)) {
+        draft.bottom = 0;
+        draft.support = "floor";
+        draft.support_basis = "image_contact";
+        continue;
+      }
+    }
+    for (const surface of surfaceLabels) {
+      const plane = structure.find((p) => p.id === surface.id);
+      const contact = contactBelow(draft, (cell) => labels[cell] === surface.label);
+      if (plane && plane.center[1] < draft.top && contact.touching && nearInPlan(draft, contact)) {
+        draft.bottom = plane.center[1];
+        draft.support = plane.id;
+        draft.support_basis = "image_contact";
+        break;
+      }
     }
   }
 
@@ -642,6 +680,7 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
       },
       bottom_y_m: round(bottom),
       support,
+      support_basis: draft.support_basis || (support === "none_detected" ? null : "height"),
       distance_from_camera_m: round(draft.median),
       corners: corners.map((corner) => roundVec(corner)),
       image_bbox_px: draft.image_bbox_px,

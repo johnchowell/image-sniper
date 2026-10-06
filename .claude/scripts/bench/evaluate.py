@@ -153,11 +153,15 @@ def score_view(view_dir):
     }
 
     # Structure: each visible true plane against the best predicted plane (camera frame).
-    normal_cam = arrays["normal_world"] @ R_gt.T
+    # A plane is visible where true 3D points (from the planar depth) lie on it.
+    K = gt["camera"]["intrinsics_px"]
+    v, u = np.mgrid[0:H, 0:W]
+    cam_points = np.stack([(u + 0.5 - K["cx"]) / K["fx"], (v + 0.5 - K["cy"]) / K["fy"], np.ones((H, W))], -1) * arrays["depth"][..., None]
+    background = (arrays["instance"] == 0) & ~((arrays["emission"] @ LUMA) > 1e-4)
     structure = []
     for plane in gt["structure"]:
         n_gt, d_gt = plane_in_cam(plane["point"], plane["normal"], R_gt, t_gt)
-        visible = ((arrays["instance"] == 0) & (np.abs(normal_cam @ n_gt) > 0.95) & ~((arrays["emission"] @ LUMA) > 1e-4)).mean()
+        visible = (background & (np.abs(cam_points @ n_gt + d_gt) < 0.03)).mean()
         if visible < 0.02:
             continue
         best = None
