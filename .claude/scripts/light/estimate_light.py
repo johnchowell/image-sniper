@@ -109,10 +109,12 @@ def main():
     parser.add_argument("--resolution", type=int, default=768)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--postprocess-only", action="store_true", help="reuse the cached model prediction of this index")
-    parser.add_argument("--dominance", type=float, default=0.6, help="residual share above which a bright pixel is non-diffuse")
-    parser.add_argument("--min-luminance", type=float, default=0.5, help="linear photo luminance for emitter candidates")
-    parser.add_argument("--source-clipped", type=float, default=0.5, help="clipped share that makes a region a light source")
-    parser.add_argument("--clipped-candidates", type=int, default=0, help="1: overexposed pixels are emitter candidates too")
+    # Defaults chosen on the benchmark training renders by windows located within 1 m in 3D (light_select.py):
+    # 0.17 with the previous rule (0.6, 0.5, 0.5, 0), 0.58 with this one.
+    parser.add_argument("--dominance", type=float, default=0.4, help="residual share above which a bright pixel is non-diffuse")
+    parser.add_argument("--min-luminance", type=float, default=0.3, help="linear photo luminance for emitter candidates")
+    parser.add_argument("--source-clipped", type=float, default=0.7, help="clipped share that makes a region a light source")
+    parser.add_argument("--clipped-candidates", type=int, default=1, help="1: overexposed pixels are emitter candidates too")
     args = parser.parse_args()
 
     image = Image.open(args.image).convert("RGB")

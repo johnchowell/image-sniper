@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(REPO, ".claude", "scripts", "light"))
 from estimate_light import LUMA, find_emitters, srgb_to_linear  # noqa: E402
 
 GRID = {"dominance": [0.4, 0.5, 0.6, 0.7], "min_luminance": [0.3, 0.5, 0.7], "source_clipped": [0.3, 0.5, 0.7], "clipped_candidates": [0, 1]}
-CURRENT = {"dominance": 0.6, "min_luminance": 0.5, "source_clipped": 0.5, "clipped_candidates": 0}
+PREVIOUS = {"dominance": 0.6, "min_luminance": 0.5, "source_clipped": 0.5, "clipped_candidates": 0}
 
 
 def load(split):
@@ -68,12 +68,12 @@ def main():
     results.sort(key=lambda r: -r["f1"])
     best = {k: results[0][k] for k in GRID}
     report = {
-        "current": {"params": CURRENT, "train": score(train, CURRENT), "test": score(test, CURRENT)},
+        "previous": {"params": PREVIOUS, "train": score(train, PREVIOUS), "test": score(test, PREVIOUS)},
         "best_on_train": {"params": best, "train": score(train, best), "test": score(test, best)},
         "top_train": results[:10],
     }
     json.dump(report, open(os.path.join(REPO, "benchmark", "results", "light-calibration.json"), "w"), indent=2)
-    print(json.dumps({k: report[k] for k in ("current", "best_on_train")}, indent=2))
+    print(json.dumps({k: report[k] for k in ("previous", "best_on_train")}, indent=2))
     for r in results[:6]:
         print(r)
 

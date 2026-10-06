@@ -18,9 +18,9 @@ sys.path.insert(0, HERE)
 import evaluate  # noqa: E402
 
 CANDIDATES = {
-    "current": {"dominance": 0.6, "min_luminance": 0.5, "source_clipped": 0.5, "clipped_candidates": 0},
+    "previous": {"dominance": 0.6, "min_luminance": 0.5, "source_clipped": 0.5, "clipped_candidates": 0},
     "pixel-f1": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 0},
-    "clipped": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1},
+    "chosen": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1},
 }
 
 
