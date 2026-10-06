@@ -111,11 +111,14 @@ def si_rmse(pred, gt, mask):
     return float(np.sqrt(np.mean((s * p - g) ** 2)) / max(np.sqrt(np.mean(g ** 2)), 1e-12))
 
 
-def score_view(view_dir):
+def score_view(view_dir, layout_index=None):
     gt = json.load(open(os.path.join(view_dir, "gt.json")))
     arrays = np.load(os.path.join(view_dir, "gt.npz"))
     world = os.path.join(REPO, "worlds", world_name(view_dir))
-    layout_path = latest(os.path.join(world, "output", "layout"), "[0-9]*-layout.json")
+    layout_path = (os.path.join(world, "output", "layout", f"{layout_index}-layout.json") if layout_index is not None
+                   else latest(os.path.join(world, "output", "layout"), "[0-9]*-layout.json"))
+    if layout_path and not os.path.exists(layout_path):
+        layout_path = None
     if not layout_path:
         return {"view": world_name(view_dir), "status": "no_layout"}
     layout = json.load(open(layout_path))
@@ -167,12 +170,14 @@ def score_view(view_dir):
         best = None
         for pred in layout["structure"]:
             n_p, d_p = plane_in_cam(pred["center"], pred["normal"], R_pc, t_pc)
-            err = (angle(n_p, n_gt), abs(d_p - d_gt))
+            err = (angle(n_p, n_gt), abs(d_p - d_gt), abs(scale * d_p - d_gt))
             if best is None or err[0] + 20 * err[1] < best[1] + 20 * best[2]:
                 best = (pred["id"], *err)
-        found = best is not None and best[1] < 10 and best[2] < 0.25
-        structure.append({"gt": plane["id"], "class": plane["class"], "visible_fraction": float(visible), "found": found,
-                          "match": best[0] if best else None, "normal_err_deg": best[1] if best else None, "offset_err_m": best[2] if best else None})
+        structure.append({"gt": plane["id"], "class": plane["class"], "visible_fraction": float(visible),
+                          "found": best is not None and best[1] < 10 and best[2] < 0.25,
+                          "found_aligned": best is not None and best[1] < 10 and best[3] < 0.25,
+                          "match": best[0] if best else None, "normal_err_deg": best[1] if best else None,
+                          "offset_err_m": best[2] if best else None, "offset_err_aligned_m": best[3] if best else None})
     out["structure"] = structure
 
     # Objects: recall, mask IoU, box center and height errors, support.
@@ -199,6 +204,8 @@ def score_view(view_dir):
             gt_center = to_cam(np.array(obj["center"]), R_gt, t_gt)
             record.update({
                 "center_err_m": float(np.linalg.norm(pred_center - gt_center)),
+                "center_err_aligned_m": float(np.linalg.norm(scale * pred_center - gt_center)),
+                "height_rel_err_aligned": (scale * best["size"][1] - obj["size"][2]) / obj["size"][2],
                 "height_err_m": best["size"][1] - obj["size"][2],
                 "height_rel_err": (best["size"][1] - obj["size"][2]) / obj["size"][2],
                 "gt_support": obj["support"],
@@ -261,19 +268,25 @@ def summarize(results):
         "views": len(results),
         "scored": len(scored),
         "camera": {k: median_abs([r["camera"][k] for r in scored]) for k in ("height_err_m", "pitch_err_deg", "roll_err_deg", "fov_err_deg")},
-        "depth": {k: mean([r["depth"][k] for r in scored]) for k in ("absrel_metric", "absrel_scaled", "delta1_metric")},
+        "depth": {**{k: mean([r["depth"][k] for r in scored]) for k in ("absrel_metric", "absrel_scaled", "delta1_metric")},
+                  "scale_err_median": median_abs([r["depth"]["scale_gt_over_pred"] - 1 for r in scored])},
         "structure": {
             "floor_found": mean([p["found"] for p in planes if p["class"] == "floor"]),
             "wall_found": mean([p["found"] for p in planes if p["class"] == "wall"]),
             "ceiling_found": mean([p["found"] for p in planes if p["class"] == "ceiling"]),
-            "normal_err_deg_median": median_abs([p["normal_err_deg"] for p in planes if p["found"]]),
+            "floor_found_aligned": mean([p["found_aligned"] for p in planes if p["class"] == "floor"]),
+            "wall_found_aligned": mean([p["found_aligned"] for p in planes if p["class"] == "wall"]),
+            "normal_err_deg_median": median_abs([p["normal_err_deg"] for p in planes if p["found_aligned"]]),
             "offset_err_m_median": median_abs([p["offset_err_m"] for p in planes if p["found"]]),
+            "offset_err_aligned_m_median": median_abs([p["offset_err_aligned_m"] for p in planes if p["found_aligned"]]),
         },
         "objects": {
             "recall": mean([o["found"] for o in objects]),
             "mask_iou_mean": mean([o["mask_iou"] for o in objects]),
             "center_err_m_median": median_abs([o.get("center_err_m") for o in found]),
+            "center_err_aligned_m_median": median_abs([o.get("center_err_aligned_m") for o in found]),
             "height_rel_err_median": median_abs([o.get("height_rel_err") for o in found]),
+            "height_rel_err_aligned_median": median_abs([o.get("height_rel_err_aligned") for o in found]),
             "support_accuracy": mean([o.get("support_correct") for o in found]),
         },
         "light": {
@@ -293,13 +306,14 @@ def main():
     parser.add_argument("--python", default=sys.executable)
     parser.add_argument("--skip-light", action="store_true")
     parser.add_argument("--name", default="baseline")
+    parser.add_argument("--layout-index", type=int, help="score this layout index instead of the latest")
     args = parser.parse_args()
     if args.command == "prepare":
         prepare(args.split)
     elif args.command == "run":
         run(args.split, args.python, args.skip_light)
     else:
-        results = [score_view(v) for v in views(args.split)]
+        results = [score_view(v, args.layout_index) for v in views(args.split)]
         report = {"name": args.name, "split": args.split, "summary": summarize(results), "views": results}
         os.makedirs(os.path.join(REPO, "benchmark", "results"), exist_ok=True)
         path = os.path.join(REPO, "benchmark", "results", f"{args.name}-{args.split}.json")
