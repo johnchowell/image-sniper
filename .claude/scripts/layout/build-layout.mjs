@@ -25,8 +25,21 @@ import { decodePng, encodePng, maskFromPng } from "./png.mjs";
 import { parsePly } from "./ply.mjs";
 
 const MAX_GRID_SIDE = 1024;
-const HORIZONTAL_DEG = 15;
-const UP_SEARCH_DEG = 40;
+// Solver parameters; build-layout.mjs --params '<json>' overrides any of them (used by benchmark calibration).
+export const DEFAULT_PARAMS = {
+  horizontal_deg: 15,
+  up_search_deg: 40,
+  plane_min_fraction: 0.003,
+  plane_normal_deg: 25,
+  plane_base_tolerance_m: 0.01,
+  plane_relative_tolerance: 0.01,
+  region_reach_cells: 2,
+  region_min_fraction: 0.25,
+  region_dominant_fraction: 0.5,
+  wall_min_height_m: 1.5,
+  support_snap_min_m: 0.08,
+  support_snap_fraction: 0.1
+};
 const CLASS_COLORS = {
   floor: [80, 50, 50],
   wall: [120, 120, 120],
@@ -282,7 +295,10 @@ function drawLine(image, gw, gh, a, b, color) {
   }
 }
 
-export async function buildLayout({ world, index }) {
+export async function buildLayout({ world, index, params: overrides = {} }) {
+  const params = { ...DEFAULT_PARAMS, ...overrides };
+  const HORIZONTAL_DEG = params.horizontal_deg;
+  const UP_SEARCH_DEG = params.up_search_deg;
   const dir = layoutDir(world);
   const depthRequestPath = requestPath(dir, index, "layout", "depth");
   if (!(await pathExists(depthRequestPath))) throw new Error(`Missing depth request metadata: ${depthRequestPath}`);
@@ -333,9 +349,15 @@ export async function buildLayout({ world, index }) {
     if (valid[cell] && hasNormal[cell] && !occupied[cell]) candidates.push(cell);
   }
   const rawPlanes = extractPlanes(points, normals, candidates, {
-    minPoints: Math.max(200, Math.round(0.003 * validCount)),
+    minPoints: Math.max(200, Math.round(params.plane_min_fraction * validCount)),
     iterations: 400,
     sampleSize: 15000,
+    normalAngleDeg: params.plane_normal_deg,
+    baseTolerance: params.plane_base_tolerance_m,
+    relativeTolerance: params.plane_relative_tolerance,
+    regionReach: params.region_reach_cells,
+    minRegionFraction: params.region_min_fraction,
+    dominantRegionFraction: params.region_dominant_fraction,
     gridWidth: gw
   }).map((plane) => (plane.d < 0 ? { ...plane, normal: scale(plane.normal, -1), d: -plane.d } : plane));
 
@@ -439,7 +461,7 @@ export async function buildLayout({ world, index }) {
     const residuals = layoutPoints.map((p) => (dot(normal, p) + offset) ** 2);
     const rms = Math.sqrt(residuals.reduce((sum, value) => sum + value, 0) / residuals.length);
 
-    if (kind === "vertical_surface" && size[1] >= 1.5) kind = "wall";
+    if (kind === "vertical_surface" && size[1] >= params.wall_min_height_m) kind = "wall";
     counters[kind] = (counters[kind] || 0) + 1;
     const id = kind === "floor" || kind === "ceiling" ? kind : `${kind.replace("_surface", "")}-${counters[kind]}`;
     const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) =>
@@ -496,7 +518,7 @@ export async function buildLayout({ world, index }) {
       let bottom = percentile(ys, 0.02);
       const top = percentile(ys, 0.98);
       const objectHeight = top - bottom;
-      const snap = Math.max(0.08, 0.1 * objectHeight);
+      const snap = Math.max(params.support_snap_min_m, params.support_snap_fraction * objectHeight);
       let support = "none_detected";
       if (bottom < snap) {
         bottom = 0;
@@ -878,6 +900,7 @@ export async function buildLayout({ world, index }) {
       } : {}),
       points_ply: files.points
     },
+    solver_params: params,
     prompts: {
       structure: structureLines.join(" "),
       objects: objectLines.join(" "),
@@ -915,7 +938,10 @@ async function main() {
   if (!world) throw new Error("Usage: node .claude/scripts/layout/build-layout.mjs --world <world> [--index N]");
   const explicit = one(flags, "index");
   const index = explicit !== undefined ? Number(explicit) : await latestLayoutIndex(layoutDir(world));
-  console.log(JSON.stringify(await buildLayout({ world, index }), null, 2));
+  const params = one(flags, "params") ? JSON.parse(one(flags, "params")) : {};
+  const unknown = Object.keys(params).filter((key) => !(key in DEFAULT_PARAMS));
+  if (unknown.length) throw new Error(`Unknown layout params: ${unknown.join(", ")}`);
+  console.log(JSON.stringify(await buildLayout({ world, index, params }), null, 2));
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

@@ -133,6 +133,9 @@ export function extractPlanes(points, normals, candidates, options = {}) {
     baseTolerance = 0.01,
     relativeTolerance = 0.01,
     gridWidth,
+    regionReach = 2,
+    minRegionFraction = 0.25,
+    dominantRegionFraction = 0.5,
     seed = 7
   } = options;
   let rejected = 0;
@@ -184,11 +187,11 @@ export function extractPlanes(points, normals, candidates, options = {}) {
     if (inliers.length < minPoints) break;
 
     // A surface is a coherent image region: drop scattered fragments that only happen to lie near the plane.
-    const regions = gridWidth ? connectedRegions(inliers, gridWidth) : [inliers];
-    const minRegion = Math.max(50, Math.round(0.25 * minPoints));
+    const regions = gridWidth ? connectedRegions(inliers, gridWidth, regionReach) : [inliers];
+    const minRegion = Math.max(50, Math.round(minRegionFraction * minPoints));
     const coherent = regions.filter((region) => region.length >= minRegion).flat();
     const consumed = new Uint8Array(distance.length);
-    if (coherent.length < minPoints || regions[0].length < 0.5 * minPoints) {
+    if (coherent.length < minPoints || regions[0].length < dominantRegionFraction * minPoints) {
       for (const i of inliers) consumed[i] = 1;
       remaining = remaining.filter((i) => !consumed[i]);
       rejected += 1;
