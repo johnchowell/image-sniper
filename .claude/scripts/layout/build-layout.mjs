@@ -338,6 +338,14 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
   // Objects first: their pixels are excluded from structural plane fitting.
   const objectMasks = await loadObjectMasks(dir, index, grid, width, height);
   const { normals, hasNormal } = computeNormals(grid);
+  // Overexposed cells (all channels at the sensor limit) carry no depth signal for a monocular model:
+  // a blown-out window would otherwise form a plane of its own at the wrong depth.
+  const overexposed = new Uint8Array(cellCount);
+  if (grid.hasColor) {
+    for (let cell = 0; cell < cellCount; cell += 1) {
+      if (grid.colors[cell * 3] >= 250 && grid.colors[cell * 3 + 1] >= 250 && grid.colors[cell * 3 + 2] >= 250) overexposed[cell] = 1;
+    }
+  }
   const planeOptions = {
     minPoints: Math.max(200, Math.round(params.plane_min_fraction * validCount)),
     iterations: 400,
@@ -355,7 +363,7 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
   // the floor from plane fitting. Up comes from a first plane pass over all cells.
   {
     const all = [];
-    for (let cell = 0; cell < cellCount; cell += 1) if (valid[cell] && hasNormal[cell]) all.push(cell);
+    for (let cell = 0; cell < cellCount; cell += 1) if (valid[cell] && hasNormal[cell] && !overexposed[cell]) all.push(cell);
     const firstPass = extractPlanes(points, normals, all, { ...planeOptions, maxPlanes: 4 });
     const level = firstPass
       .filter((plane) => Math.abs(plane.normal[1]) > Math.cos((params.up_search_deg * Math.PI) / 180))
@@ -391,7 +399,7 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
 
   const candidates = [];
   for (let cell = 0; cell < cellCount; cell += 1) {
-    if (valid[cell] && hasNormal[cell] && !occupied[cell]) candidates.push(cell);
+    if (valid[cell] && hasNormal[cell] && !occupied[cell] && !overexposed[cell]) candidates.push(cell);
   }
   const rawPlanes = extractPlanes(points, normals, candidates, planeOptions).map((plane) => (plane.d < 0 ? { ...plane, normal: scale(plane.normal, -1), d: -plane.d } : plane));
 
@@ -730,7 +738,7 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
   const planeNormalOf = new Map();
   rawPlanes.forEach((plane, k) => { for (const cell of plane.inliers) planeNormalOf.set(cell, structure[k].normal); });
   const lightResult = lightEstimate
-    ? analyzeLighting({ light: lightEstimate, grid, normals, hasNormal, planeNormalOf, R, toLayout, labels, palette, structure, width, height, cameraPosition })
+    ? analyzeLighting({ light: lightEstimate, grid, normals, hasNormal, planeNormalOf, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics })
     : undefined;
   const lighting = lightResult?.lighting || { status: "no_light_estimate", hint: "Run image-blast-light before the layout for lighting." };
   const emitterPrimitives = lightResult?.emitters || [];

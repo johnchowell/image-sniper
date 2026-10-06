@@ -238,17 +238,23 @@ def score_view(view_dir, layout_index=None):
             if e["kind"] == "light_source":
                 emit_pred |= ids == e["id"]
         windows = []
-        for window in gt["windows"]:
+        visible_windows = [w for w in gt["windows"] if emit_gt.mean() > 0.005]
+        for window in visible_windows:
             gt_c = to_cam(np.array(window["center"]), R_gt, t_gt)
             pred = layout.get("lighting", {}).get("emitters", [])
             dists = [float(np.linalg.norm(to_cam(np.array(e["center"]), R_pc, t_pc) - gt_c)) for e in pred]
-            windows.append({"gt": window["id"], "nearest_light_err_m": min(dists) if dists else None})
+            aligned = [float(np.linalg.norm(scale * to_cam(np.array(e["center"]), R_pc, t_pc) - gt_c)) for e in pred]
+            windows.append({"gt": window["id"], "nearest_light_err_m": min(dists) if dists else None,
+                            "nearest_light_err_aligned_m": min(aligned) if aligned else None})
         out["light"] = {
             "albedo_si_rmse": si_rmse(albedo, arrays["albedo"], surfaces),
             "decomposition_r2": light["reconstruction_r2"],
-            "light_source_iou": float((emit_pred & emit_gt).sum() / max((emit_pred | emit_gt).sum(), 1)),
+            "windows_visible": bool(emit_gt.mean() > 0.005),
+            "light_source_iou": float((emit_pred & emit_gt).sum() / max((emit_pred | emit_gt).sum(), 1)) if emit_gt.mean() > 0.005 else None,
+            "false_light_source_fraction": float((emit_pred & ~emit_gt).mean()),
             "windows": windows,
             "dominant_confidence": layout.get("lighting", {}).get("dominant_light", {}).get("confidence"),
+            "light_sources": len(layout.get("lighting", {}).get("emitters", [])),
         }
     return out
 
@@ -298,8 +304,13 @@ def summarize(results):
             "albedo_si_rmse_mean": mean([l["albedo_si_rmse"] for l in light]),
             "decomposition_r2_mean": mean([l["decomposition_r2"] for l in light]),
             "light_source_iou_mean": mean([l["light_source_iou"] for l in light]),
+            "views_with_windows": sum(l["windows_visible"] for l in light),
+            "false_light_source_fraction_mean": mean([l["false_light_source_fraction"] for l in light]),
             "window_position_err_m_median": median_abs([w["nearest_light_err_m"] for w in windows]),
             "windows_located_within_1m": mean([w["nearest_light_err_m"] is not None and w["nearest_light_err_m"] < 1 for w in windows]),
+            "window_position_err_aligned_m_median": median_abs([w["nearest_light_err_aligned_m"] for w in windows]),
+            "windows_located_within_1m_aligned": mean([w["nearest_light_err_aligned_m"] is not None and w["nearest_light_err_aligned_m"] < 1 for w in windows]),
+            "light_sources_per_view": mean([l.get("light_sources", 0) for l in light]),
         },
     }
 

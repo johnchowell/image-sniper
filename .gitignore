@@ -22,3 +22,6 @@ app/.vite/
 .venv/
 third_party/
 benchmark/
+
+# Python bytecode
+__pycache__/

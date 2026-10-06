@@ -62,6 +62,43 @@ def kelvin_from_rgb(rgb):
     return float(449 * n ** 3 + 3525 * n ** 2 + 6823.3 * n + 5520.33)
 
 
+def find_emitters(photo, photo_luma, unclipped, residual_dominance, dominance, min_luminance, source_clipped, clipped_candidates):
+    """Bright regions of light that is not diffusely reflected: candidates are bright pixels the model assigns to the
+    residual, plus (clipped_candidates) overexposed pixels. Light seen directly (a window, a lamp) is either; the model
+    is inconsistent about which. Regions mostly overexposed are light sources, the rest reflections; the layout stage
+    reclassifies light sources that sit on confirmed objects as highlights."""
+    import cv2
+
+    candidates = (residual_dominance > dominance) & (photo_luma >= min_luminance)
+    if clipped_candidates:
+        candidates |= ~unclipped
+    candidates = cv2.morphologyEx(candidates.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    count, labels, stats, centroids = cv2.connectedComponentsWithStats(candidates, connectivity=8)
+    min_area = 0.001 * labels.size
+    emitters = []
+    emitter_map = np.zeros(labels.shape, dtype=np.uint8)
+    for k in sorted(range(1, count), key=lambda k: -stats[k, cv2.CC_STAT_AREA]):
+        area = int(stats[k, cv2.CC_STAT_AREA])
+        if area < min_area or len(emitters) >= 255:
+            continue
+        region = labels == k
+        emitter_id = len(emitters) + 1
+        emitter_map[region] = emitter_id
+        x, y, w, h = (int(stats[k, i]) for i in (cv2.CC_STAT_LEFT, cv2.CC_STAT_TOP, cv2.CC_STAT_WIDTH, cv2.CC_STAT_HEIGHT))
+        clipped = float(1 - unclipped[region].mean())
+        emitters.append({
+            "id": emitter_id,
+            "kind": "light_source" if clipped >= source_clipped else "reflection",
+            "image_bbox_px": [x, y, x + w, y + h],
+            "area_fraction": round(area / labels.size, 5),
+            "centroid_px": [round(float(c), 1) for c in centroids[k]],
+            "mean_linear_rgb": [round(float(c), 4) for c in photo[region].mean(0)],
+            "relative_luminance": round(float(photo_luma[region].mean() / np.median(photo_luma)), 3),
+            "clipped_fraction": round(clipped, 3),
+        })
+    return emitters, emitter_map
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", required=True)
@@ -75,6 +112,7 @@ def main():
     parser.add_argument("--dominance", type=float, default=0.6, help="residual share above which a bright pixel is non-diffuse")
     parser.add_argument("--min-luminance", type=float, default=0.5, help="linear photo luminance for emitter candidates")
     parser.add_argument("--source-clipped", type=float, default=0.5, help="clipped share that makes a region a light source")
+    parser.add_argument("--clipped-candidates", type=int, default=0, help="1: overexposed pixels are emitter candidates too")
     args = parser.parse_args()
 
     image = Image.open(args.image).convert("RGB")
@@ -124,40 +162,10 @@ def main():
     light_rgb = (shading_lin.reshape(-1, 3) * weights[:, None]).sum(0) / max(weights.sum(), 1e-9)
     light_rgb = light_rgb / max(light_rgb @ LUMA, 1e-9)
 
-    # Emitters: bright pixels whose light the model assigns to the non-diffuse residual. Light seen
-    # directly (sky through a window, a lamp) is not diffusely reflected, so the residual carries it.
-    # Specular highlights also match; the layout stage separates them in 3D.
-    import cv2
-
     diffuse_luma = (albedo * shading_lin) @ LUMA
     residual_dominance = residual_luma / np.maximum(diffuse_luma + residual_luma, 1e-9)
-    candidates = ((residual_dominance > args.dominance) & (photo_luma >= args.min_luminance)).astype(np.uint8)
-    candidates = cv2.morphologyEx(candidates, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
-    count, labels, stats, centroids = cv2.connectedComponentsWithStats(candidates, connectivity=8)
-    min_area = 0.001 * labels.size
-    emitters = []
-    emitter_map = np.zeros(labels.shape, dtype=np.uint8)
-    for k in sorted(range(1, count), key=lambda k: -stats[k, cv2.CC_STAT_AREA]):
-        area = int(stats[k, cv2.CC_STAT_AREA])
-        if area < min_area or len(emitters) >= 255:
-            continue
-        region = labels == k
-        emitter_id = len(emitters) + 1
-        emitter_map[region] = emitter_id
-        x, y, w, h = (int(stats[k, i]) for i in (cv2.CC_STAT_LEFT, cv2.CC_STAT_TOP, cv2.CC_STAT_WIDTH, cv2.CC_STAT_HEIGHT))
-        color = photo[region].mean(0)
-        clipped = float(1 - unclipped[region].mean())
-        emitters.append({
-            "id": emitter_id,
-            # A source exceeds the sensor range; a reflection in glass or a highlight mostly does not.
-            "kind": "light_source" if clipped >= args.source_clipped else "reflection",
-            "image_bbox_px": [x, y, x + w, y + h],
-            "area_fraction": round(area / labels.size, 5),
-            "centroid_px": [round(float(c), 1) for c in centroids[k]],
-            "mean_linear_rgb": [round(float(c), 4) for c in color],
-            "relative_luminance": round(float(photo_luma[region].mean() / np.median(photo_luma)), 3),
-            "clipped_fraction": round(clipped, 3),
-        })
+    emitters, emitter_map = find_emitters(photo, photo_luma, unclipped, residual_dominance, args.dominance,
+                                          args.min_luminance, args.source_clipped, args.clipped_candidates)
 
     outside = unclipped & (emitter_map == 0)
     out = args.out_dir.rstrip("/")
@@ -186,7 +194,8 @@ def main():
         "source_image": args.image,
         "image_size": [image.width, image.height],
         "settings": {"steps": args.steps, "ensemble": args.ensemble, "processing_resolution": args.resolution, "seed": args.seed,
-                     "dominance": args.dominance, "min_luminance": args.min_luminance, "source_clipped": args.source_clipped},
+                     "dominance": args.dominance, "min_luminance": args.min_luminance, "source_clipped": args.source_clipped,
+                     "clipped_candidates": bool(args.clipped_candidates)},
         "prediction_cache": cache,
         "inference_seconds": round(seconds, 1),
         "scales": {"shading": round(a, 6), "residual": round(b, 6)},
