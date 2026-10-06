@@ -190,11 +190,12 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
       continue;
     }
     // An overexposed window has no usable depth of its own; the surface around it (a ring of cells) holds it.
-    // Only labeled ring cells are evidence: neighboring panes and invalid cells carry none.
+    // Each labeled ring cell votes for its plane or object; neighboring panes and invalid cells carry no evidence.
+    // The region lies on the most common label when that label is a structure plane. Objects compete one by one,
+    // so a desk, a lamp and a laptop in front of a window do not outvote the wall around it together.
     const seen = new Uint8Array(cellCount);
     for (const cell of cells) seen[cell] = 1;
     const ringVotes = new Map();
-    let labeledRing = 0;
     for (const cell of cells) {
       const gx = cell % gw, gy = Math.floor(cell / gw);
       for (let dy = -3; dy <= 3; dy += 1) {
@@ -205,15 +206,13 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
           if (seen[other]) continue;
           seen[other] = 1;
           if (!labels[other]) continue;
-          labeledRing += 1;
-          const entry = palette[labels[other] - 1];
-          if (entry.class !== "object") ringVotes.set(entry.id, (ringVotes.get(entry.id) || 0) + 1);
+          ringVotes.set(labels[other], (ringVotes.get(labels[other]) || 0) + 1);
         }
       }
     }
-    const [ringOwner, ringTop] = [...ringVotes.entries()].sort((a, b) => b[1] - a[1])[0] || [undefined, 0];
+    const ringTopEntry = palette[([...ringVotes.entries()].sort((a, b) => b[1] - a[1])[0] || [0])[0] - 1];
     const ownPlane = owner && owner.class !== "object" && topVotes >= 0.5 * cells.length ? owner.id : undefined;
-    const surfaceId = ringOwner && ringTop >= 0.5 * labeledRing ? ringOwner : ownPlane;
+    const surfaceId = ringTopEntry && ringTopEntry.class !== "object" ? ringTopEntry.id : ownPlane;
     // Floors and tabletops do not hold light sources: an overexposed patch there is sunlight spill.
     const surfaceClass = structure.find((plane) => plane.id === surfaceId)?.class;
     if (surfaceClass === "floor" || surfaceClass === "horizontal_surface") {
