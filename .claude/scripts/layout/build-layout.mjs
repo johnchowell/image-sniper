@@ -38,7 +38,9 @@ export const DEFAULT_PARAMS = {
   region_dominant_fraction: 0.5,
   wall_min_height_m: 1.5,
   support_snap_min_m: 0.08,
-  support_snap_fraction: 0.1
+  support_snap_fraction: 0.1,
+  flat_mask_min_extent_m: 1.5,
+  flat_mask_max_height_ratio: 0.1
 };
 const CLASS_COLORS = {
   floor: [80, 50, 50],
@@ -335,20 +337,8 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
 
   // Objects first: their pixels are excluded from structural plane fitting.
   const objectMasks = await loadObjectMasks(dir, index, grid, width, height);
-  const occupied = new Uint8Array(cellCount);
-  for (const object of objectMasks) {
-    for (const instance of object.instances) {
-      const dilated = morph(morph(instance.gridMask, gw, gh, false), gw, gh, false);
-      for (let i = 0; i < cellCount; i += 1) if (dilated[i]) occupied[i] = 1;
-    }
-  }
-
   const { normals, hasNormal } = computeNormals(grid);
-  const candidates = [];
-  for (let cell = 0; cell < cellCount; cell += 1) {
-    if (valid[cell] && hasNormal[cell] && !occupied[cell]) candidates.push(cell);
-  }
-  const rawPlanes = extractPlanes(points, normals, candidates, {
+  const planeOptions = {
     minPoints: Math.max(200, Math.round(params.plane_min_fraction * validCount)),
     iterations: 400,
     sampleSize: 15000,
@@ -359,7 +349,51 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
     minRegionFraction: params.region_min_fraction,
     dominantRegionFraction: params.region_dominant_fraction,
     gridWidth: gw
-  }).map((plane) => (plane.d < 0 ? { ...plane, normal: scale(plane.normal, -1), d: -plane.d } : plane));
+  };
+
+  // A mask that is a flat surface meters across is floor (or a rug), not an object: excluding it would hide
+  // the floor from plane fitting. Up comes from a first plane pass over all cells.
+  {
+    const all = [];
+    for (let cell = 0; cell < cellCount; cell += 1) if (valid[cell] && hasNormal[cell]) all.push(cell);
+    const firstPass = extractPlanes(points, normals, all, { ...planeOptions, maxPlanes: 4 });
+    const level = firstPass
+      .filter((plane) => Math.abs(plane.normal[1]) > Math.cos((params.up_search_deg * Math.PI) / 180))
+      .sort((a, b) => b.inliers.length - a.inliers.length)[0];
+    const up0 = level ? (level.normal[1] < 0 ? level.normal : scale(level.normal, -1)) : [0, -1, 0];
+    const side = normalize(cross(up0, Math.abs(up0[0]) < 0.9 ? [1, 0, 0] : [0, 0, 1]));
+    const side2 = cross(up0, side);
+    for (const object of objectMasks) {
+      object.instances = object.instances.filter((instance) => {
+        const cells = [];
+        for (let cell = 0; cell < cellCount; cell += 1) if (instance.gridMask[cell] && valid[cell]) cells.push(cell);
+        if (cells.length < 30) return true;
+        const spread = (axis) => {
+          const values = sortedValues(cells.map((cell) => dot(cellPoint(cell), axis)));
+          return percentile(values, 0.98) - percentile(values, 0.02);
+        };
+        const extent = Math.max(spread(side), spread(side2));
+        const height = spread(up0);
+        const flat = extent > params.flat_mask_min_extent_m && height < params.flat_mask_max_height_ratio * extent;
+        if (flat) warnings.push(`Dropped a mask of "${object.object_id}": a flat surface ${round(extent, 2)} m across and ${round(height, 2)} m tall (floor or rug, not the object).`);
+        return !flat;
+      });
+    }
+  }
+
+  const occupied = new Uint8Array(cellCount);
+  for (const object of objectMasks) {
+    for (const instance of object.instances) {
+      const dilated = morph(morph(instance.gridMask, gw, gh, false), gw, gh, false);
+      for (let i = 0; i < cellCount; i += 1) if (dilated[i]) occupied[i] = 1;
+    }
+  }
+
+  const candidates = [];
+  for (let cell = 0; cell < cellCount; cell += 1) {
+    if (valid[cell] && hasNormal[cell] && !occupied[cell]) candidates.push(cell);
+  }
+  const rawPlanes = extractPlanes(points, normals, candidates, planeOptions).map((plane) => (plane.d < 0 ? { ...plane, normal: scale(plane.normal, -1), d: -plane.d } : plane));
 
   // Gravity: the best-supported near-horizontal plane defines up; otherwise assume a level camera.
   const cameraUp = [0, -1, 0];
