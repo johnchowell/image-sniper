@@ -19,7 +19,7 @@ app/.vite/
 .DS_Store
 
 # Local model runtime
-.venv/
+.venv
 third_party/
 benchmark/
 
