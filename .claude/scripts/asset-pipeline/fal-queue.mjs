@@ -2,12 +2,15 @@
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-let envLoaded = false;
+let envLoad;
 
-export async function loadDotEnv(envPath = ".env") {
-  if (envLoaded) return;
-  envLoaded = true;
+// One shared load: parallel callers wait for the same read instead of seeing a half-loaded env.
+export function loadDotEnv(envPath = ".env") {
+  envLoad ??= readDotEnv(envPath);
+  return envLoad;
+}
 
+async function readDotEnv(envPath) {
   let contents;
   try {
     contents = await readFile(envPath, "utf8");
@@ -112,6 +115,14 @@ export async function writeJson(filePath, value) {
   await ensureDir(path.dirname(filePath));
   const output = isRequestMetadataPath(filePath) ? stripBase64(value) : value;
   await writeFile(filePath, `${JSON.stringify(output, null, 2)}\n`);
+}
+
+// Provider reason from an error response body, without echoing request input.
+export function providerReason(body) {
+  const detail = body?.detail ?? body?.message ?? body?.error;
+  if (!detail) return "";
+  const text = typeof detail === "string" ? detail : JSON.stringify(detail);
+  return `: ${text.slice(0, 500)}`;
 }
 
 export function slugify(value) {
@@ -312,7 +323,7 @@ export async function submitFalQueue(endpoint, input, options = {}) {
   const submitBody = await submitResponse.json().catch(() => ({}));
 
   if (!submitResponse.ok) {
-    throw new Error(`FAL submit failed (${submitResponse.status}).`);
+    throw new Error(`FAL submit failed (${submitResponse.status})${providerReason(submitBody)}.`);
   }
 
   const requestId = submitBody.request_id;
@@ -359,7 +370,7 @@ export async function pollFalQueue(endpoint, requestId, options = {}) {
     statusBody = await statusResponse.json().catch(() => ({}));
 
     if (!statusResponse.ok) {
-      throw new Error(`FAL status failed (${statusResponse.status}).`);
+      throw new Error(`FAL status failed (${statusResponse.status})${providerReason(statusBody)}.`);
     }
 
     const statusPatch = {
@@ -403,7 +414,7 @@ export async function getFalQueueResult(endpoint, requestId, options = {}) {
   });
   const resultBody = await resultResponse.json().catch(() => ({}));
   if (!resultResponse.ok) {
-    throw new Error(`FAL result failed (${resultResponse.status}).`);
+    throw new Error(`FAL result failed (${resultResponse.status})${providerReason(resultBody)}.`);
   }
 
   await updateMetadata(metadataPath, {

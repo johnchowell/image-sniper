@@ -7,6 +7,9 @@
       "Skill(image-blast-3d)",
       "Skill(image-blast-sfx)",
       "Skill(image-blast-plate)",
+      "Skill(image-blast-light)",
+      "Skill(image-blast-local)",
+      "Skill(image-blast-layout)",
       "Skill(image-blast-image-edit)",
       "Skill(image-blast-wildcard)",
       "Bash(ls:*)",
@@ -16,7 +19,9 @@
       "Bash(bun run dev:*)",
       "Bash(lsof:*)",
       "Bash(mkdir:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(python3 -m venv:*)",
+      "Bash(pip install:*)"
     ]
   },
   "hooks": {

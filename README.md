@@ -35,6 +35,8 @@ You can embed `image-blaster` under the assets of *any game engine, DCC software
 IMAGE-BLASTER uses a few generation models:
 
 - `marble-1.1` - World Labs Marble model creates the explorable environment.
+- `moge-2` - metric depth, camera intrinsics, and point cloud for the primitive layout step.
+- `sam-3` - text-prompted instance masks for each confirmed object in the layout step.
 - `nano-banana` - default image edit preference for source cleanup, clean plates, and object reference images.
 - `gpt-image-2` - alternate image edit provider when the edit skill is asked to prefer it.
 - `hunyuan-3d` - Hunyuan 3D model creates 3D object models through FAL.

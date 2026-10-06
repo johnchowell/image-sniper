@@ -1,0 +1,24 @@
+# Local open-weight runtime for IMAGE-BLASTER (light, layout inputs, plate, environment, objects).
+# Install torch first from the CPU index (see setup.sh). Versions pinned to a combination verified together:
+# TripoSR needs transformers 4.x (its ViT checkpoint keys), and transformers 4.x needs huggingface-hub 0.x,
+# which needs diffusers < 0.36.
+diffusers==0.35.2
+transformers==4.57.6
+huggingface_hub==0.36.2
+accelerate==1.15.0
+numpy==2.4.6
+pillow==12.3.0
+opencv-python-headless==5.0.0.93
+trimesh==5.1.1
+fast_simplification==0.2.0
+omegaconf==2.3.1
+einops==0.8.2
+imageio==2.38.0
+xatlas==0.0.11
+rembg==2.0.85
+onnxruntime==1.30.0
+fire==0.7.1
+scikit-build-core==1.1.1
+pybind11==3.1.0
+moge @ git+https://github.com/microsoft/MoGe.git@74fbce054ebed49800de42d0ad0e83495065719a
+SAM-2 @ git+https://github.com/facebookresearch/sam2.git@2b90b9f5ceec907a1c18123530e92e794ad901a4

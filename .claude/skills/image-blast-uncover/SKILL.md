@@ -74,7 +74,7 @@ worlds/$0/output/<object-slug>/object.json
 Object files store durable identity, intent, and provenance only. Do not write generated state such as `status`, `jobs`, generated `files`, request lifecycle, or completion data into `object.json`. Generated outputs and request state live beside `object.json` as indexed visible artifacts and hidden request JSON.
 
 11. After object files are written, handle the clean plate decision:
-   - In one-shot mode, continue with `Agent(image-blast-plate)` and wait for it before world generation.
+   - In one-shot mode, continue with `Agent(image-blast-plate)` and `Agent(image-blast-layout)` in parallel, and wait for both before world generation.
    - Otherwise ask whether to remove confirmed objects any anything else the user wants to remove from the source image to create a clean plate to generate a world from.
 
 12. Refresh derived project state:
