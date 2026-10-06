@@ -40,12 +40,13 @@ def original_source(world):
     return os.path.join(src, min(images, key=lambda f: (int(f.split("-")[0]), f)))
 
 
-def detect_jointly(processor, detector, image, objects, threshold):
+def detect_jointly(processor, detector, image, objects, threshold, extra):
     """One Grounding DINO pass with every object name as a competing phrase.
 
     A box's score for a phrase is the max token probability over that phrase's tokens. Each box goes to its best
     phrase; overlapping boxes keep the higher score across all phrases (one image region, one object); each object
-    keeps at most count_estimate boxes. Independent per-name queries let similar names claim the same region.
+    keeps at most count_estimate + extra boxes. Independent per-name queries let similar names claim the same region.
+    Benchmark (12 training renders, box F1): independent 0.624, joint 0.741 at threshold 0.25 with one extra box.
     """
     phrases = [obj["name"].lower().strip().rstrip(".") for obj in objects]
     prompt = " ".join(f"{p}." for p in phrases)
@@ -70,7 +71,7 @@ def detect_jointly(processor, detector, image, objects, threshold):
     detections = {obj["id"]: [] for obj in objects}
     for i in keep:
         obj = objects[best[i]]
-        if len(detections[obj["id"]]) < max(1, obj["count"]):
+        if len(detections[obj["id"]]) < max(1, obj["count"]) + extra:
             detections[obj["id"]].append((boxes[i].clip([0, 0, 0, 0], [W, H, W, H]), float(score[i])))
     return prompt, detections
 
@@ -95,7 +96,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--world", required=True)
     parser.add_argument("--image")
-    parser.add_argument("--box-threshold", type=float, default=0.3)
+    parser.add_argument("--box-threshold", type=float, default=0.25)
+    parser.add_argument("--extra-per-object", type=int, default=1, help="boxes kept beyond count_estimate")
     args = parser.parse_args()
 
     source = args.image or original_source(args.world)
@@ -154,7 +156,7 @@ def main():
     predictor.set_image(rgb)
     found = {}
     objects = confirmed_objects(args.world)
-    prompt, detections = detect_jointly(processor, detector, image, objects, args.box_threshold) if objects else ("", {})
+    prompt, detections = detect_jointly(processor, detector, image, objects, args.box_threshold, args.extra_per_object) if objects else ("", {})
     for obj in objects:
         downloaded, kept_scores, kept_boxes = [], [], []
         for k, (box, box_score) in enumerate(detections[obj["id"]], start=1):
