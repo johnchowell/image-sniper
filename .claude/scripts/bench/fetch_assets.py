@@ -97,7 +97,9 @@ def main():
                        and any(words[1] in t for t in info.get("tags", []) + info.get("categories", [])))[:3]
         for slug in slugs:
             maps = fetch_texture(slug, args.out)
-            manifest["textures"].append({"slug": slug, "role": role, "maps": maps, "page": f"https://polyhaven.com/a/{slug}"})
+            dimensions = get_json(f"{API}/info/{slug}").get("dimensions")  # real-world size of one tile, mm
+            manifest["textures"].append({"slug": slug, "role": role, "maps": maps, "tile_m": dimensions[0] / 1000 if dimensions else None,
+                                         "page": f"https://polyhaven.com/a/{slug}"})
             print(f"texture {role} {slug}")
 
     with open(os.path.join(args.out, "manifest.json"), "w") as f:

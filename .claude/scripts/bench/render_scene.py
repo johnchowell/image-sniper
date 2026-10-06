@@ -143,8 +143,11 @@ def main():
     W, D, H = rng.uniform(3.6, 6.0), rng.uniform(4.0, 7.0), rng.uniform(2.5, 3.1)
     floors = [t for t in manifest["textures"] if t["role"] == "floor"]
     walls = [t for t in manifest["textures"] if t["role"] == "wall"]
-    floor_mat = textured_material("floor", rng.choice(floors)["maps"] if floors else None, 1.5, (0.4, 0.3, 0.2))
-    wall_mat = textured_material("wall", rng.choice(walls)["maps"] if walls else None, 2.0, (0.8, 0.78, 0.74))
+    # Textures map at their published real-world tile size (fallback 2 m), so scale cues match real rooms.
+    floor_tex = rng.choice(floors) if floors else {}
+    wall_tex = rng.choice(walls) if walls else {}
+    floor_mat = textured_material("floor", floor_tex.get("maps"), floor_tex.get("tile_m") or 2.0, (0.4, 0.3, 0.2))
+    wall_mat = textured_material("wall", wall_tex.get("maps"), wall_tex.get("tile_m") or 2.0, (0.8, 0.78, 0.74))
     ceiling_mat = textured_material("ceiling", None, 1, (0.85, 0.85, 0.85))
     structure = [
         {"id": "floor", "class": "floor", "point": [0, 0, 0], "normal": [0, 0, 1], "size": [W, D],
