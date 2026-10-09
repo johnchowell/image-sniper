@@ -19,6 +19,9 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+sys.path.insert(0, HERE)
+from common import world_lock  # noqa: E402
+
 STEPS = ["light", "layout", "plate", "environment", "objects", "scene"]
 
 
@@ -39,6 +42,11 @@ def main():
     parser.add_argument("--world", required=True)
     parser.add_argument("--skip", action="append", default=[], choices=STEPS)
     args = parser.parse_args()
+    with world_lock(args.world):
+        run_pass(args)
+
+
+def run_pass(args):
     py = sys.executable
     summary = {"world": args.world, "seconds": {}}
 

@@ -1,0 +1,56 @@
+{
+  "previous": {
+    "params": {
+      "dominance": 0.6,
+      "min_luminance": 0.5,
+      "source_clipped": 0.5,
+      "clipped_candidates": 0
+    },
+    "albedo_si_rmse_mean": 0.3375,
+    "decomposition_r2_mean": 0.9523,
+    "light_source_iou_mean": 0.2315,
+    "views_with_windows": 8,
+    "false_light_source_fraction_mean": 0.0219,
+    "window_position_err_m_median": 2.1846,
+    "windows_located_within_1m": 0.1667,
+    "window_position_err_aligned_m_median": 1.2011,
+    "windows_located_within_1m_aligned": 0.1667,
+    "light_sources_per_view": 0.5833
+  },
+  "pixel-f1": {
+    "params": {
+      "dominance": 0.4,
+      "min_luminance": 0.3,
+      "source_clipped": 0.7,
+      "clipped_candidates": 0
+    },
+    "albedo_si_rmse_mean": 0.3375,
+    "decomposition_r2_mean": 0.9523,
+    "light_source_iou_mean": 0.4415,
+    "views_with_windows": 8,
+    "false_light_source_fraction_mean": 0.0059,
+    "window_position_err_m_median": 1.6502,
+    "windows_located_within_1m": 0.1667,
+    "window_position_err_aligned_m_median": 0.7662,
+    "windows_located_within_1m_aligned": 0.4167,
+    "light_sources_per_view": 0.5833
+  },
+  "chosen": {
+    "params": {
+      "dominance": 0.4,
+      "min_luminance": 0.3,
+      "source_clipped": 0.7,
+      "clipped_candidates": 1
+    },
+    "albedo_si_rmse_mean": 0.3375,
+    "decomposition_r2_mean": 0.9523,
+    "light_source_iou_mean": 0.5314,
+    "views_with_windows": 8,
+    "false_light_source_fraction_mean": 0.0406,
+    "window_position_err_m_median": 1.2691,
+    "windows_located_within_1m": 0.25,
+    "window_position_err_aligned_m_median": 0.9865,
+    "windows_located_within_1m_aligned": 0.5,
+    "light_sources_per_view": 0.9167
+  }
+}

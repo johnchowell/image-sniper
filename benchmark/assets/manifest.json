@@ -1,0 +1,496 @@
+{
+  "source": "https://polyhaven.com",
+  "license": "CC0 1.0",
+  "models": [
+    {
+      "slug": "chinese_stool",
+      "name": "Chinese Stool",
+      "categories": [
+        "seating",
+        "furniture"
+      ],
+      "authors": [
+        "Kirill Sannikov"
+      ],
+      "path": "benchmark/assets/models/chinese_stool/chinese_stool.gltf",
+      "page": "https://polyhaven.com/a/chinese_stool"
+    },
+    {
+      "slug": "modern_coffee_table_02",
+      "name": "Modern Coffee Table 02",
+      "categories": [
+        "furniture",
+        "table"
+      ],
+      "authors": [
+        "Amin"
+      ],
+      "path": "benchmark/assets/models/modern_coffee_table_02/modern_coffee_table_02.gltf",
+      "page": "https://polyhaven.com/a/modern_coffee_table_02"
+    },
+    {
+      "slug": "ceramic_vase_04",
+      "name": "Ceramic Vase 04",
+      "categories": [
+        "containers",
+        "decorative",
+        "vases"
+      ],
+      "authors": [
+        "James Ray Cock"
+      ],
+      "path": "benchmark/assets/models/ceramic_vase_04/ceramic_vase_04.gltf",
+      "page": "https://polyhaven.com/a/ceramic_vase_04"
+    },
+    {
+      "slug": "wooden_bookshelf_worn",
+      "name": "Wooden Bookshelf Worn",
+      "categories": [
+        "furniture",
+        "shelves",
+        "collection: the_shed"
+      ],
+      "authors": [
+        "Ulan Cabanilla"
+      ],
+      "path": "benchmark/assets/models/wooden_bookshelf_worn/wooden_bookshelf_worn.gltf",
+      "page": "https://polyhaven.com/a/wooden_bookshelf_worn"
+    },
+    {
+      "slug": "Chandelier_03",
+      "name": "Chandelier 03",
+      "categories": [
+        "lighting",
+        "decorative"
+      ],
+      "authors": [
+        "Kirill Sannikov"
+      ],
+      "path": "benchmark/assets/models/Chandelier_03/Chandelier_03.gltf",
+      "page": "https://polyhaven.com/a/Chandelier_03"
+    },
+    {
+      "slug": "brass_vase_01",
+      "name": "Brass Vase 01",
+      "categories": [
+        "decorative",
+        "vases"
+      ],
+      "authors": [
+        "Rico Cilliers"
+      ],
+      "path": "benchmark/assets/models/brass_vase_01/brass_vase_01.gltf",
+      "page": "https://polyhaven.com/a/brass_vase_01"
+    },
+    {
+      "slug": "metal_detector",
+      "name": "Metal Detector",
+      "categories": [
+        "props",
+        "electronics"
+      ],
+      "authors": [
+        "Kuutti Siitonen"
+      ],
+      "path": "benchmark/assets/models/metal_detector/metal_detector.gltf",
+      "page": "https://polyhaven.com/a/metal_detector"
+    },
+    {
+      "slug": "garden_hose_wall_mounted_01",
+      "name": "Garden Hose Wall Mounted 01",
+      "categories": [
+        "wall decoration",
+        "plants",
+        "collection: the_shed"
+      ],
+      "authors": [
+        "Kuutti Siitonen"
+      ],
+      "path": "benchmark/assets/models/garden_hose_wall_mounted_01/garden_hose_wall_mounted_01.gltf",
+      "page": "https://polyhaven.com/a/garden_hose_wall_mounted_01"
+    },
+    {
+      "slug": "WoodenTable_01",
+      "name": "Wooden Table 01",
+      "categories": [
+        "furniture"
+      ],
+      "authors": [
+        "Ethan Place"
+      ],
+      "path": "benchmark/assets/models/WoodenTable_01/WoodenTable_01.gltf",
+      "page": "https://polyhaven.com/a/WoodenTable_01"
+    },
+    {
+      "slug": "ceiling_fan",
+      "name": "Ceiling Fan",
+      "categories": [
+        "appliances",
+        "electronics"
+      ],
+      "authors": [
+        "Ulan Cabanilla"
+      ],
+      "path": "benchmark/assets/models/ceiling_fan/ceiling_fan.gltf",
+      "page": "https://polyhaven.com/a/ceiling_fan"
+    },
+    {
+      "slug": "BarberShopChair_01",
+      "name": "Barber Shop Chair 01",
+      "categories": [
+        "furniture",
+        "seating"
+      ],
+      "authors": [
+        "Fernando Quinn"
+      ],
+      "path": "benchmark/assets/models/BarberShopChair_01/BarberShopChair_01.gltf",
+      "page": "https://polyhaven.com/a/BarberShopChair_01"
+    },
+    {
+      "slug": "coffee_table_round_01",
+      "name": "Coffee Table Round 01",
+      "categories": [
+        "furniture",
+        "table"
+      ],
+      "authors": [
+        "Ulan Cabanilla"
+      ],
+      "path": "benchmark/assets/models/coffee_table_round_01/coffee_table_round_01.gltf",
+      "page": "https://polyhaven.com/a/coffee_table_round_01"
+    },
+    {
+      "slug": "planter_box_03",
+      "name": "Planter Box 03",
+      "categories": [
+        "containers",
+        "decorative",
+        "potted plants",
+        "collection: the_shed"
+      ],
+      "authors": [
+        "James Ray Cock"
+      ],
+      "path": "benchmark/assets/models/planter_box_03/planter_box_03.gltf",
+      "page": "https://polyhaven.com/a/planter_box_03"
+    },
+    {
+      "slug": "painted_wooden_cabinet_02",
+      "name": "Painted Wooden Cabinet 02",
+      "categories": [
+        "furniture",
+        "shelves"
+      ],
+      "authors": [
+        "Kirill Sannikov"
+      ],
+      "path": "benchmark/assets/models/painted_wooden_cabinet_02/painted_wooden_cabinet_02.gltf",
+      "page": "https://polyhaven.com/a/painted_wooden_cabinet_02"
+    },
+    {
+      "slug": "vintage_oil_lamp",
+      "name": "Vintage Oil Lamp",
+      "categories": [
+        "lighting",
+        "decorative"
+      ],
+      "authors": [
+        "Monsta3D"
+      ],
+      "path": "benchmark/assets/models/vintage_oil_lamp/vintage_oil_lamp.gltf",
+      "page": "https://polyhaven.com/a/vintage_oil_lamp"
+    },
+    {
+      "slug": "brass_diya_lantern",
+      "name": "Brass Diya Lantern",
+      "categories": [
+        "decorative",
+        "lighting"
+      ],
+      "authors": [
+        "Bhargav Kubal"
+      ],
+      "path": "benchmark/assets/models/brass_diya_lantern/brass_diya_lantern.gltf",
+      "page": "https://polyhaven.com/a/brass_diya_lantern"
+    },
+    {
+      "slug": "cassette_player",
+      "name": "Cassette Player",
+      "categories": [
+        "props",
+        "electronics"
+      ],
+      "authors": [
+        "Oday Abuzaeed"
+      ],
+      "path": "benchmark/assets/models/cassette_player/cassette_player.gltf",
+      "page": "https://polyhaven.com/a/cassette_player"
+    },
+    {
+      "slug": "GothicBed_01",
+      "name": "Gothic Bed 01",
+      "categories": [
+        "furniture",
+        "bed"
+      ],
+      "authors": [
+        "Kirill Sannikov"
+      ],
+      "path": "benchmark/assets/models/GothicBed_01/GothicBed_01.gltf",
+      "page": "https://polyhaven.com/a/GothicBed_01"
+    },
+    {
+      "slug": "CashRegister_01",
+      "name": "Cash Register 01",
+      "categories": [
+        "appliances",
+        "props"
+      ],
+      "authors": [
+        "Joe Seabuhr"
+      ],
+      "path": "benchmark/assets/models/CashRegister_01/CashRegister_01.gltf",
+      "page": "https://polyhaven.com/a/CashRegister_01"
+    },
+    {
+      "slug": "Rockingchair_01",
+      "name": "Rockingchair 01",
+      "categories": [
+        "furniture",
+        "seating"
+      ],
+      "authors": [
+        "Jorge Camacho"
+      ],
+      "path": "benchmark/assets/models/Rockingchair_01/Rockingchair_01.gltf",
+      "page": "https://polyhaven.com/a/Rockingchair_01"
+    },
+    {
+      "slug": "wooden_table_02",
+      "name": "Wooden Table 02",
+      "categories": [
+        "furniture",
+        "table"
+      ],
+      "authors": [
+        "Serhii Khromov"
+      ],
+      "path": "benchmark/assets/models/wooden_table_02/wooden_table_02.gltf",
+      "page": "https://polyhaven.com/a/wooden_table_02"
+    },
+    {
+      "slug": "planter_pot_clay",
+      "name": "Planter Pot Clay",
+      "categories": [
+        "containers",
+        "vases",
+        "collection: the_shed"
+      ],
+      "authors": [
+        "Amal Kumar"
+      ],
+      "path": "benchmark/assets/models/planter_pot_clay/planter_pot_clay.gltf",
+      "page": "https://polyhaven.com/a/planter_pot_clay"
+    },
+    {
+      "slug": "wooden_display_shelves_01",
+      "name": "Wooden Display Shelves 01",
+      "categories": [
+        "furniture",
+        "shelves"
+      ],
+      "authors": [
+        "James Ray Cock"
+      ],
+      "path": "benchmark/assets/models/wooden_display_shelves_01/wooden_display_shelves_01.gltf",
+      "page": "https://polyhaven.com/a/wooden_display_shelves_01"
+    },
+    {
+      "slug": "industrial_wall_lamp",
+      "name": "Industrial Wall Lamp",
+      "categories": [
+        "lighting"
+      ],
+      "authors": [
+        "Kuutti Siitonen"
+      ],
+      "path": "benchmark/assets/models/industrial_wall_lamp/industrial_wall_lamp.gltf",
+      "page": "https://polyhaven.com/a/industrial_wall_lamp"
+    },
+    {
+      "slug": "antique_ceramic_vase_01",
+      "name": "Antique Ceramic Vase 01",
+      "categories": [
+        "decorative",
+        "containers",
+        "vases"
+      ],
+      "authors": [
+        "James Ray Cock"
+      ],
+      "path": "benchmark/assets/models/antique_ceramic_vase_01/antique_ceramic_vase_01.gltf",
+      "page": "https://polyhaven.com/a/antique_ceramic_vase_01"
+    },
+    {
+      "slug": "Television_01",
+      "name": "Television 01",
+      "categories": [
+        "props",
+        "electronics",
+        "collection: the_shed"
+      ],
+      "authors": [
+        "Gabriel Radi\u0107"
+      ],
+      "path": "benchmark/assets/models/Television_01/Television_01.gltf",
+      "page": "https://polyhaven.com/a/Television_01"
+    },
+    {
+      "slug": "WoodenTable_03",
+      "name": "Wooden Table 03",
+      "categories": [
+        "furniture",
+        "collection: the_shed"
+      ],
+      "authors": [
+        "Gabriel Radi\u0107"
+      ],
+      "path": "benchmark/assets/models/WoodenTable_03/WoodenTable_03.gltf",
+      "page": "https://polyhaven.com/a/WoodenTable_03"
+    },
+    {
+      "slug": "scandinavian_masonry_heater",
+      "name": "Scandinavian Masonry Heater",
+      "categories": [
+        "appliances"
+      ],
+      "authors": [
+        "Kuutti Siitonen"
+      ],
+      "path": "benchmark/assets/models/scandinavian_masonry_heater/scandinavian_masonry_heater.gltf",
+      "page": "https://polyhaven.com/a/scandinavian_masonry_heater"
+    },
+    {
+      "slug": "bar_chair_round_01",
+      "name": "Bar Chair Round 01",
+      "categories": [
+        "seating",
+        "furniture"
+      ],
+      "authors": [
+        "Dairon Sanchez"
+      ],
+      "path": "benchmark/assets/models/bar_chair_round_01/bar_chair_round_01.gltf",
+      "page": "https://polyhaven.com/a/bar_chair_round_01"
+    },
+    {
+      "slug": "painted_wooden_nightstand",
+      "name": "Painted Wooden Nightstand",
+      "categories": [
+        "furniture",
+        "table"
+      ],
+      "authors": [
+        "Kirill Sannikov"
+      ],
+      "path": "benchmark/assets/models/painted_wooden_nightstand/painted_wooden_nightstand.gltf",
+      "page": "https://polyhaven.com/a/painted_wooden_nightstand"
+    },
+    {
+      "slug": "russian_food_cans_01",
+      "name": "Russian Food Cans 01",
+      "categories": [
+        "containers",
+        "props",
+        "food"
+      ],
+      "authors": [
+        "Kosan Aziz"
+      ],
+      "path": "benchmark/assets/models/russian_food_cans_01/russian_food_cans_01.gltf",
+      "page": "https://polyhaven.com/a/russian_food_cans_01"
+    },
+    {
+      "slug": "painted_wooden_shelves",
+      "name": "Painted Wooden Shelves",
+      "categories": [
+        "furniture",
+        "shelves"
+      ],
+      "authors": [
+        "Kirill Sannikov"
+      ],
+      "path": "benchmark/assets/models/painted_wooden_shelves/painted_wooden_shelves.gltf",
+      "page": "https://polyhaven.com/a/painted_wooden_shelves"
+    }
+  ],
+  "textures": [
+    {
+      "slug": "dark_wooden_planks",
+      "role": "floor",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/dark_wooden_planks/dark_wooden_planks_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/dark_wooden_planks/dark_wooden_planks_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/dark_wooden_planks/dark_wooden_planks_nor_gl.jpg"
+      },
+      "tile_m": 2.0,
+      "page": "https://polyhaven.com/a/dark_wooden_planks"
+    },
+    {
+      "slug": "diagonal_parquet",
+      "role": "floor",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/diagonal_parquet/diagonal_parquet_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/diagonal_parquet/diagonal_parquet_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/diagonal_parquet/diagonal_parquet_nor_gl.jpg"
+      },
+      "tile_m": 2.359999418258667,
+      "page": "https://polyhaven.com/a/diagonal_parquet"
+    },
+    {
+      "slug": "embedded_plank_flooring",
+      "role": "floor",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/embedded_plank_flooring/embedded_plank_flooring_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/embedded_plank_flooring/embedded_plank_flooring_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/embedded_plank_flooring/embedded_plank_flooring_nor_gl.jpg"
+      },
+      "tile_m": 2.0299999713897705,
+      "page": "https://polyhaven.com/a/embedded_plank_flooring"
+    },
+    {
+      "slug": "beige_wall_001",
+      "role": "wall",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/beige_wall_001/beige_wall_001_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/beige_wall_001/beige_wall_001_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/beige_wall_001/beige_wall_001_nor_gl.jpg"
+      },
+      "tile_m": 3.0,
+      "page": "https://polyhaven.com/a/beige_wall_001"
+    },
+    {
+      "slug": "beige_wall_002",
+      "role": "wall",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/beige_wall_002/beige_wall_002_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/beige_wall_002/beige_wall_002_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/beige_wall_002/beige_wall_002_nor_gl.jpg"
+      },
+      "tile_m": 3.0,
+      "page": "https://polyhaven.com/a/beige_wall_002"
+    },
+    {
+      "slug": "blue_plaster_wall",
+      "role": "wall",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/blue_plaster_wall/blue_plaster_wall_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/blue_plaster_wall/blue_plaster_wall_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/blue_plaster_wall/blue_plaster_wall_nor_gl.jpg"
+      },
+      "tile_m": 2.0,
+      "page": "https://polyhaven.com/a/blue_plaster_wall"
+    }
+  ]
+}

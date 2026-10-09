@@ -46,7 +46,8 @@ def detect_jointly(processor, detector, image, objects, threshold, extra):
     A box's score for a phrase is the max token probability over that phrase's tokens. Each box goes to its best
     phrase; overlapping boxes keep the higher score across all phrases (one image region, one object); each object
     keeps at most count_estimate + extra boxes. Independent per-name queries let similar names claim the same region.
-    Benchmark (12 training renders, box F1): independent 0.624, joint 0.741 at threshold 0.25 with one extra box.
+    Threshold and extra box count were chosen on the benchmark training renders (bench/detection_study.py,
+    results in benchmark/results/detection-*.json).
     """
     phrases = [obj["name"].lower().strip().rstrip(".") for obj in objects]
     prompt = " ".join(f"{p}." for p in phrases)

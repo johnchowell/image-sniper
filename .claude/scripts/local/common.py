@@ -1,4 +1,6 @@
 """Shared helpers for the local (open-weight) generation pass: project paths, indexed files, layout data."""
+import contextlib
+import fcntl
 import json
 import os
 import re
@@ -13,6 +15,21 @@ INDEXED = re.compile(r"^(\.)?(\d+)-(.+?)(?:__([a-z0-9._-]+))?(-request\.json|\.[
 
 def world_path(world, *parts):
     return os.path.join("worlds", world, *parts)
+
+
+@contextlib.contextmanager
+def world_lock(world):
+    """Holds worlds/<world>/.lock for a whole pass: a second pass on the same world fails at once instead of
+    writing into the same generation index (indexes are chosen by scanning the directory)."""
+    path = world_path(world, ".lock")
+    with open(path, "w") as handle:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise SystemExit(f"Another pass is running on {world} ({path} is locked).")
+        handle.write(str(os.getpid()))
+        handle.flush()
+        yield
 
 
 def next_index(directory):

@@ -20,8 +20,17 @@ app/.vite/
 
 # Local model runtime
 .venv
+.venv-render
 third_party/
-benchmark/
+# Benchmark: renders and downloaded assets are rebuilt by .claude/scripts/bench/run_all.sh; results and the
+# asset manifest are tracked so every reported number can be checked.
+benchmark/*
+!benchmark/results/
+!benchmark/assets/
+benchmark/assets/*
+!benchmark/assets/manifest.json
 
 # Python bytecode
 __pycache__/
+.venv.lock
+.venv-setup.log

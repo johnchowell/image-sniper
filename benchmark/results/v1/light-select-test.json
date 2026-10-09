@@ -1,0 +1,38 @@
+{
+  "previous": {
+    "params": {
+      "dominance": 0.6,
+      "min_luminance": 0.5,
+      "source_clipped": 0.5,
+      "clipped_candidates": 0
+    },
+    "albedo_si_rmse_mean": 0.2427,
+    "decomposition_r2_mean": 0.9652,
+    "light_source_iou_mean": 0.0,
+    "views_with_windows": 3,
+    "false_light_source_fraction_mean": 0.0052,
+    "window_position_err_m_median": null,
+    "windows_located_within_1m": 0.0,
+    "window_position_err_aligned_m_median": null,
+    "windows_located_within_1m_aligned": 0.0,
+    "light_sources_per_view": 0.0
+  },
+  "chosen": {
+    "params": {
+      "dominance": 0.4,
+      "min_luminance": 0.3,
+      "source_clipped": 0.7,
+      "clipped_candidates": 1
+    },
+    "albedo_si_rmse_mean": 0.2427,
+    "decomposition_r2_mean": 0.9652,
+    "light_source_iou_mean": 0.7805,
+    "views_with_windows": 3,
+    "false_light_source_fraction_mean": 0.0176,
+    "window_position_err_m_median": 0.4593,
+    "windows_located_within_1m": 1.0,
+    "window_position_err_aligned_m_median": 0.3,
+    "windows_located_within_1m_aligned": 1.0,
+    "light_sources_per_view": 0.625
+  }
+}

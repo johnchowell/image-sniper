@@ -109,8 +109,8 @@ def main():
     parser.add_argument("--resolution", type=int, default=768)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--postprocess-only", action="store_true", help="reuse the cached model prediction of this index")
-    # Defaults chosen on the benchmark training renders by windows located within 1 m in 3D (light_select.py):
-    # 0.17 with the previous rule (0.6, 0.5, 0.5, 0), 0.58 with this one.
+    # Defaults chosen on the benchmark training renders by the 3D window metric (bench/light_select.py,
+    # results in benchmark/results/light-select-*.json).
     parser.add_argument("--dominance", type=float, default=0.4, help="residual share above which a bright pixel is non-diffuse")
     parser.add_argument("--min-luminance", type=float, default=0.3, help="linear photo luminance for emitter candidates")
     parser.add_argument("--source-clipped", type=float, default=0.7, help="clipped share that makes a region a light source")

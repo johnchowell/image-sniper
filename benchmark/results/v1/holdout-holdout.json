@@ -1,0 +1,151 @@
+{
+  "name": "holdout",
+  "split": "holdout",
+  "summary": {
+    "views": 1,
+    "scored": 1,
+    "camera": {
+      "height_err_m": 0.0679,
+      "pitch_err_deg": 0.4193,
+      "roll_err_deg": 0.4959,
+      "fov_err_deg": 0.5963
+    },
+    "depth": {
+      "absrel_metric": 0.0372,
+      "absrel_scaled": 0.0147,
+      "delta1_metric": 0.9994,
+      "scale_err_median": 0.044
+    },
+    "structure": {
+      "floor_found": 1.0,
+      "wall_found": 0.5,
+      "ceiling_found": null,
+      "floor_found_aligned": 1.0,
+      "wall_found_aligned": 1.0,
+      "normal_err_deg_median": 0.6703,
+      "offset_err_m_median": 0.0574,
+      "offset_err_aligned_m_median": 0.0627
+    },
+    "objects": {
+      "recall": 1.0,
+      "precision": 1.0,
+      "mask_iou_mean": 0.9671,
+      "center_err_m_median": 0.4244,
+      "center_err_aligned_m_median": 0.3191,
+      "height_rel_err_median": 0.1188,
+      "height_rel_err_aligned_median": 0.1241,
+      "support_accuracy": 1.0
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3165,
+      "decomposition_r2_mean": 0.9558,
+      "light_source_iou_mean": 0.3402,
+      "views_with_windows": 1,
+      "false_light_source_fraction_mean": 0.2035,
+      "window_position_err_m_median": 0.4586,
+      "windows_located_within_1m": 1.0,
+      "window_position_err_aligned_m_median": 0.5415,
+      "windows_located_within_1m_aligned": 1.0,
+      "light_sources_per_view": 1.0
+    }
+  },
+  "views": [
+    {
+      "view": "bench-holdout-room-201-view-0",
+      "camera": {
+        "height_err_m": -0.06794174575805667,
+        "pitch_err_deg": 0.4192925133874503,
+        "roll_err_deg": 0.4959157513868868,
+        "fov_err_deg": 0.5962533233772831
+      },
+      "depth": {
+        "absrel_metric": 0.03719128646097781,
+        "absrel_scaled": 0.014660658524850741,
+        "delta1_metric": 0.9994362754903494,
+        "scale_gt_over_pred": 1.0440404488709818
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.35204427083333334,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "normal_err_deg": 0.6316763823243061,
+          "offset_err_m": 0.06839079877576104,
+          "offset_err_aligned_m": 0.009352344480300978
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.121220703125,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "normal_err_deg": 4.5611990264533295,
+          "offset_err_m": 0.2552829814281026,
+          "offset_err_aligned_m": 0.06271064327304554
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.227880859375,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "normal_err_deg": 0.6703310549968121,
+          "offset_err_m": 0.04640505871273071,
+          "offset_err_aligned_m": 0.07279079114436104
+        }
+      ],
+      "objects": [
+        {
+          "gt": "scandinavian_masonry_heater-1",
+          "name": "scandinavian masonry heater",
+          "found": 1.0,
+          "mask_iou": 0.9508364502502837,
+          "center_err_m": 0.6675163686871461,
+          "center_err_aligned_m": 0.5619498328741512,
+          "height_rel_err_aligned": -0.19987997308046357,
+          "height_err_m": -0.5514823132336606,
+          "height_rel_err": -0.2336311990739624,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "support_correct": true
+        },
+        {
+          "gt": "painted_wooden_nightstand-3",
+          "name": "painted wooden nightstand",
+          "found": 1.0,
+          "mask_iou": 0.9834363957597173,
+          "center_err_m": 0.18129762659844226,
+          "center_err_aligned_m": 0.0761514638392112,
+          "height_rel_err_aligned": 0.04824535304689222,
+          "height_err_m": 0.0024790291444262147,
+          "height_rel_err": 0.004027529949110207,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.316472412401351,
+        "decomposition_r2": 0.9558,
+        "windows_visible": true,
+        "light_source_iou": 0.34023893450408427,
+        "false_light_source_fraction": 0.203486328125,
+        "windows": [
+          {
+            "gt": "window-1",
+            "nearest_light_err_m": 0.4586268699462522,
+            "nearest_light_err_aligned_m": 0.5415450463900279
+          }
+        ],
+        "dominant_confidence": "medium",
+        "light_sources": 1
+      }
+    }
+  ]
+}

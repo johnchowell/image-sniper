@@ -1,0 +1,67 @@
+{
+  "split": "test",
+  "summary": {
+    "moge-2": {
+      "median_abs_log_err": 0.138,
+      "median_scale": 1.1487
+    },
+    "depth-anything-v2-metric-indoor": {
+      "median_abs_log_err": 0.1052,
+      "median_scale": 1.111
+    },
+    "moge-2+depth-anything-v2-metric-indoor": {
+      "median_abs_log_err": 0.1167,
+      "median_scale": 1.1242
+    }
+  },
+  "views": [
+    {
+      "view": "room-107/view-0",
+      "moge-2": 1.0566459894180298,
+      "depth-anything-v2-metric-indoor": 0.9845295548439026,
+      "moge-2+depth-anything-v2-metric-indoor": 1.0199505897784107
+    },
+    {
+      "view": "room-107/view-1",
+      "moge-2": 1.0854003429412842,
+      "depth-anything-v2-metric-indoor": 1.0473620891571045,
+      "moge-2+depth-anything-v2-metric-indoor": 1.066211597552203
+    },
+    {
+      "view": "room-108/view-0",
+      "moge-2": 1.1088931560516357,
+      "depth-anything-v2-metric-indoor": 1.0810937881469727,
+      "moge-2+depth-anything-v2-metric-indoor": 1.094905248286862
+    },
+    {
+      "view": "room-108/view-1",
+      "moge-2": 1.0476733446121216,
+      "depth-anything-v2-metric-indoor": 1.1025080680847168,
+      "moge-2+depth-anything-v2-metric-indoor": 1.0747410456254864
+    },
+    {
+      "view": "room-109/view-0",
+      "moge-2": 1.3038605451583862,
+      "depth-anything-v2-metric-indoor": 1.2049683332443237,
+      "moge-2+depth-anything-v2-metric-indoor": 1.2534395349926282
+    },
+    {
+      "view": "room-109/view-1",
+      "moge-2": 1.1884217262268066,
+      "depth-anything-v2-metric-indoor": 1.1194438934326172,
+      "moge-2+depth-anything-v2-metric-indoor": 1.1534172897296313
+    },
+    {
+      "view": "room-110/view-0",
+      "moge-2": 1.3559188842773438,
+      "depth-anything-v2-metric-indoor": 1.1762783527374268,
+      "moge-2+depth-anything-v2-metric-indoor": 1.2629085602858678
+    },
+    {
+      "view": "room-110/view-1",
+      "moge-2": 1.354475736618042,
+      "depth-anything-v2-metric-indoor": 1.3635993003845215,
+      "moge-2+depth-anything-v2-metric-indoor": 1.3590298623798418
+    }
+  ]
+}

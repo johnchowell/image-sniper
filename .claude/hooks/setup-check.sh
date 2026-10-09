@@ -61,6 +61,18 @@ if [ "$missing_env_key" -eq 1 ]; then
   fi
 fi
 
+# --- local model runtime (.venv) ---
+# setup.sh is a no-op when .venv matches it; in a cloud container the runtime is rebuilt in the background
+# after a restart. On a local machine the install (several GB) only runs when the user asks.
+if ! bash .claude/scripts/local/setup.sh --check >/dev/null 2>&1; then
+  if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ]; then
+    nohup bash .claude/scripts/local/setup.sh > .venv-setup.log 2>&1 &
+    echo "Local model runtime (.venv) is missing or outdated: setup started in the background (log: .venv-setup.log)."
+  else
+    echo "Local model runtime (.venv) is missing or outdated. For local passes run: bash .claude/scripts/local/setup.sh"
+  fi
+fi
+
 # --- worlds/ status ---
 if [ -d worlds ] && [ "$(ls worlds/ 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
   WORLD_LIST=$(ls worlds/)
