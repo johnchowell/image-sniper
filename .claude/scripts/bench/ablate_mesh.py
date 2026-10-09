@@ -114,9 +114,13 @@ def main():
                 expected = chamfer(pred, truth)
                 yaws = [(chamfer(pred[::4] @ rot_y(math.radians(d)).T, truth[::4])[0], d) for d in range(-180, 180, 5)]
                 best_cd, best_yaw = min(yaws)
+                worst_cd = max(yaws)[0]
+                # How much the fit depends on yaw: near 0 for a rotationally symmetric object (a vase), whose yaw
+                # cannot be checked.
                 row[reference] = {"chamfer_expected_pose": expected[0], "fscore_expected_pose": expected[1],
                                   "chamfer_best_yaw": chamfer(pred @ rot_y(math.radians(best_yaw)).T, truth)[0],
-                                  "best_yaw_offset_deg": best_yaw, "seconds": round(time.time() - started, 1)}
+                                  "best_yaw_offset_deg": best_yaw, "yaw_contrast": round((worst_cd - best_cd) / max(best_cd, 1e-9), 3),
+                                  "seconds": round(time.time() - started, 1)}
             rows.append(row)
             print(json.dumps(row), flush=True)
             if len(rows) >= args.max_objects:
@@ -127,7 +131,9 @@ def main():
     rng = np.random.default_rng(0)
     diff = np.array([r["albedo"]["chamfer_expected_pose"] - r["photo"]["chamfer_expected_pose"] for r in rows])
     boot = [diff[rng.integers(0, len(diff), len(diff))].mean() for _ in range(2000)]
-    offsets = np.array([abs(r["photo"]["best_yaw_offset_deg"]) for r in rows])
+    # Pose check only where yaw is identifiable: the worst yaw fits at least 50% worse than the best.
+    posed = [r for r in rows if r["photo"]["yaw_contrast"] >= 0.5]
+    offsets = np.array([abs(r["photo"]["best_yaw_offset_deg"]) for r in posed]) if posed else np.array([np.nan])
     summary = {
         "objects": len(rows),
         "photo_chamfer_mean": float(np.mean([r["photo"]["chamfer_expected_pose"] for r in rows])),
@@ -135,6 +141,7 @@ def main():
         "photo_fscore_mean": float(np.mean([r["photo"]["fscore_expected_pose"] for r in rows])),
         "albedo_fscore_mean": float(np.mean([r["albedo"]["fscore_expected_pose"] for r in rows])),
         "albedo_minus_photo_chamfer_ci95": [float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))],
+        "pose_check_objects": len(posed),
         "photo_best_yaw_offset_deg_median": float(np.median(offsets)),
         "photo_best_yaw_within_20deg": float((offsets <= 20).mean()),
         "photo_best_yaw_within_20deg_of_180": float((np.abs(offsets - 180) <= 20).mean()),
