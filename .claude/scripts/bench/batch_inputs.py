@@ -132,9 +132,10 @@ def main():
     parser.add_argument("--stages", nargs="+", default=["light", "depth", "masks", "build"])
     parser.add_argument("--rebuild", action="store_true", help="rebuild layouts that exist (after a build-layout change)")
     parser.add_argument("--limit", type=int, help="only the first N worlds (smoke test)")
+    parser.add_argument("--threads", type=int, default=os.cpu_count(), help="torch threads (leave a core when another job runs)")
     args = parser.parse_args()
     os.chdir(REPO)  # the stage helpers write repo-relative paths (worlds/...)
-    torch.set_num_threads(os.cpu_count())
+    torch.set_num_threads(args.threads)
     worlds = worlds_of(args.split, args.names)[: args.limit]
     timings = {}
     locks = []
