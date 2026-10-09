@@ -45,8 +45,8 @@ export const DEFAULT_PARAMS = {
   light_min_support: 0.2,
   light_merge_gap_m: 0.25,
   light_extent_margin_m: 0.3,
-  // Metric scale anchors (off unless enabled): real-world sizes combined with the depth model's own scale.
-  scale_anchors: 0,
+  // Metric scale anchors: real-world sizes combined with the depth model's own scale (chosen on train, checked on val).
+  scale_anchors: 1,
   scale_depth_model_sigma: 0.15,
   scale_camera_height_m: 1.45,
   scale_camera_sigma: 0.12,
