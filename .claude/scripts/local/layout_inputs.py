@@ -40,16 +40,9 @@ def original_source(world):
     return os.path.join(src, min(images, key=lambda f: (int(f.split("-")[0]), f)))
 
 
-def detect_jointly(processor, detector, image, objects, threshold, extra):
-    """One Grounding DINO pass with every object name as a competing phrase.
-
-    A box's score for a phrase is the max token probability over that phrase's tokens. Each box goes to its best
-    phrase; overlapping boxes keep the higher score across all phrases (one image region, one object); each object
-    keeps at most count_estimate + extra boxes. Independent per-name queries let similar names claim the same region.
-    Threshold and extra box count were chosen on the benchmark training renders (bench/detection_study.py,
-    results in benchmark/results/detection-*.json).
-    """
-    phrases = [obj["name"].lower().strip().rstrip(".") for obj in objects]
+def detector_outputs(processor, detector, image, phrases):
+    """One Grounding DINO pass with every phrase in the prompt: per-box phrase scores (max token probability over the
+    phrase's tokens) and boxes in pixels."""
     prompt = " ".join(f"{p}." for p in phrases)
     W, H = image.size
     with torch.no_grad():
@@ -64,16 +57,50 @@ def detect_jointly(processor, detector, image, objects, threshold, extra):
         cursor = end
         spans.append([i for i, (a, b) in enumerate(offsets) if b > a and a >= start and b <= end and i < probs.shape[1]])
     class_scores = np.stack([probs[:, span].max(1) if span else np.zeros(len(probs)) for span in spans], 1)
-    best = class_scores.argmax(1)
-    score = class_scores.max(1)
     cx, cy, w, h = outputs.pred_boxes[0].numpy().T
     boxes = np.stack([(cx - w / 2) * W, (cy - h / 2) * H, (cx + w / 2) * W, (cy + h / 2) * H], 1)
+    return prompt, class_scores, boxes.clip([0, 0, 0, 0], [W, H, W, H])
+
+
+def assign_boxes(class_scores, boxes, counts, threshold, extra, mode="global"):
+    """Boxes per object (object k may keep counts[k] boxes plus `extra`). Overlapping boxes collapse first (NMS on
+    each box's best score: one image region, one object).
+    greedy: each box goes to its best-scoring object.
+    global: one-to-one assignment maximizing the total score (Hungarian), so with similar names ("table",
+            "coffee table", "side table") every object gets the box it scores best among the boxes the others do
+            not need more; leftover boxes then go to their best object as extras."""
+    from scipy.optimize import linear_sum_assignment
+
+    best, score = class_scores.argmax(1), class_scores.max(1)
     keep = [i for i in nms(boxes, score, iou=0.6) if score[i] >= threshold]
-    detections = {obj["id"]: [] for obj in objects}
+    kept = {k: [] for k in range(class_scores.shape[1])}
+    if mode == "greedy":
+        for i in keep:
+            if len(kept[best[i]]) < max(1, counts[best[i]]) + extra:
+                kept[best[i]].append(i)
+        return kept
+    rows = [k for k in range(class_scores.shape[1]) for _ in range(max(1, counts[k]))]
+    used = set()
+    if rows and keep:
+        matrix = np.array([[class_scores[i, k] for i in keep] for k in rows])
+        for r, c in zip(*linear_sum_assignment(-matrix)):
+            if matrix[r, c] >= threshold:
+                kept[rows[r]].append(keep[c])
+                used.add(keep[c])
     for i in keep:
-        obj = objects[best[i]]
-        if len(detections[obj["id"]]) < max(1, obj["count"]) + extra:
-            detections[obj["id"]].append((boxes[i].clip([0, 0, 0, 0], [W, H, W, H]), float(score[i])))
+        if i not in used and len(kept[best[i]]) < max(1, counts[best[i]]) + extra:
+            kept[best[i]].append(i)
+    return kept
+
+
+def detect_jointly(processor, detector, image, objects, threshold, extra, mode="greedy"):
+    """Boxes for every confirmed object from one Grounding DINO pass in which all names compete
+    (see assign_boxes). Threshold, extra and mode were chosen on the benchmark training renders
+    (bench/detection_study.py, results in benchmark/results/detection-*.json)."""
+    phrases = [obj["name"].lower().strip().rstrip(".") for obj in objects]
+    prompt, class_scores, boxes = detector_outputs(processor, detector, image, phrases)
+    kept = assign_boxes(class_scores, boxes, [obj["count"] for obj in objects], threshold, extra, mode)
+    detections = {obj["id"]: [(boxes[i], float(class_scores[i, k])) for i in kept[k]] for k, obj in enumerate(objects)}
     return prompt, detections
 
 

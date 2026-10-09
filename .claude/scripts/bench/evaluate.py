@@ -291,7 +291,8 @@ def score_view(view_dir, names="oracle", layout_index=None):
         false_positives += len(candidates) - (1 if found else 0)
         bucket = next(label for lo, hi, label in SIZE_BUCKETS if lo <= pixels / (H * W) < hi)
         record = {"gt": obj["id"], "name": obj["name"], "class": obj.get("class", "furniture"), "pixel_fraction": pixels / (H * W),
-                  "size_bucket": bucket, "truncated": truncated, "named": (pixels >= CONFIRM_PX), "found": found, "mask_iou": float(best_iou)}
+                  "size_bucket": bucket, "truncated": truncated, "named": (pixels >= CONFIRM_PX), "found": found, "mask_iou": float(best_iou),
+                  "listed": os.path.exists(os.path.join(world, "output", slug(obj["id"]), "object.json"))}
         if best is not None:
             pred_center = to_cam(np.array(best["center"]), R_pc, t_pc)
             gt_center = to_cam(np.array(obj["center"]), R_gt, t_gt)
@@ -434,6 +435,8 @@ def summarize(results):
         },
         "objects": {
             "recall": mean([o["found"] for o in named]),
+            "recall_of_listed": mean([o["found"] for o in named if o.get("listed", True)]),
+            "listed_fraction": mean([o.get("listed", True) for o in named]),
             "precision": round(tp / max(tp + sum(r["object_false_positives"] for r in scored), 1), 4),
             "recall_by_size": {label: mean([o["found"] for o in named if o["size_bucket"] == label]) for _, _, label in SIZE_BUCKETS},
             "unnamed_small_objects": sum(not o["named"] for o in objects),
@@ -511,9 +514,10 @@ def bootstrap(results, draws=1000, seed=0):
 
 def compare(a, b, draws=1000, seed=0):
     """Paired bootstrap of b - a on the views both scored. A metric whose interval contains 0 is a tie."""
-    va = {r["view"]: r for r in a["views"] if "camera" in r}
-    vb = {r["view"]: r for r in b["views"] if "camera" in r}
-    common = sorted(set(va) & set(vb), key=lambda v: v.replace("-noisy", ""))
+    key = lambda r: r["view"].removesuffix("-noisy")  # the noisy-name world of a view pairs with its oracle world
+    va = {key(r): r for r in a["views"] if "camera" in r}
+    vb = {key(r): r for r in b["views"] if "camera" in r}
+    common = sorted(set(va) & set(vb))
     ra, rb = [va[v] for v in common], [vb[v] for v in common]
     rng = np.random.default_rng(seed)
     base_a, base_b = summarize(ra), summarize(rb)

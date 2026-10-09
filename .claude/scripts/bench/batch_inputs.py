@@ -50,8 +50,15 @@ def light_stage(worlds, timings):
     for world, twin in todo:
         out_dir = f"worlds/{world}/output/light"
         if world != twin and os.path.exists(os.path.join(REPO, "worlds", twin, "output", "light", "0-light.json")):
-            shutil.copytree(os.path.join(REPO, "worlds", twin, "output", "light"), os.path.join(REPO, out_dir), dirs_exist_ok=True)
-            continue  # same photo: the twin's estimate is this world's estimate
+            # Same photo: the twin's estimate is this world's estimate. Paths inside its JSON files name the twin.
+            os.makedirs(os.path.join(REPO, out_dir), exist_ok=True)
+            twin_dir = os.path.join(REPO, "worlds", twin, "output", "light")
+            for name in os.listdir(twin_dir):
+                data = open(os.path.join(twin_dir, name), "rb").read()
+                if name.endswith(".json"):
+                    data = data.replace(f"worlds/{twin}/".encode(), f"worlds/{world}/".encode())
+                open(os.path.join(REPO, out_dir, name), "wb").write(data)
+            continue
         if pipe is None:
             started = time.time()
             pipe = estimate_light.load_model()
