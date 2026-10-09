@@ -24,6 +24,8 @@ CANDIDATES = {
     "relative-8": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 8},
     "relative-5": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 5},
     "relative-3": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 3},
+    "relative-2.5": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 2.5},
+    "relative-2": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 2},
 }
 
 
@@ -51,7 +53,9 @@ def main():
         summary = evaluate.summarize([evaluate.score_view(v) for v in evaluate.views(args.split)])
         rows[name] = {"params": CANDIDATES[name], **summary["light"]}
         print(name, json.dumps(rows[name]), flush=True)
-    json.dump(rows, open(os.path.join(REPO, "benchmark", "results", f"light-select-{args.split}.json"), "w"), indent=2)
+    path = os.path.join(REPO, "benchmark", "results", f"light-select-{args.split}.json")
+    previous = json.load(open(path)) if os.path.exists(path) else {}
+    json.dump({**previous, **rows}, open(path, "w"), indent=2)  # candidates run separately accumulate
 
 
 if __name__ == "__main__":
