@@ -52,7 +52,8 @@ export const DEFAULT_PARAMS = {
   scale_camera_sigma: 0.12,
   scale_ceiling_height_m: 2.6,
   scale_ceiling_sigma: 0.08,
-  scale_use_objects: 1
+  scale_use_objects: 1,
+  scale_outlier_z: 3
 };
 
 // Typical heights of objects that carry scale (median m, log-normal sigma); first match wins.
@@ -84,13 +85,30 @@ export function scaleFromAnchors(layout, params) {
       }
     }
   }
-  const weight = evidence.reduce((sum, e) => sum + 1 / e.sigma ** 2, 0);
-  const logScale = evidence.reduce((sum, e) => sum + e.log_scale / e.sigma ** 2, 0) / weight;
+  // Robust fusion: an anchor inconsistent with all the others (a door half hidden behind furniture measures
+  // 0.7 m) is dropped, the worst first, while its deviation exceeds scale_outlier_z combined sigmas.
+  const fuse = (items) => {
+    const weight = items.reduce((sum, e) => sum + 1 / e.sigma ** 2, 0);
+    return { log: items.reduce((sum, e) => sum + e.log_scale / e.sigma ** 2, 0) / weight, sigma: 1 / Math.sqrt(weight) };
+  };
+  let active = [...evidence];
+  const rejected = [];
+  while (active.length > 2) {
+    const scored = active.slice(1).map((e) => {
+      const rest = fuse(active.filter((other) => other !== e));
+      return { e, z: Math.abs(e.log_scale - rest.log) / Math.sqrt(e.sigma ** 2 + rest.sigma ** 2) };
+    }).sort((a, b) => b.z - a.z);
+    if (scored[0].z <= params.scale_outlier_z) break;
+    rejected.push({ source: scored[0].e.source, z: round(scored[0].z, 2) });
+    active = active.filter((e) => e !== scored[0].e);
+  }
+  const fused = fuse(active);
   return {
-    applied: round(Math.exp(logScale), 4),
-    sigma_log: round(1 / Math.sqrt(weight), 4),
-    method: "inverse-variance mean of log(true / measured) over the anchors; the depth model counts as one anchor at 0",
-    evidence: evidence.map((e) => ({ ...e, log_scale: round(e.log_scale, 4), measured_m: e.measured_m === undefined ? undefined : round(e.measured_m) }))
+    applied: round(Math.exp(fused.log), 4),
+    sigma_log: round(fused.sigma, 4),
+    method: "inverse-variance mean of log(true / measured) over the anchors (the depth model counts as one anchor at 0), after dropping anchors more than scale_outlier_z combined sigmas from the rest",
+    evidence: evidence.map((e) => ({ ...e, log_scale: round(e.log_scale, 4), measured_m: e.measured_m === undefined ? undefined : round(e.measured_m), used: active.includes(e) })),
+    rejected
   };
 }
 const CLASS_COLORS = {

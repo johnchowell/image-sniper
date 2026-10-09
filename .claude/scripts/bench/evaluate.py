@@ -535,7 +535,7 @@ def compare(a, b, draws=1000, seed=0):
             continue
         lo, hi = np.percentile(values, [2.5, 97.5])
         table.append({"metric": ".".join(path), "a": get(base_a, path), "b": get(base_b, path),
-                      "diff_ci95": [round(float(lo), 4), round(float(hi), 4)], "verdict": "tie" if lo <= 0 <= hi else ("b higher" if lo > 0 else "a higher")})
+                      "diff_ci95": [round(float(lo), 4), round(float(hi), 4)], "verdict": "tie" if lo <= 0 <= hi else ("b higher" if lo > 0 else "b lower")})
     return {"views": len(common), "a": a["name"], "b": b["name"], "metrics": table}
 
 
