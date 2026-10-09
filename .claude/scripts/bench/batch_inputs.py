@@ -131,10 +131,11 @@ def main():
     parser.add_argument("--names", choices=["oracle", "noisy"], default="oracle")
     parser.add_argument("--stages", nargs="+", default=["light", "depth", "masks", "build"])
     parser.add_argument("--rebuild", action="store_true", help="rebuild layouts that exist (after a build-layout change)")
+    parser.add_argument("--limit", type=int, help="only the first N worlds (smoke test)")
     args = parser.parse_args()
     os.chdir(REPO)  # the stage helpers write repo-relative paths (worlds/...)
     torch.set_num_threads(os.cpu_count())
-    worlds = worlds_of(args.split, args.names)
+    worlds = worlds_of(args.split, args.names)[: args.limit]
     timings = {}
     locks = []
     try:
