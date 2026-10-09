@@ -103,7 +103,7 @@ def find_emitters(photo, photo_luma, unclipped, residual_dominance, dominance, m
     return emitters, emitter_map
 
 
-DEFAULT_RULE = {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 0}
+DEFAULT_RULE = {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 2.5}
 
 
 def load_model():
