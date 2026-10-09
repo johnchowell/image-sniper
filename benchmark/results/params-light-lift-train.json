@@ -1,0 +1,476 @@
+{
+  "default": {
+    "params": {},
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.1229,
+      "pitch_err_deg": 0.336,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.1185,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.8472,
+      "scale_err_median": 0.0967,
+      "log_scale_bias": 0.1092
+    },
+    "structure": {
+      "floor_found_aligned": 0.9492,
+      "wall_found_aligned": 0.8952,
+      "ceiling_found_aligned": 0.963,
+      "wall_found": 0.5242,
+      "class_correct": 0.8756,
+      "normal_err_deg_median": 0.6508,
+      "offset_err_m_median": 0.0818,
+      "offset_err_aligned_m_median": 0.0598
+    },
+    "objects": {
+      "recall": 0.7452,
+      "precision": 0.7967,
+      "recall_by_size": {
+        "under_0.2pct": 0.5238,
+        "0.2_to_1pct": 0.6406,
+        "1_to_5pct": 0.6901,
+        "over_5pct": 0.8879
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.6896,
+      "center_err_aligned_m_median": 0.179,
+      "center_err_aligned_m_median_truncated": 0.244,
+      "center_err_aligned_m_median_whole": 0.1317,
+      "center_err_m_median": 0.4628,
+      "height_rel_err_aligned_median": 0.1116,
+      "height_rel_err_aligned_median_whole": 0.0859,
+      "truncation_flag_accuracy": 0.9592,
+      "support_accuracy": 0.699
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5376,
+      "light_source_iou_final_mean": 0.6013,
+      "false_light_fraction_final_mean": 0.0264,
+      "window_located": 0.6275,
+      "window_located_clipped": 0.56,
+      "window_located_rolloff": 0.6923,
+      "window_rect_iou_aligned_mean": 0.4573,
+      "window_rect_iou_mean": 0.2829,
+      "window_normal_err_deg_median": 0.9124,
+      "window_width_rel_err_aligned_median": 0.1318,
+      "window_center_err_aligned_m_median": 0.3225,
+      "light_sources_per_view": 1.8667
+    }
+  },
+  "support-0.1": {
+    "params": {
+      "light_min_support": 0.1
+    },
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.1229,
+      "pitch_err_deg": 0.336,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.1185,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.8472,
+      "scale_err_median": 0.0967,
+      "log_scale_bias": 0.1092
+    },
+    "structure": {
+      "floor_found_aligned": 0.9492,
+      "wall_found_aligned": 0.8952,
+      "ceiling_found_aligned": 0.963,
+      "wall_found": 0.5242,
+      "class_correct": 0.8756,
+      "normal_err_deg_median": 0.6508,
+      "offset_err_m_median": 0.0818,
+      "offset_err_aligned_m_median": 0.0598
+    },
+    "objects": {
+      "recall": 0.7452,
+      "precision": 0.7967,
+      "recall_by_size": {
+        "under_0.2pct": 0.5238,
+        "0.2_to_1pct": 0.6406,
+        "1_to_5pct": 0.6901,
+        "over_5pct": 0.8879
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.6896,
+      "center_err_aligned_m_median": 0.179,
+      "center_err_aligned_m_median_truncated": 0.244,
+      "center_err_aligned_m_median_whole": 0.1317,
+      "center_err_m_median": 0.4628,
+      "height_rel_err_aligned_median": 0.1116,
+      "height_rel_err_aligned_median_whole": 0.0859,
+      "truncation_flag_accuracy": 0.9592,
+      "support_accuracy": 0.699
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5376,
+      "light_source_iou_final_mean": 0.6013,
+      "false_light_fraction_final_mean": 0.0264,
+      "window_located": 0.6667,
+      "window_located_clipped": 0.64,
+      "window_located_rolloff": 0.6923,
+      "window_rect_iou_aligned_mean": 0.4814,
+      "window_rect_iou_mean": 0.2957,
+      "window_normal_err_deg_median": 0.8911,
+      "window_width_rel_err_aligned_median": 0.1469,
+      "window_center_err_aligned_m_median": 0.3201,
+      "light_sources_per_view": 1.8833
+    }
+  },
+  "support-0.35": {
+    "params": {
+      "light_min_support": 0.35
+    },
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.1229,
+      "pitch_err_deg": 0.336,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.1185,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.8472,
+      "scale_err_median": 0.0967,
+      "log_scale_bias": 0.1092
+    },
+    "structure": {
+      "floor_found_aligned": 0.9492,
+      "wall_found_aligned": 0.8952,
+      "ceiling_found_aligned": 0.963,
+      "wall_found": 0.5242,
+      "class_correct": 0.8756,
+      "normal_err_deg_median": 0.6508,
+      "offset_err_m_median": 0.0818,
+      "offset_err_aligned_m_median": 0.0598
+    },
+    "objects": {
+      "recall": 0.7452,
+      "precision": 0.7967,
+      "recall_by_size": {
+        "under_0.2pct": 0.5238,
+        "0.2_to_1pct": 0.6406,
+        "1_to_5pct": 0.6901,
+        "over_5pct": 0.8879
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.6896,
+      "center_err_aligned_m_median": 0.179,
+      "center_err_aligned_m_median_truncated": 0.244,
+      "center_err_aligned_m_median_whole": 0.1317,
+      "center_err_m_median": 0.4628,
+      "height_rel_err_aligned_median": 0.1116,
+      "height_rel_err_aligned_median_whole": 0.0859,
+      "truncation_flag_accuracy": 0.9592,
+      "support_accuracy": 0.699
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5376,
+      "light_source_iou_final_mean": 0.6013,
+      "false_light_fraction_final_mean": 0.0264,
+      "window_located": 0.6078,
+      "window_located_clipped": 0.56,
+      "window_located_rolloff": 0.6538,
+      "window_rect_iou_aligned_mean": 0.4441,
+      "window_rect_iou_mean": 0.2664,
+      "window_normal_err_deg_median": 0.9432,
+      "window_width_rel_err_aligned_median": 0.1469,
+      "window_center_err_aligned_m_median": 0.3439,
+      "light_sources_per_view": 1.6667
+    }
+  },
+  "tol-0.04": {
+    "params": {
+      "light_plane_tol_m": 0.04
+    },
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.1229,
+      "pitch_err_deg": 0.336,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.1185,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.8472,
+      "scale_err_median": 0.0967,
+      "log_scale_bias": 0.1092
+    },
+    "structure": {
+      "floor_found_aligned": 0.9492,
+      "wall_found_aligned": 0.8952,
+      "ceiling_found_aligned": 0.963,
+      "wall_found": 0.5242,
+      "class_correct": 0.8756,
+      "normal_err_deg_median": 0.6508,
+      "offset_err_m_median": 0.0818,
+      "offset_err_aligned_m_median": 0.0598
+    },
+    "objects": {
+      "recall": 0.7452,
+      "precision": 0.7967,
+      "recall_by_size": {
+        "under_0.2pct": 0.5238,
+        "0.2_to_1pct": 0.6406,
+        "1_to_5pct": 0.6901,
+        "over_5pct": 0.8879
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.6896,
+      "center_err_aligned_m_median": 0.179,
+      "center_err_aligned_m_median_truncated": 0.244,
+      "center_err_aligned_m_median_whole": 0.1317,
+      "center_err_m_median": 0.4628,
+      "height_rel_err_aligned_median": 0.1116,
+      "height_rel_err_aligned_median_whole": 0.0859,
+      "truncation_flag_accuracy": 0.9592,
+      "support_accuracy": 0.699
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5376,
+      "light_source_iou_final_mean": 0.6011,
+      "false_light_fraction_final_mean": 0.0265,
+      "window_located": 0.6078,
+      "window_located_clipped": 0.52,
+      "window_located_rolloff": 0.6923,
+      "window_rect_iou_aligned_mean": 0.4446,
+      "window_rect_iou_mean": 0.279,
+      "window_normal_err_deg_median": 0.9646,
+      "window_width_rel_err_aligned_median": 0.1318,
+      "window_center_err_aligned_m_median": 0.3332,
+      "light_sources_per_view": 1.8667
+    }
+  },
+  "tol-0.1": {
+    "params": {
+      "light_plane_tol_m": 0.1
+    },
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.1229,
+      "pitch_err_deg": 0.336,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.1185,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.8472,
+      "scale_err_median": 0.0967,
+      "log_scale_bias": 0.1092
+    },
+    "structure": {
+      "floor_found_aligned": 0.9492,
+      "wall_found_aligned": 0.8952,
+      "ceiling_found_aligned": 0.963,
+      "wall_found": 0.5242,
+      "class_correct": 0.8756,
+      "normal_err_deg_median": 0.6508,
+      "offset_err_m_median": 0.0818,
+      "offset_err_aligned_m_median": 0.0598
+    },
+    "objects": {
+      "recall": 0.7452,
+      "precision": 0.7967,
+      "recall_by_size": {
+        "under_0.2pct": 0.5238,
+        "0.2_to_1pct": 0.6406,
+        "1_to_5pct": 0.6901,
+        "over_5pct": 0.8879
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.6896,
+      "center_err_aligned_m_median": 0.179,
+      "center_err_aligned_m_median_truncated": 0.244,
+      "center_err_aligned_m_median_whole": 0.1317,
+      "center_err_m_median": 0.4628,
+      "height_rel_err_aligned_median": 0.1116,
+      "height_rel_err_aligned_median_whole": 0.0859,
+      "truncation_flag_accuracy": 0.9592,
+      "support_accuracy": 0.699
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5376,
+      "light_source_iou_final_mean": 0.6013,
+      "false_light_fraction_final_mean": 0.0264,
+      "window_located": 0.6471,
+      "window_located_clipped": 0.56,
+      "window_located_rolloff": 0.7308,
+      "window_rect_iou_aligned_mean": 0.477,
+      "window_rect_iou_mean": 0.2999,
+      "window_normal_err_deg_median": 0.8999,
+      "window_width_rel_err_aligned_median": 0.1318,
+      "window_center_err_aligned_m_median": 0.3201,
+      "light_sources_per_view": 1.85
+    }
+  },
+  "gap-0.1": {
+    "params": {
+      "light_merge_gap_m": 0.1
+    },
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.1229,
+      "pitch_err_deg": 0.336,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.1185,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.8472,
+      "scale_err_median": 0.0967,
+      "log_scale_bias": 0.1092
+    },
+    "structure": {
+      "floor_found_aligned": 0.9492,
+      "wall_found_aligned": 0.8952,
+      "ceiling_found_aligned": 0.963,
+      "wall_found": 0.5242,
+      "class_correct": 0.8756,
+      "normal_err_deg_median": 0.6508,
+      "offset_err_m_median": 0.0818,
+      "offset_err_aligned_m_median": 0.0598
+    },
+    "objects": {
+      "recall": 0.7452,
+      "precision": 0.7967,
+      "recall_by_size": {
+        "under_0.2pct": 0.5238,
+        "0.2_to_1pct": 0.6406,
+        "1_to_5pct": 0.6901,
+        "over_5pct": 0.8879
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.6896,
+      "center_err_aligned_m_median": 0.179,
+      "center_err_aligned_m_median_truncated": 0.244,
+      "center_err_aligned_m_median_whole": 0.1317,
+      "center_err_m_median": 0.4628,
+      "height_rel_err_aligned_median": 0.1116,
+      "height_rel_err_aligned_median_whole": 0.0859,
+      "truncation_flag_accuracy": 0.9592,
+      "support_accuracy": 0.699
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5376,
+      "light_source_iou_final_mean": 0.6013,
+      "false_light_fraction_final_mean": 0.0264,
+      "window_located": 0.6275,
+      "window_located_clipped": 0.56,
+      "window_located_rolloff": 0.6923,
+      "window_rect_iou_aligned_mean": 0.4501,
+      "window_rect_iou_mean": 0.2755,
+      "window_normal_err_deg_median": 0.9124,
+      "window_width_rel_err_aligned_median": 0.1318,
+      "window_center_err_aligned_m_median": 0.3332,
+      "light_sources_per_view": 2.05
+    }
+  },
+  "gap-0.5": {
+    "params": {
+      "light_merge_gap_m": 0.5
+    },
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.1229,
+      "pitch_err_deg": 0.336,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.1185,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.8472,
+      "scale_err_median": 0.0967,
+      "log_scale_bias": 0.1092
+    },
+    "structure": {
+      "floor_found_aligned": 0.9492,
+      "wall_found_aligned": 0.8952,
+      "ceiling_found_aligned": 0.963,
+      "wall_found": 0.5242,
+      "class_correct": 0.8756,
+      "normal_err_deg_median": 0.6508,
+      "offset_err_m_median": 0.0818,
+      "offset_err_aligned_m_median": 0.0598
+    },
+    "objects": {
+      "recall": 0.7452,
+      "precision": 0.7967,
+      "recall_by_size": {
+        "under_0.2pct": 0.5238,
+        "0.2_to_1pct": 0.6406,
+        "1_to_5pct": 0.6901,
+        "over_5pct": 0.8879
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.6896,
+      "center_err_aligned_m_median": 0.179,
+      "center_err_aligned_m_median_truncated": 0.244,
+      "center_err_aligned_m_median_whole": 0.1317,
+      "center_err_m_median": 0.4628,
+      "height_rel_err_aligned_median": 0.1116,
+      "height_rel_err_aligned_median_whole": 0.0859,
+      "truncation_flag_accuracy": 0.9592,
+      "support_accuracy": 0.699
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5376,
+      "light_source_iou_final_mean": 0.6013,
+      "false_light_fraction_final_mean": 0.0264,
+      "window_located": 0.6275,
+      "window_located_clipped": 0.56,
+      "window_located_rolloff": 0.6923,
+      "window_rect_iou_aligned_mean": 0.4629,
+      "window_rect_iou_mean": 0.2877,
+      "window_normal_err_deg_median": 0.9124,
+      "window_width_rel_err_aligned_median": 0.1318,
+      "window_center_err_aligned_m_median": 0.3201,
+      "light_sources_per_view": 1.85
+    }
+  }
+}
