@@ -121,7 +121,7 @@ function directionWords(direction) {
  * Fits a second-order spherical-harmonic irradiance field to the model's diffuse shading against
  * the depth normals, and lifts the model's light-source regions to 3D area lights.
  */
-export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics }) {
+export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics, params }) {
   const { gw, gh, step, valid, points } = grid;
   const cellCount = gw * gh;
   const sx = light.shading.width / width;
@@ -172,30 +172,53 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
   const elevation = degrees(Math.asin(Math.max(-1, Math.min(1, dominant[1]))));
   const directionality = Math.hypot(...band1) / Math.max(1e-9, lumaCoefficients[0]);
 
-  // Light sources: group regions by the surface they lie on; regions on a confirmed object are highlights.
-  const groups = new Map();
+  // Light sources. A light-source region (a window, a lamp) often has no usable depth of its own: blown out, or
+  // sky the depth model masks out. Its surface comes from the depth around it: a plane holds the region when at
+  // least light_min_support of the ring cells (not on objects, not in other bright regions) lie on it within
+  // light_plane_tol_m. Each region cell goes to the holder its camera ray meets first inside that plane's extent
+  // (from inside a room the nearest surface along a ray is the one seen), so a region spanning a corner splits
+  // between the two walls. Parts on floors and tabletops are sunlight spill. Parts on one plane merge only when
+  // their rectangles are within light_merge_gap_m (mullions, frames); separate windows stay separate.
+  const P = { tol: params.light_plane_tol_m, support: params.light_min_support, gap: params.light_merge_gap_m, margin: params.light_extent_margin_m };
+  const rayOf = (cell) => {
+    const px = (cell % gw) * step + step / 2, py = Math.floor(cell / gw) * step + step / 2;
+    return normalize(mulMat3Vec(R, [(px - intrinsics.cx) / intrinsics.fx, (py - intrinsics.cy) / intrinsics.fy, 1]));
+  };
+  const hitPlane = (plane, ray) => {
+    const denom = dot(plane.normal, ray);
+    if (Math.abs(denom) < 1e-6) return undefined;
+    const t = (dot(plane.normal, plane.center) - dot(plane.normal, cameraPosition)) / denom;
+    if (!(t > 0)) return undefined;
+    const p = add(cameraPosition, scale(ray, t));
+    const rel = sub(p, plane.center);
+    if (Math.abs(dot(rel, plane.u_axis)) > plane.size[0] / 2 + P.margin || Math.abs(dot(rel, plane.v_axis)) > plane.size[1] / 2 + P.margin) return undefined;
+    return { t, p };
+  };
+  const pointOf = (cell) => toLayout([points[cell * 3], points[cell * 3 + 1], points[cell * 3 + 2]]);
+  const parts = [];
   const highlights = [];
   const sunlitPatches = [];
+  const unplaced = [];
   for (const emitter of light.json.emitters) {
-    const cells = [];
-    for (let cell = 0; cell < cellCount; cell += 1) if (emitterOf[cell] === emitter.id && valid[cell]) cells.push(cell);
-    if (cells.length < 10) continue;
-    const votes = new Map();
-    for (const cell of cells) if (labels[cell]) votes.set(labels[cell], (votes.get(labels[cell]) || 0) + 1);
-    const [topLabel, topVotes] = [...votes.entries()].sort((a, b) => b[1] - a[1])[0] || [0, 0];
-    const owner = topLabel ? palette[topLabel - 1] : undefined;
     if (emitter.kind !== "light_source") continue;
-    if (owner?.class === "object" && topVotes >= 0.5 * cells.length) {
-      highlights.push({ region: emitter.id, object_id: owner.id });
+    const cells = [];
+    for (let cell = 0; cell < cellCount; cell += 1) if (emitterOf[cell] === emitter.id) cells.push(cell);
+    if (cells.length < 10) continue;
+    const validCells = cells.filter((cell) => valid[cell]);
+    // A region mostly on one confirmed object is a highlight on it (a lamp shade, a screen).
+    const objectVotes = new Map();
+    for (const cell of validCells) {
+      const entry = labels[cell] ? palette[labels[cell] - 1] : undefined;
+      if (entry?.class === "object") objectVotes.set(entry.id, (objectVotes.get(entry.id) || 0) + 1);
+    }
+    const [topObject, topObjectVotes] = [...objectVotes.entries()].sort((a, b) => b[1] - a[1])[0] || [undefined, 0];
+    if (topObject && validCells.length >= 10 && topObjectVotes >= 0.5 * validCells.length) {
+      highlights.push({ region: emitter.id, object_id: topObject });
       continue;
     }
-    // An overexposed window has no usable depth of its own; the surface around it (a ring of cells) holds it.
-    // Each labeled ring cell votes for its plane or object; neighboring panes and invalid cells carry no evidence.
-    // The region lies on the most common label when that label is a structure plane. Objects compete one by one,
-    // so a desk, a lamp and a laptop in front of a window do not outvote the wall around it together.
     const seen = new Uint8Array(cellCount);
     for (const cell of cells) seen[cell] = 1;
-    const ringVotes = new Map();
+    const ring = [];
     for (const cell of cells) {
       const gx = cell % gw, gy = Math.floor(cell / gw);
       for (let dy = -3; dy <= 3; dy += 1) {
@@ -205,43 +228,76 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
           const other = y * gw + x;
           if (seen[other]) continue;
           seen[other] = 1;
-          if (!labels[other]) continue;
-          ringVotes.set(labels[other], (ringVotes.get(labels[other]) || 0) + 1);
+          if (!valid[other] || emitterOf[other]) continue;
+          const entry = labels[other] ? palette[labels[other] - 1] : undefined;
+          if (entry?.class === "object") continue;
+          ring.push(pointOf(other));
         }
       }
     }
-    const ringTopEntry = palette[([...ringVotes.entries()].sort((a, b) => b[1] - a[1])[0] || [0])[0] - 1];
-    const ownPlane = owner && owner.class !== "object" && topVotes >= 0.5 * cells.length ? owner.id : undefined;
-    const surfaceId = ringTopEntry && ringTopEntry.class !== "object" ? ringTopEntry.id : ownPlane;
-    // Floors and tabletops do not hold light sources: an overexposed patch there is sunlight spill.
-    const surfaceClass = structure.find((plane) => plane.id === surfaceId)?.class;
-    if (surfaceClass === "floor" || surfaceClass === "horizontal_surface") {
-      sunlitPatches.push({ region: emitter.id, on_surface: surfaceId });
+    const holders = ring.length < 10 ? [] : structure.filter((plane) => {
+      const inliers = ring.filter((p) => Math.abs(dot(sub(p, plane.center), plane.normal)) < P.tol).length;
+      return inliers >= P.support * ring.length;
+    });
+    const byPlane = new Map();
+    for (const cell of cells) {
+      const ray = rayOf(cell);
+      let best;
+      for (const plane of holders) {
+        const hit = hitPlane(plane, ray);
+        if (hit && (!best || hit.t < best.t)) best = { ...hit, plane };
+      }
+      if (!best) continue;
+      if (!byPlane.has(best.plane.id)) byPlane.set(best.plane.id, { plane: best.plane, points: [] });
+      byPlane.get(best.plane.id).points.push(best.p);
+    }
+    if (!byPlane.size) {
+      // No surface holds it: a free-standing light (a bulb) placed from its own depth, when it has some.
+      if (validCells.length >= 10) parts.push({ surface: undefined, points: validCells.map(pointOf), regions: [emitter.id], luminance: [emitter.relative_luminance] });
+      else unplaced.push({ region: emitter.id, ring_cells: ring.length });
       continue;
     }
-    const key = surfaceId || `region-${emitter.id}`;
-    if (!groups.has(key)) groups.set(key, { surface: key.startsWith("region-") ? undefined : key, cells: [], regions: [], luminance: [] });
-    const group = groups.get(key);
-    group.cells.push(...cells);
-    group.regions.push(emitter.id);
-    group.luminance.push(emitter.relative_luminance);
+    for (const { plane, points: lifted } of byPlane.values()) {
+      if (lifted.length < 5) continue;
+      if (plane.class === "floor" || plane.class === "horizontal_surface") {
+        sunlitPatches.push({ region: emitter.id, on_surface: plane.id, cells: lifted.length });
+        continue;
+      }
+      parts.push({ surface: plane, points: lifted, regions: [emitter.id], luminance: [emitter.relative_luminance] });
+    }
+  }
+  // Merge parts on the same plane whose rectangles (in that plane) are within the merge gap.
+  const extentOf = (part) => {
+    const us = sortedValues(part.points.map((p) => dot(sub(p, part.surface.center), part.surface.u_axis)));
+    const vs = sortedValues(part.points.map((p) => dot(sub(p, part.surface.center), part.surface.v_axis)));
+    return [percentile(us, 0.02), percentile(us, 0.98), percentile(vs, 0.02), percentile(vs, 0.98)];
+  };
+  const groups = [];
+  for (const part of parts) {
+    if (!part.surface) {
+      groups.push(part);
+      continue;
+    }
+    const box = extentOf(part);
+    const near = groups.filter((g) => g.surface?.id === part.surface.id && (() => {
+      const o = extentOf(g);
+      return Math.max(o[0] - box[1], box[0] - o[1], o[2] - box[3], box[2] - o[3]) <= P.gap;
+    })());
+    const merged = { surface: part.surface, points: [...part.points], regions: [...part.regions], luminance: [...part.luminance] };
+    for (const g of near) {
+      merged.points.push(...g.points);
+      merged.regions.push(...g.regions);
+      merged.luminance.push(...g.luminance);
+      groups.splice(groups.indexOf(g), 1);
+    }
+    groups.push(merged);
   }
 
   const roomCenter = add(structure.find((plane) => plane.class === "floor")?.center || [0, 0, -3], [0, 1, 0]);
   const emitters = [];
-  for (const group of groups.values()) {
-    const surface = structure.find((plane) => plane.id === group.surface);
-    // On a known surface, region pixels are placed by intersecting their camera rays with the plane.
-    const layoutPoints = group.cells.map((cell) => {
-      if (surface && intrinsics) {
-        const px = (cell % gw) * step + step / 2, py = Math.floor(cell / gw) * step + step / 2;
-        const ray = normalize(mulMat3Vec(R, [(px - intrinsics.cx) / intrinsics.fx, (py - intrinsics.cy) / intrinsics.fy, 1]));
-        const denom = dot(surface.normal, ray);
-        const t = Math.abs(denom) > 1e-6 ? -(dot(surface.normal, cameraPosition) - dot(surface.normal, surface.center)) / denom : -1;
-        if (t > 0) return add(cameraPosition, scale(ray, t));
-      }
-      return toLayout([points[cell * 3], points[cell * 3 + 1], points[cell * 3 + 2]]);
-    });
+  for (const group of groups) {
+    const surface = group.surface;
+    const layoutPoints = group.points;
     let normal;
     if (surface) {
       normal = surface.normal;
@@ -265,7 +321,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
       id: `${label}-${emitters.filter((e) => e.id.startsWith(label)).length + 1}`,
       type: "area_light",
       class: "light_source",
-      on_surface: group.surface || null,
+      on_surface: surface?.id || null,
       center: roundVec(center),
       normal: roundVec(normal, 4),
       u_axis: roundVec(u, 4),
@@ -276,7 +332,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
       color_linear_rgb: light.json.light_color.linear_rgb,
       saturated: true,
       relative_luminance_min: round(Math.min(...group.luminance), 2),
-      image_regions: group.regions,
+      image_regions: [...new Set(group.regions)],
       angle_to_dominant_light_deg: round(degrees(Math.acos(Math.max(-1, Math.min(1, dot(toward, dominant))))), 1)
     });
   }
@@ -316,7 +372,8 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     },
     emitters,
     highlights_on_objects: highlights,
-    sunlit_patches: sunlitPatches
+    sunlit_patches: sunlitPatches,
+    unplaced_light_regions: unplaced
   };
   return { lighting, emitters, emitterOf };
 }

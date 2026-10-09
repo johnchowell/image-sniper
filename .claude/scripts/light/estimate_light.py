@@ -62,11 +62,13 @@ def kelvin_from_rgb(rgb):
     return float(449 * n ** 3 + 3525 * n ** 2 + 6823.3 * n + 5520.33)
 
 
-def find_emitters(photo, photo_luma, unclipped, residual_dominance, dominance, min_luminance, source_clipped, clipped_candidates):
+def find_emitters(photo, photo_luma, unclipped, residual_dominance, dominance, min_luminance, source_clipped, clipped_candidates,
+                  source_relative_luminance=0):
     """Bright regions of light that is not diffusely reflected: candidates are bright pixels the model assigns to the
     residual, plus (clipped_candidates) overexposed pixels. Light seen directly (a window, a lamp) is either; the model
-    is inconsistent about which. Regions mostly overexposed are light sources, the rest reflections; the layout stage
-    reclassifies light sources that sit on confirmed objects as highlights."""
+    is inconsistent about which. Regions mostly overexposed are light sources, and (source_relative_luminance > 0)
+    regions whose mean luminance is that many times the image median: a phone's HDR tone curve keeps windows below
+    clipping. The rest are reflections; the layout stage reclassifies light sources on confirmed objects as highlights."""
     import cv2
 
     candidates = (residual_dominance > dominance) & (photo_luma >= min_luminance)
@@ -86,63 +88,48 @@ def find_emitters(photo, photo_luma, unclipped, residual_dominance, dominance, m
         emitter_map[region] = emitter_id
         x, y, w, h = (int(stats[k, i]) for i in (cv2.CC_STAT_LEFT, cv2.CC_STAT_TOP, cv2.CC_STAT_WIDTH, cv2.CC_STAT_HEIGHT))
         clipped = float(1 - unclipped[region].mean())
+        relative = float(photo_luma[region].mean() / np.median(photo_luma))
+        source = clipped >= source_clipped or (source_relative_luminance > 0 and relative >= source_relative_luminance)
         emitters.append({
             "id": emitter_id,
-            "kind": "light_source" if clipped >= source_clipped else "reflection",
+            "kind": "light_source" if source else "reflection",
             "image_bbox_px": [x, y, x + w, y + h],
             "area_fraction": round(area / labels.size, 5),
             "centroid_px": [round(float(c), 1) for c in centroids[k]],
             "mean_linear_rgb": [round(float(c), 4) for c in photo[region].mean(0)],
-            "relative_luminance": round(float(photo_luma[region].mean() / np.median(photo_luma)), 3),
+            "relative_luminance": round(relative, 3),
             "clipped_fraction": round(clipped, 3),
         })
     return emitters, emitter_map
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--image", required=True)
-    parser.add_argument("--out-dir", required=True)
-    parser.add_argument("--index", type=int, required=True)
-    parser.add_argument("--steps", type=int, default=4)
-    parser.add_argument("--ensemble", type=int, default=1)
-    parser.add_argument("--resolution", type=int, default=768)
-    parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--postprocess-only", action="store_true", help="reuse the cached model prediction of this index")
-    # Defaults chosen on the benchmark training renders by the 3D window metric (bench/light_select.py,
-    # results in benchmark/results/light-select-*.json).
-    parser.add_argument("--dominance", type=float, default=0.4, help="residual share above which a bright pixel is non-diffuse")
-    parser.add_argument("--min-luminance", type=float, default=0.3, help="linear photo luminance for emitter candidates")
-    parser.add_argument("--source-clipped", type=float, default=0.7, help="clipped share that makes a region a light source")
-    parser.add_argument("--clipped-candidates", type=int, default=1, help="1: overexposed pixels are emitter candidates too")
-    args = parser.parse_args()
+DEFAULT_RULE = {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 0}
 
-    image = Image.open(args.image).convert("RGB")
+
+def load_model():
+    import torch
+    from diffusers import MarigoldIntrinsicsPipeline
+
+    return MarigoldIntrinsicsPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
+
+
+def predict(pipe, image, steps=4, ensemble=1, resolution=768, seed=0):
+    """Raw model output (albedo, shading, residual; shading and residual up to scale) at the image size."""
+    import torch
+
+    result = pipe(image, num_inference_steps=steps, ensemble_size=ensemble, processing_resolution=resolution,
+                  output_type="np", generator=torch.Generator().manual_seed(seed))
+    names = pipe.target_properties["target_names"]
+    return {name: result.prediction[k].astype(np.float32) for k, name in enumerate(names)}
+
+
+def write_estimate(image_path, image, prediction, out_dir, index, settings, timings):
+    """Fits scales, finds light sources, writes the indexed light files and N-light.json; returns the summary."""
     photo = srgb_to_linear(np.asarray(image, dtype=np.float64) / 255.0)
-    cache = f"{args.out_dir.rstrip('/')}/.{args.index}-light-prediction.npz"
-
-    started = time.time()
-    if args.postprocess_only:
-        cached = np.load(cache)
-        albedo, shading, residual = (cached[k].astype(np.float64) for k in ("albedo", "shading", "residual"))
-    else:
-        import torch
-        from diffusers import MarigoldIntrinsicsPipeline
-
-        pipe = MarigoldIntrinsicsPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
-        result = pipe(
-            image,
-            num_inference_steps=args.steps,
-            ensemble_size=args.ensemble,
-            processing_resolution=args.resolution,
-            output_type="np",
-            generator=torch.Generator().manual_seed(args.seed),
-        )
-        names = pipe.target_properties["target_names"]
-        prediction = {name: result.prediction[k].astype(np.float32) for k, name in enumerate(names)}
-        np.savez_compressed(cache, **prediction)  # raw model output, so thresholds can be refit without inference
-        albedo, shading, residual = (prediction[k].astype(np.float64) for k in ("albedo", "shading", "residual"))
-    seconds = time.time() - started
+    albedo, shading, residual = (prediction[k].astype(np.float64) for k in ("albedo", "shading", "residual"))
+    out = out_dir.rstrip("/")
+    n = index
+    cache = f"{out}/.{n}-light-prediction.npz"
 
     # Shading and residual are up to scale: fit photo ~= a * albedo * shading + b * residual.
     # Clipped pixels are not linear measurements, so they stay out of the fit and the check.
@@ -166,12 +153,11 @@ def main():
 
     diffuse_luma = (albedo * shading_lin) @ LUMA
     residual_dominance = residual_luma / np.maximum(diffuse_luma + residual_luma, 1e-9)
-    emitters, emitter_map = find_emitters(photo, photo_luma, unclipped, residual_dominance, args.dominance,
-                                          args.min_luminance, args.source_clipped, args.clipped_candidates)
+    emitters, emitter_map = find_emitters(photo, photo_luma, unclipped, residual_dominance, settings["dominance"],
+                                          settings["min_luminance"], settings["source_clipped"], settings["clipped_candidates"],
+                                          settings.get("source_relative_luminance", 0))
 
     outside = unclipped & (emitter_map == 0)
-    out = args.out_dir.rstrip("/")
-    n = args.index
     files = {
         "albedo": f"{out}/{n}-light-albedo.png",
         "shading": f"{out}/{n}-light-shading.png",
@@ -193,13 +179,12 @@ def main():
         "kind": "light",
         "model": MODEL_ID,
         "decomposition": "photo_linear = albedo * shading + residual",
-        "source_image": args.image,
+        "source_image": image_path,
         "image_size": [image.width, image.height],
-        "settings": {"steps": args.steps, "ensemble": args.ensemble, "processing_resolution": args.resolution, "seed": args.seed,
-                     "dominance": args.dominance, "min_luminance": args.min_luminance, "source_clipped": args.source_clipped,
-                     "clipped_candidates": bool(args.clipped_candidates)},
+        "settings": {**settings, "clipped_candidates": bool(settings["clipped_candidates"])},
         "prediction_cache": cache,
-        "inference_seconds": round(seconds, 1),
+        "inference_seconds": timings.get("inference"),
+        "timings_seconds": timings,
         "scales": {"shading": round(a, 6), "residual": round(b, 6)},
         "reconstruction_r2": round(float(r2), 4),
         "reconstruction_scope": "unclipped pixels",
@@ -222,7 +207,52 @@ def main():
     }
     with open(f"{out}/{n}-light.json", "w") as f:
         json.dump(summary, f, indent=2)
-    print(json.dumps({k: summary[k] for k in ("reconstruction_r2", "scales", "light_color", "nondiffuse_fraction", "inference_seconds")} | {"emitters": len(emitters)}))
+    return summary
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--image", required=True)
+    parser.add_argument("--out-dir", required=True)
+    parser.add_argument("--index", type=int, required=True)
+    parser.add_argument("--steps", type=int, default=4)
+    parser.add_argument("--ensemble", type=int, default=1)
+    parser.add_argument("--resolution", type=int, default=768)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--postprocess-only", action="store_true", help="reuse the cached model prediction of this index")
+    # Defaults chosen on the benchmark training renders by the 3D window metric (bench/light_select.py,
+    # results in benchmark/results/light-select-*.json).
+    parser.add_argument("--dominance", type=float, default=DEFAULT_RULE["dominance"], help="residual share above which a bright pixel is non-diffuse")
+    parser.add_argument("--min-luminance", type=float, default=DEFAULT_RULE["min_luminance"], help="linear photo luminance for emitter candidates")
+    parser.add_argument("--source-clipped", type=float, default=DEFAULT_RULE["source_clipped"], help="clipped share that makes a region a light source")
+    parser.add_argument("--clipped-candidates", type=int, default=DEFAULT_RULE["clipped_candidates"], help="1: overexposed pixels are emitter candidates too")
+    parser.add_argument("--source-relative-luminance", type=float, default=DEFAULT_RULE["source_relative_luminance"],
+                        help="> 0: a region this many times brighter than the image median is a light source even unclipped")
+    args = parser.parse_args()
+
+    image = Image.open(args.image).convert("RGB")
+    cache = f"{args.out_dir.rstrip('/')}/.{args.index}-light-prediction.npz"
+    timings = {}
+    if args.postprocess_only:
+        prediction = dict(np.load(cache))
+    else:
+        started = time.time()
+        pipe = load_model()
+        timings["model_load"] = round(time.time() - started, 1)
+        started = time.time()
+        prediction = predict(pipe, image, args.steps, args.ensemble, args.resolution, args.seed)
+        timings["inference"] = round(time.time() - started, 1)
+        np.savez_compressed(cache, **prediction)  # raw model output, so thresholds can be refit without inference
+    started = time.time()
+    settings = {"steps": args.steps, "ensemble": args.ensemble, "processing_resolution": args.resolution, "seed": args.seed,
+                "dominance": args.dominance, "min_luminance": args.min_luminance, "source_clipped": args.source_clipped,
+                "clipped_candidates": args.clipped_candidates, "source_relative_luminance": args.source_relative_luminance}
+    summary = write_estimate(args.image, image, prediction, args.out_dir, args.index, settings, timings)
+    timings["postprocess"] = round(time.time() - started, 1)
+    with open(f"{args.out_dir.rstrip('/')}/{args.index}-light.json", "w") as f:
+        json.dump({**summary, "timings_seconds": timings}, f, indent=2)
+    print(json.dumps({k: summary[k] for k in ("reconstruction_r2", "scales", "light_color", "nondiffuse_fraction")}
+                     | {"emitters": len(summary["emitters"]), "timings_seconds": timings}))
 
 
 if __name__ == "__main__":

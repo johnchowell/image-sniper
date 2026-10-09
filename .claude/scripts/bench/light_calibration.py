@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fits the light-source rule of estimate_light.py on the training renders, then scores it on the test renders.
+"""Fits the light-source rule of estimate_light.py on the training renders, then scores it on the val renders (test is read once, by the 3D metric).
 
 Uses each bench world's cached model prediction (no inference). Score: pooled pixel precision / recall / F1 of
 light-source pixels against the true emissive windows over all views of a split (views without windows count
@@ -26,7 +26,7 @@ PREVIOUS = {"dominance": 0.6, "min_luminance": 0.5, "source_clipped": 0.5, "clip
 
 def load(split):
     views = []
-    for d in sorted(glob.glob(os.path.join(REPO, "benchmark", "renders", split, "room-*", "view-*"))):
+    for d in sorted(os.path.dirname(p) for p in glob.glob(os.path.join(REPO, "benchmark", "renders", split, "room-*", "view-*", "gt.json"))):
         room, view = d.split("/")[-2:]
         light = os.path.join(REPO, "worlds", f"bench-{split}-{room}-{view}", "output", "light")
         meta = json.load(open(os.path.join(light, "0-light.json")))
@@ -38,7 +38,8 @@ def load(split):
         residual = cache["residual"].astype(np.float64) * meta["scales"]["residual"]
         residual_luma = residual @ LUMA
         dominance = residual_luma / np.maximum((albedo * shading) @ LUMA + residual_luma, 1e-9)
-        windows = (np.load(os.path.join(d, "gt.npz"))["emission"] @ LUMA) > 1e-4
+        arrays = np.load(os.path.join(d, "gt.npz"))
+        windows = arrays["window"] if "window" in arrays else (arrays["emission"] @ LUMA) > 1e-4
         views.append({"photo": photo, "luma": photo @ LUMA, "unclipped": (srgb < 0.98).all(-1), "dominance": dominance, "windows": windows})
     return views
 
@@ -60,7 +61,7 @@ def score(views, params):
 def main():
     parser = argparse.ArgumentParser()
     parser.parse_args()
-    train, test = load("train"), load("test")
+    train, test = load("train"), load("val")
     results = []
     for values in itertools.product(*GRID.values()):
         params = dict(zip(GRID, values))
@@ -68,8 +69,8 @@ def main():
     results.sort(key=lambda r: -r["f1"])
     best = {k: results[0][k] for k in GRID}
     report = {
-        "previous": {"params": PREVIOUS, "train": score(train, PREVIOUS), "test": score(test, PREVIOUS)},
-        "best_on_train": {"params": best, "train": score(train, best), "test": score(test, best)},
+        "previous": {"params": PREVIOUS, "train": score(train, PREVIOUS), "val": score(test, PREVIOUS)},
+        "best_on_train": {"params": best, "train": score(train, best), "val": score(test, best)},
         "top_train": results[:10],
     }
     json.dump(report, open(os.path.join(REPO, "benchmark", "results", "light-calibration.json"), "w"), indent=2)

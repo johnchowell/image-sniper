@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Chooses the light-source rule by the task metric: true windows located within 1 m in 3D after the layout.
+"""Chooses the light-source rule by the task metric: true windows located in 3D after the layout (rectangle IoU
+on the true window plane >= 0.3, scale-aligned), on the train split; check val, then test once.
 
 For each candidate rule: re-derive every view's light estimate from its cached prediction (no inference), rebuild
 its layout (same index), and score with evaluate.py. Candidates are compared on the split given (use train to
@@ -18,9 +19,11 @@ sys.path.insert(0, HERE)
 import evaluate  # noqa: E402
 
 CANDIDATES = {
-    "previous": {"dominance": 0.6, "min_luminance": 0.5, "source_clipped": 0.5, "clipped_candidates": 0},
-    "pixel-f1": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 0},
-    "chosen": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1},
+    "v1-default": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 0},
+    "v1-residual-only": {"dominance": 0.6, "min_luminance": 0.5, "source_clipped": 0.5, "clipped_candidates": 0, "source_relative_luminance": 0},
+    "relative-8": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 8},
+    "relative-5": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 5},
+    "relative-3": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 3},
 }
 
 
@@ -32,8 +35,9 @@ def apply(split, params, python):
         subprocess.run([python, ".claude/scripts/light/estimate_light.py", "--image", meta["source_image"], "--out-dir", light,
                         "--index", "0", "--postprocess-only", "--dominance", str(params["dominance"]),
                         "--min-luminance", str(params["min_luminance"]), "--source-clipped", str(params["source_clipped"]),
-                        "--clipped-candidates", str(params["clipped_candidates"])], cwd=REPO, check=True, capture_output=True)
-        subprocess.run(["node", ".claude/scripts/layout/build-layout.mjs", "--world", world], cwd=REPO, check=True, capture_output=True)
+                        "--clipped-candidates", str(params["clipped_candidates"]),
+                        "--source-relative-luminance", str(params["source_relative_luminance"])], cwd=REPO, check=True, capture_output=True)
+        subprocess.run(["node", ".claude/scripts/layout/build-layout.mjs", "--world", world, "--index", "0"], cwd=REPO, check=True, capture_output=True)
 
 
 def main():

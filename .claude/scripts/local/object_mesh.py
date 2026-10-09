@@ -107,7 +107,6 @@ def main():
         for other_obj, other in object_instances(layout):
             if other_obj["object_id"] != obj["object_id"]:
                 continue
-            factor = other["size"][1] / max(extent[1], 1e-9)
             center = np.array(other["center"], dtype=np.float64)
             toward = camera - center
             toward[1] = 0
@@ -116,6 +115,16 @@ def main():
             box_yaw = math.radians(other["yaw_deg"])
             local_x = np.array([math.cos(box_yaw), 0, -math.sin(box_yaw)])
             local_z = np.array([math.sin(box_yaw), 0, math.cos(box_yaw)])
+            # Scale from the measured height (snapped to the support), unless the frame cuts the object top or
+            # bottom: then from the width seen by the camera, unless that is cut too.
+            edges = set(other.get("truncated_edges", []))
+            side = np.array([toward[2], 0, -toward[0]])
+            seen_width = abs(local_x @ side) * other["size"][0] + abs(local_z @ side) * other["size"][2]
+            if edges & {"top", "bottom"} and not edges & {"left", "right"}:
+                factor, scale_basis = seen_width / max(extent[0], 1e-9), "visible_width (top or bottom cut by the frame)"
+            else:
+                factor = other["size"][1] / max(extent[1], 1e-9)
+                scale_basis = "height" if not edges else "height (cut by the frame on both axes: lower bound)"
             box_reach = abs(local_x @ toward) * other["size"][0] / 2 + abs(local_z @ toward) * other["size"][2] / 2
             position = center + toward * (box_reach - factor * extent[2] / 2)
             position[1] = other["bottom_y_m"]
@@ -126,6 +135,7 @@ def main():
                 "yaw_deg": round(math.degrees(yaw), 2),
                 "rotation_quaternion": [0, round(math.sin(yaw / 2), 6), 0, round(math.cos(yaw / 2), 6)],
                 "scale": round(float(factor), 5),
+                "scale_basis": scale_basis,
             })
 
         object_dir = world_path(args.world, "output", obj["object_id"])

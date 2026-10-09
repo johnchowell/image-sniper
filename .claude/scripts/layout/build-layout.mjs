@@ -40,8 +40,59 @@ export const DEFAULT_PARAMS = {
   support_snap_min_m: 0.08,
   support_snap_fraction: 0.1,
   flat_mask_min_extent_m: 1.5,
-  flat_mask_max_height_ratio: 0.1
+  flat_mask_max_height_ratio: 0.1,
+  light_plane_tol_m: 0.06,
+  light_min_support: 0.2,
+  light_merge_gap_m: 0.25,
+  light_extent_margin_m: 0.3,
+  // Metric scale anchors (off unless enabled): real-world sizes combined with the depth model's own scale.
+  scale_anchors: 0,
+  scale_depth_model_sigma: 0.15,
+  scale_camera_height_m: 1.45,
+  scale_camera_sigma: 0.12,
+  scale_ceiling_height_m: 2.6,
+  scale_ceiling_sigma: 0.08,
+  scale_use_objects: 1
 };
+
+// Typical heights of objects that carry scale (median m, log-normal sigma); first match wins.
+const HEIGHT_PRIORS = [
+  { pattern: /\bdoor(way)?\b/, height_m: 2.1, sigma: 0.03, basis: "door with casing, 2.03-2.15 m" },
+  { pattern: /\b(coffee|low) table\b/, height_m: 0.45, sigma: 0.15, basis: "coffee table 0.38-0.5 m" },
+  { pattern: /\b(nightstand|bedside table)\b/, height_m: 0.6, sigma: 0.15, basis: "nightstand 0.5-0.7 m" },
+  { pattern: /^(?!.*\b(side|coffee|low|round)\b).*\b(dining table|kitchen table|table|desk)\b/, height_m: 0.75, sigma: 0.08, basis: "table or desk 0.72-0.78 m" }
+];
+
+/** Log-scale evidence (true / measured) from anchors, combined by inverse variance with the depth model's scale. */
+export function scaleFromAnchors(layout, params) {
+  const evidence = [{ source: "depth model", log_scale: 0, sigma: params.scale_depth_model_sigma }];
+  if (layout.camera.height_m > 0.3) {
+    evidence.push({ source: "camera height prior", measured_m: layout.camera.height_m, log_scale: Math.log(params.scale_camera_height_m / layout.camera.height_m), sigma: params.scale_camera_sigma });
+  }
+  const ceiling = layout.structure.find((plane) => plane.class === "ceiling");
+  if (ceiling && ceiling.center[1] > 1.5) {
+    evidence.push({ source: "ceiling height prior", measured_m: ceiling.center[1], log_scale: Math.log(params.scale_ceiling_height_m / ceiling.center[1]), sigma: params.scale_ceiling_sigma });
+  }
+  if (params.scale_use_objects) {
+    for (const object of layout.objects) {
+      const prior = HEIGHT_PRIORS.find((p) => p.pattern.test(object.name.toLowerCase()));
+      if (!prior) continue;
+      for (const instance of object.instances) {
+        // Only a whole object standing on the floor gives its full height.
+        if (instance.truncated || instance.size_basis.y !== "observed_to_support" || instance.support !== "floor") continue;
+        evidence.push({ source: `${instance.id} height prior (${prior.basis})`, measured_m: instance.size[1], log_scale: Math.log(prior.height_m / instance.size[1]), sigma: prior.sigma });
+      }
+    }
+  }
+  const weight = evidence.reduce((sum, e) => sum + 1 / e.sigma ** 2, 0);
+  const logScale = evidence.reduce((sum, e) => sum + e.log_scale / e.sigma ** 2, 0) / weight;
+  return {
+    applied: round(Math.exp(logScale), 4),
+    sigma_log: round(1 / Math.sqrt(weight), 4),
+    method: "inverse-variance mean of log(true / measured) over the anchors; the depth model counts as one anchor at 0",
+    evidence: evidence.map((e) => ({ ...e, log_scale: round(e.log_scale, 4), measured_m: e.measured_m === undefined ? undefined : round(e.measured_m) }))
+  };
+}
 const CLASS_COLORS = {
   floor: [80, 50, 50],
   wall: [120, 120, 120],
@@ -299,6 +350,22 @@ function drawLine(image, gw, gh, a, b, color) {
 
 export async function buildLayout({ world, index, params: overrides = {} }) {
   const params = { ...DEFAULT_PARAMS, ...overrides };
+  let result = await buildLayoutOnce({ world, index, params, depthScale: 1 });
+  const layout = await readJson(result.layout_json);
+  let estimate = { applied: 1, method: "scale anchors off: the depth model's metric scale as predicted" };
+  if (params.scale_anchors) {
+    estimate = scaleFromAnchors(layout, params);
+    // Points are in the camera frame, so scaling them about the camera rescales the whole layout exactly.
+    if (Math.abs(Math.log(estimate.applied)) > 0.005) result = await buildLayoutOnce({ world, index, params, depthScale: estimate.applied });
+    else estimate.applied = 1;
+  }
+  const final = await readJson(result.layout_json);
+  final.scale = estimate;
+  await writeJson(result.layout_json, final);
+  return { ...result, scale: estimate.applied };
+}
+
+async function buildLayoutOnce({ world, index, params, depthScale }) {
   const HORIZONTAL_DEG = params.horizontal_deg;
   const UP_SEARCH_DEG = params.up_search_deg;
   const dir = layoutDir(world);
@@ -327,6 +394,7 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
   const K = depthResult.intrinsics;
   const intrinsics = { fx: K[0][0] * width, fy: K[1][1] * height, cx: K[0][2] * width, cy: K[1][2] * height };
   const ply = parsePly(await readFile(files.points));
+  if (depthScale !== 1) for (let i = 0; i < ply.positions.length; i += 1) ply.positions[i] *= depthScale;
   const frameCheck = selectPointFrame(ply, intrinsics, validPng.mask, width, height);
   const grid = buildGrid(ply, frameCheck.signs, intrinsics, width, height);
   const { gw, gh, step, points, valid } = grid;
@@ -706,6 +774,13 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
         corners.push(add(center, add(add(scale(localX, (sx * size[0]) / 2), [0, (sy * size[1]) / 2, 0]), scale(localZ, (sz * size[2]) / 2))));
       }
     }
+    // A mask touching an image edge is cut by the frame: the box along that direction is only what is visible.
+    const [bx0, by0, bx1, by1] = draft.image_bbox_px;
+    const margin = Math.max(2, step);
+    const truncatedEdges = [["left", bx0 <= margin], ["right", bx1 >= width - margin], ["top", by0 <= margin], ["bottom", by1 >= height - margin]]
+      .filter(([, cut]) => cut).map(([edge]) => edge);
+    const lateralCut = truncatedEdges.includes("left") || truncatedEdges.includes("right");
+    const verticalCut = truncatedEdges.includes("top") || truncatedEdges.includes("bottom");
     return {
       id: draft.id,
       type: "box",
@@ -716,10 +791,12 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
       yaw_deg: round(degrees(rect.yaw), 1),
       rotation_quaternion: roundVec([0, Math.sin(rect.yaw / 2), 0, Math.cos(rect.yaw / 2)], 5),
       size_basis: {
-        x: depthAxis === "x" ? "visible_lower_bound" : "observed",
-        y: support === "none_detected" ? "observed" : "observed_to_support",
-        z: depthAxis === "z" ? "visible_lower_bound" : "observed"
+        x: depthAxis === "x" || lateralCut ? "visible_lower_bound" : "observed",
+        y: verticalCut ? "visible_lower_bound" : support === "none_detected" ? "observed" : "observed_to_support",
+        z: depthAxis === "z" || lateralCut ? "visible_lower_bound" : "observed"
       },
+      truncated: truncatedEdges.length > 0,
+      truncated_edges: truncatedEdges,
       bottom_y_m: round(bottom),
       support,
       support_basis: draft.support_basis || (support === "none_detected" ? null : "height"),
@@ -738,7 +815,7 @@ export async function buildLayout({ world, index, params: overrides = {} }) {
   const planeNormalOf = new Map();
   rawPlanes.forEach((plane, k) => { for (const cell of plane.inliers) planeNormalOf.set(cell, structure[k].normal); });
   const lightResult = lightEstimate
-    ? analyzeLighting({ light: lightEstimate, grid, normals, hasNormal, planeNormalOf, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics })
+    ? analyzeLighting({ light: lightEstimate, grid, normals, hasNormal, planeNormalOf, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics, params })
     : undefined;
   const lighting = lightResult?.lighting || { status: "no_light_estimate", hint: "Run image-blast-light before the layout for lighting." };
   const emitterPrimitives = lightResult?.emitters || [];

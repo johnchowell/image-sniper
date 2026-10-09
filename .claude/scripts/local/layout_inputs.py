@@ -93,35 +93,20 @@ def box_iou(a, b):
     return inter / max(area(a) + area(b) - inter, 1e-9)
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--world", required=True)
-    parser.add_argument("--image")
-    parser.add_argument("--box-threshold", type=float, default=0.25)
-    parser.add_argument("--extra-per-object", type=int, default=1, help="boxes kept beyond count_estimate")
-    args = parser.parse_args()
-
-    source = args.image or original_source(args.world)
-    image = Image.open(source).convert("RGB")
-    rgb = np.asarray(image)
-    H, W = rgb.shape[:2]
-    out_rel = world_path(args.world, "output", "layout")
-    index = next_index(out_rel)
-    torch.set_num_threads(os.cpu_count())
-    timings = {}
-
-    # Depth: same checkpoint and defaults as the fal request.
+def load_depth_model():
     from moge.model.v2 import MoGeModel
 
-    started = time.time()
-    moge = MoGeModel.from_pretrained("Ruicheng/moge-2-vitl-normal").eval()
+    return MoGeModel.from_pretrained("Ruicheng/moge-2-vitl-normal").eval()
+
+
+def depth_step(moge, rgb, out_rel, index, source):
+    """MoGe-2 depth with the same checkpoint and defaults as the fal request; writes the point cloud, mask,
+    preview and request metadata of this index."""
     with torch.no_grad():
         result = moge.infer(torch.tensor(rgb / 255.0, dtype=torch.float32).permute(2, 0, 1), resolution_level=9, apply_mask=True, use_fp16=False)
-    del moge
     points = result["points"].numpy()
     mask = result["mask"].numpy().astype(bool) & np.isfinite(points).all(-1)
     K = result["intrinsics"].numpy().tolist()
-    timings["depth"] = round(time.time() - started, 1)
 
     pts = points[mask] * np.array([1, -1, -1], dtype=np.float32)  # MoGe export convention (OpenGL axes)
     cols = rgb[mask]
@@ -146,18 +131,23 @@ def main():
         "result": {"intrinsics": K, "fov_x": float(np.degrees(2 * np.arctan(0.5 / K[0][0])))},
     })
 
-    # Masks: text -> boxes (Grounding DINO) -> masks (SAM 2.1).
+
+def load_mask_models():
     from sam2.sam2_image_predictor import SAM2ImagePredictor
     from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
 
-    started = time.time()
     processor = AutoProcessor.from_pretrained(DETECTOR)
     detector = AutoModelForZeroShotObjectDetection.from_pretrained(DETECTOR).eval()
     predictor = SAM2ImagePredictor.from_pretrained(SEGMENTER, device="cpu")
+    return processor, detector, predictor
+
+
+def mask_step(models, image, rgb, objects, out_rel, index, source, threshold, extra):
+    """Text -> boxes (Grounding DINO, all names compete) -> masks (SAM 2.1); one request file per object."""
+    processor, detector, predictor = models
     predictor.set_image(rgb)
     found = {}
-    objects = confirmed_objects(args.world)
-    prompt, detections = detect_jointly(processor, detector, image, objects, args.box_threshold, args.extra_per_object) if objects else ("", {})
+    prompt, detections = detect_jointly(processor, detector, image, objects, threshold, extra) if objects else ("", {})
     for obj in objects:
         downloaded, kept_scores, kept_boxes = [], [], []
         for k, (box, box_score) in enumerate(detections[obj["id"]], start=1):
@@ -172,11 +162,39 @@ def main():
             "kind": "layout-mask", "provider": f"local/{DETECTOR.split('/')[-1]}+{SEGMENTER.split('/')[-1]}",
             "endpoint": "local/grounded-sam2", "index": index, "status": "completed",
             "object_id": obj["id"], "object_name": obj["name"], "prompt": prompt, "detection": "joint (all names compete)",
-            "mask_threshold": args.box_threshold,
+            "mask_threshold": threshold,
             "input_files": [source], "output_files": [d["path"] for d in downloaded], "downloaded_files": downloaded,
             "result": {"scores": kept_scores, "boxes_px": kept_boxes},
         })
         found[obj["id"]] = len(downloaded)
+    return found
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--world", required=True)
+    parser.add_argument("--image")
+    parser.add_argument("--box-threshold", type=float, default=0.25)
+    parser.add_argument("--extra-per-object", type=int, default=1, help="boxes kept beyond count_estimate")
+    args = parser.parse_args()
+
+    source = args.image or original_source(args.world)
+    image = Image.open(source).convert("RGB")
+    rgb = np.asarray(image)
+    out_rel = world_path(args.world, "output", "layout")
+    index = next_index(out_rel)
+    torch.set_num_threads(os.cpu_count())
+    timings = {}
+
+    started = time.time()
+    moge = load_depth_model()
+    depth_step(moge, rgb, out_rel, index, source)
+    del moge
+    timings["depth"] = round(time.time() - started, 1)
+
+    started = time.time()
+    found = mask_step(load_mask_models(), image, rgb, confirmed_objects(args.world), out_rel, index, source,
+                      args.box_threshold, args.extra_per_object)
     timings["masks"] = round(time.time() - started, 1)
     print(json.dumps({"index": index, "source_image": source, "instances": found, "seconds": timings}))
 
