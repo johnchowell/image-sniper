@@ -1,0 +1,58 @@
+{
+  "train_views": 60,
+  "val_views": 20,
+  "ridge_lambda": 0.01,
+  "coefficients": {
+    "log_cam_evidence": 0.2438,
+    "ceiling_present": -0.0541,
+    "ceiling_log_evidence": 0.4653,
+    "objects_present": 0.0352,
+    "objects_log_evidence": -0.0403,
+    "fov_rel": 0.0853,
+    "bias": 0.0863
+  },
+  "val_median_abs_log_error": {
+    "depth model": 0.1138,
+    "anchors": 0.0884,
+    "regressor": 0.041
+  },
+  "val_ci95": {
+    "depth model": [
+      0.0837,
+      0.1647
+    ],
+    "anchors": [
+      0.0651,
+      0.1129
+    ],
+    "regressor": [
+      0.0251,
+      0.0817
+    ]
+  },
+  "val_difference_ci95": {
+    "anchors - depth model": [
+      -0.0776,
+      0.0093
+    ],
+    "regressor - depth model": [
+      -0.1309,
+      -0.0196
+    ],
+    "regressor - anchors": [
+      -0.0714,
+      -0.0041
+    ]
+  },
+  "train_raw_log_bias": 0.1092,
+  "bias_check": {
+    "val_median_abs_log_error": {
+      "constant_train_bias_only": 0.0698,
+      "regressor_without_intercept": 0.0523,
+      "regressor": 0.041,
+      "anchors": 0.0884,
+      "depth_model": 0.1138
+    },
+    "decision": "not shipped: subtracting the train bias as a constant already beats the anchors on val, so most of the regressor's lead is the renders' own depth bias (MoGe reads these rooms about 9% small; on the real home-office photo MoGe and Depth Anything V2 agree within 1.5%). The anchors use real-world sizes and stay the default."
+  }
+}
