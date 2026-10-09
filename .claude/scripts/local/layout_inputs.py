@@ -19,6 +19,9 @@ from common import next_index, world_path, write_request
 RESERVED = {"world", "sfx", "light", "layout", "scene"}
 DETECTOR = "IDEA-Research/grounding-dino-base"
 SEGMENTER = "facebook/sam2.1-hiera-large"
+# Chosen on the benchmark training renders by box F1 (bench/detection_study.py, benchmark/results/detection-train.json).
+BOX_THRESHOLD = 0.25
+EXTRA_PER_OBJECT = 0
 
 
 def confirmed_objects(world):
@@ -201,8 +204,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--world", required=True)
     parser.add_argument("--image")
-    parser.add_argument("--box-threshold", type=float, default=0.25)
-    parser.add_argument("--extra-per-object", type=int, default=1, help="boxes kept beyond count_estimate")
+    parser.add_argument("--box-threshold", type=float, default=BOX_THRESHOLD)
+    parser.add_argument("--extra-per-object", type=int, default=EXTRA_PER_OBJECT, help="boxes kept beyond count_estimate")
     args = parser.parse_args()
 
     source = args.image or original_source(args.world)

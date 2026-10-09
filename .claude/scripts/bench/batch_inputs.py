@@ -119,7 +119,8 @@ def mask_stage(worlds, timings):
         source = f"worlds/{world}/source/0-render.png"
         image = Image.open(os.path.join(REPO, source)).convert("RGB")
         started = time.time()
-        layout_inputs.mask_step(models, image, np.asarray(image), objects, f"worlds/{world}/output/layout", 0, source, 0.25, 1)
+        layout_inputs.mask_step(models, image, np.asarray(image), objects, f"worlds/{world}/output/layout", 0, source,
+                                 layout_inputs.BOX_THRESHOLD, layout_inputs.EXTRA_PER_OBJECT)
         timings.setdefault("mask_inference", []).append(round(time.time() - started, 1))
         log(f"masks {world} {timings['mask_inference'][-1]}s ({len(objects)} names)")
 
