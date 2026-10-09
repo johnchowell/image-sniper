@@ -460,6 +460,28 @@
       "page": "https://polyhaven.com/a/embedded_plank_flooring"
     },
     {
+      "slug": "herringbone_parquet",
+      "role": "floor",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/herringbone_parquet/herringbone_parquet_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/herringbone_parquet/herringbone_parquet_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/herringbone_parquet/herringbone_parquet_nor_gl.jpg"
+      },
+      "tile_m": 3.4000000953674316,
+      "page": "https://polyhaven.com/a/herringbone_parquet"
+    },
+    {
+      "slug": "laminate_floor",
+      "role": "floor",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/laminate_floor/laminate_floor_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/laminate_floor/laminate_floor_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/laminate_floor/laminate_floor_nor_gl.jpg"
+      },
+      "tile_m": 2.0,
+      "page": "https://polyhaven.com/a/laminate_floor"
+    },
+    {
       "slug": "beige_wall_001",
       "role": "wall",
       "maps": {
@@ -491,6 +513,165 @@
       },
       "tile_m": 2.0,
       "page": "https://polyhaven.com/a/blue_plaster_wall"
+    },
+    {
+      "slug": "blue_plaster_weathered",
+      "role": "wall",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/blue_plaster_weathered/blue_plaster_weathered_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/blue_plaster_weathered/blue_plaster_weathered_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/blue_plaster_weathered/blue_plaster_weathered_nor_gl.jpg"
+      },
+      "tile_m": 2.0,
+      "page": "https://polyhaven.com/a/blue_plaster_weathered"
+    },
+    {
+      "slug": "brick_wall_04",
+      "role": "wall",
+      "maps": {
+        "Diffuse": "benchmark/assets/textures/brick_wall_04/brick_wall_04_Diffuse.jpg",
+        "Rough": "benchmark/assets/textures/brick_wall_04/brick_wall_04_Rough.jpg",
+        "nor_gl": "benchmark/assets/textures/brick_wall_04/brick_wall_04_nor_gl.jpg"
+      },
+      "tile_m": 1.3899999856948853,
+      "page": "https://polyhaven.com/a/brick_wall_04"
+    }
+  ],
+  "hdris": [
+    {
+      "slug": "abandoned_hopper_terminal_03",
+      "categories": [
+        "outdoor",
+        "nature",
+        "morning-afternoon",
+        "partly cloudy",
+        "medium contrast",
+        "natural light"
+      ],
+      "path": "benchmark/assets/hdris/abandoned_hopper_terminal_03_1k.hdr",
+      "page": "https://polyhaven.com/a/abandoned_hopper_terminal_03"
+    },
+    {
+      "slug": "drakensberg_solitary_mountain_puresky",
+      "categories": [
+        "natural light",
+        "outdoor",
+        "nature",
+        "skies",
+        "clear",
+        "morning-afternoon",
+        "high contrast",
+        "pure skies"
+      ],
+      "path": "benchmark/assets/hdris/drakensberg_solitary_mountain_puresky_1k.hdr",
+      "page": "https://polyhaven.com/a/drakensberg_solitary_mountain_puresky"
+    },
+    {
+      "slug": "dry_orchard_meadow",
+      "categories": [
+        "outdoor",
+        "natural light",
+        "nature",
+        "partly cloudy",
+        "high contrast",
+        "morning-afternoon"
+      ],
+      "path": "benchmark/assets/hdris/dry_orchard_meadow_1k.hdr",
+      "page": "https://polyhaven.com/a/dry_orchard_meadow"
+    },
+    {
+      "slug": "under_bridge",
+      "categories": [
+        "outdoor",
+        "urban",
+        "sunrise-sunset",
+        "partly cloudy",
+        "high contrast",
+        "natural light"
+      ],
+      "path": "benchmark/assets/hdris/under_bridge_1k.hdr",
+      "page": "https://polyhaven.com/a/under_bridge"
+    },
+    {
+      "slug": "dry_field",
+      "categories": [
+        "outdoor",
+        "skies",
+        "nature",
+        "partly cloudy",
+        "morning-afternoon",
+        "high contrast",
+        "natural light"
+      ],
+      "path": "benchmark/assets/hdris/dry_field_1k.hdr",
+      "page": "https://polyhaven.com/a/dry_field"
+    },
+    {
+      "slug": "qwantani_dawn",
+      "categories": [
+        "outdoor",
+        "natural light",
+        "nature",
+        "skies",
+        "clear",
+        "low contrast",
+        "sunrise-sunset"
+      ],
+      "path": "benchmark/assets/hdris/qwantani_dawn_1k.hdr",
+      "page": "https://polyhaven.com/a/qwantani_dawn"
+    },
+    {
+      "slug": "skidpan",
+      "categories": [
+        "natural light",
+        "outdoor",
+        "partly cloudy",
+        "low contrast",
+        "morning-afternoon",
+        "urban",
+        "skies"
+      ],
+      "path": "benchmark/assets/hdris/skidpan_1k.hdr",
+      "page": "https://polyhaven.com/a/skidpan"
+    },
+    {
+      "slug": "zwartkops_straight_sunset",
+      "categories": [
+        "outdoor",
+        "urban",
+        "skies",
+        "natural light",
+        "clear",
+        "sunrise-sunset",
+        "low contrast"
+      ],
+      "path": "benchmark/assets/hdris/zwartkops_straight_sunset_1k.hdr",
+      "page": "https://polyhaven.com/a/zwartkops_straight_sunset"
+    },
+    {
+      "slug": "river_alcove",
+      "categories": [
+        "outdoor",
+        "natural light",
+        "nature",
+        "clear",
+        "high contrast",
+        "midday"
+      ],
+      "path": "benchmark/assets/hdris/river_alcove_1k.hdr",
+      "page": "https://polyhaven.com/a/river_alcove"
+    },
+    {
+      "slug": "river_walk_1",
+      "categories": [
+        "outdoor",
+        "nature",
+        "sunrise-sunset",
+        "medium contrast",
+        "natural light"
+      ],
+      "path": "benchmark/assets/hdris/river_walk_1_1k.hdr",
+      "page": "https://polyhaven.com/a/river_walk_1"
     }
   ]
 }
