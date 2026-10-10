@@ -77,5 +77,18 @@
       "seconds": 79.8
     }
   ],
-  "weights": "benchmark/models/da2-metric-indoor-small-bench"
+  "weights": "benchmark/models/da2-metric-indoor-small-bench",
+  "score_test": {
+    "split": "test",
+    "zero_shot": {
+      "absrel_mean": 0.2239,
+      "abs_log_scale_median": 0.1885,
+      "log_scale_bias": -0.0764
+    },
+    "fine_tuned": {
+      "absrel_mean": 0.13,
+      "abs_log_scale_median": 0.0848,
+      "log_scale_bias": 0.0589
+    }
+  }
 }

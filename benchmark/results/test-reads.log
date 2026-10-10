@@ -1,0 +1,3 @@
+{"time": "2026-10-10T01:30:22+00:00", "name": "current", "commit": "9aa072e", "objects_recall": 0.7412, "window_located": 0.7368}
+{"time": "2026-10-10T01:30:26+00:00", "name": "noisy", "commit": "9aa072e", "objects_recall": 0.5059, "window_located": 0.6842}
+{"time": "2026-10-10T01:31:11+00:00", "name": "depth-finetune", "commit": "9aa072e", "zero_shot_absrel": 0.2239, "fine_tuned_absrel": 0.13}
