@@ -66,7 +66,7 @@
       "window_normal_err_deg_median": 0.8818,
       "window_width_rel_err_aligned_median": 0.1319,
       "window_center_err_aligned_m_median": 0.32,
-      "light_sources_per_view": 1.9333
+      "light_sources_per_view": 1.8333
     }
   },
   "ci95": {
@@ -270,8 +270,8 @@
         0.4081
       ],
       "light_sources_per_view": [
-        1.5333,
-        2.3167
+        1.4663,
+        2.2
       ]
     }
   },
@@ -439,7 +439,7 @@
           }
         ],
         "dominant_confidence": "medium",
-        "light_sources": 4,
+        "light_sources": 3,
         "tone": "clip"
       }
     },
@@ -2146,7 +2146,7 @@
           }
         ],
         "dominant_confidence": "medium",
-        "light_sources": 2,
+        "light_sources": 1,
         "tone": "rolloff"
       }
     },
@@ -3166,7 +3166,7 @@
           }
         ],
         "dominant_confidence": "medium",
-        "light_sources": 5,
+        "light_sources": 3,
         "tone": "clip"
       }
     },
@@ -4633,7 +4633,7 @@
           }
         ],
         "dominant_confidence": "low",
-        "light_sources": 6,
+        "light_sources": 5,
         "tone": "rolloff"
       }
     },
@@ -8577,7 +8577,7 @@
           }
         ],
         "dominant_confidence": "low",
-        "light_sources": 4,
+        "light_sources": 3,
         "tone": "clip"
       }
     },

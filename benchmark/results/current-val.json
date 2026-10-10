@@ -66,7 +66,7 @@
       "window_normal_err_deg_median": 1.1394,
       "window_width_rel_err_aligned_median": 0.1491,
       "window_center_err_aligned_m_median": 0.1648,
-      "light_sources_per_view": 2.9
+      "light_sources_per_view": 2.8
     },
     "plate": {
       "psnr_furniture_px_mean": 17.7786,
@@ -280,8 +280,8 @@
         0.416
       ],
       "light_sources_per_view": [
-        2.0,
-        3.9512
+        1.95,
+        3.8512
       ]
     },
     "plate": {
@@ -1522,7 +1522,7 @@
           }
         ],
         "dominant_confidence": "medium",
-        "light_sources": 5,
+        "light_sources": 4,
         "tone": "rolloff"
       },
       "plate": {
@@ -3293,7 +3293,7 @@
           }
         ],
         "dominant_confidence": "low",
-        "light_sources": 3,
+        "light_sources": 2,
         "tone": "clip"
       },
       "plate": {
