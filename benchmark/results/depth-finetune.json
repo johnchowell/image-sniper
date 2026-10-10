@@ -1,0 +1,81 @@
+{
+  "model": "depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf",
+  "trained": "DPT neck and head; backbone frozen",
+  "loss": "mean |log pred - log true|",
+  "epochs": 6,
+  "lr": 0.0001,
+  "train_views": 60,
+  "val_views": 20,
+  "best_epoch": 5,
+  "history": [
+    {
+      "epoch": 0,
+      "val": {
+        "absrel_mean": 0.2297,
+        "abs_log_scale_median": 0.1852,
+        "log_scale_bias": -0.0516
+      }
+    },
+    {
+      "epoch": 1,
+      "train_loss": 0.1838,
+      "val": {
+        "absrel_mean": 0.1636,
+        "abs_log_scale_median": 0.1381,
+        "log_scale_bias": -0.0178
+      },
+      "seconds": 79.3
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.098,
+      "val": {
+        "absrel_mean": 0.1544,
+        "abs_log_scale_median": 0.1713,
+        "log_scale_bias": 0.0213
+      },
+      "seconds": 80.6
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.0991,
+      "val": {
+        "absrel_mean": 0.1877,
+        "abs_log_scale_median": 0.1236,
+        "log_scale_bias": -0.122
+      },
+      "seconds": 80.7
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.1153,
+      "val": {
+        "absrel_mean": 0.1528,
+        "abs_log_scale_median": 0.1172,
+        "log_scale_bias": -0.0534
+      },
+      "seconds": 79.0
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.0987,
+      "val": {
+        "absrel_mean": 0.1396,
+        "abs_log_scale_median": 0.1424,
+        "log_scale_bias": 0.068
+      },
+      "seconds": 80.8
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.0933,
+      "val": {
+        "absrel_mean": 0.144,
+        "abs_log_scale_median": 0.1521,
+        "log_scale_bias": 0.0284
+      },
+      "seconds": 79.8
+    }
+  ],
+  "weights": "benchmark/models/da2-metric-indoor-small-bench"
+}
