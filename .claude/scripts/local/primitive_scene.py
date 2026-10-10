@@ -97,6 +97,15 @@ def height_to_normal(height, texel_m):
     return (n * 0.5 + 0.5).astype(np.float32)
 
 
+def read_linear16(light, key, size):
+    """A 16-bit RGB linear map of the light stage, in linear units. PIL cannot read 16-bit RGB (it truncates to 8
+    bits), so OpenCV reads it."""
+    raw = cv2.imread(light["files"][key], cv2.IMREAD_UNCHANGED)
+    assert raw is not None and raw.dtype == np.uint16, f"{light['files'][key]}: expected 16-bit RGB"
+    rgb = cv2.cvtColor(raw, cv2.COLOR_BGR2RGB).astype(np.float32) / 65535 * light["encoding"][key]["value = sample / 65535 *"]
+    return cv2.resize(rgb, size, interpolation=cv2.INTER_LINEAR)
+
+
 def image_of(array, alpha=None):
     rgb = np.clip(array * 255, 0, 255).astype(np.uint8)
     if alpha is not None:
@@ -138,7 +147,7 @@ class Maps:
         W, H = self.view.W, self.view.H
         if not light:
             return image
-        shading = np.asarray(Image.open(light["files"]["shading"]).resize((W, H), Image.BILINEAR)).astype(np.float32) / 65535 * light["encoding"]["shading"]["value = sample / 65535 *"]
+        shading = read_linear16(light, "shading", (W, H))
         shading = cv2.GaussianBlur(shading, (0, 0), 2)
         linear = srgb_to_linear(image)
         albedo = linear / np.maximum(shading, 0.02)
@@ -152,8 +161,7 @@ class Maps:
         W, H = self.view.W, self.view.H
         if not light:
             return np.full((H, W), 0.8, np.float32)
-        decode = lambda key: np.asarray(Image.open(light["files"][key]).resize((W, H), Image.BILINEAR)).astype(np.float32) / 65535 * light["encoding"][key]["value = sample / 65535 *"]
-        shading, residual = decode("shading"), decode("residual")
+        shading, residual = read_linear16(light, "shading", (W, H)), read_linear16(light, "residual", (W, H))
         albedo = srgb_to_linear(np.asarray(Image.open(light["files"]["albedo"]).convert("RGB").resize((W, H))).astype(np.float32) / 255)
         # Gloss against the scene's light level, not as a share of the pixel: on a dark surface a tiny residual is
         # a large share, which made dark matte wood read as glossy.
@@ -184,9 +192,36 @@ def plane_grid(origin, u_axis, v_axis, size_u, size_v, spacing):
     return P, np.array(faces), uv
 
 
+def relief(height, z, args):
+    """Relief that the depth can carry: monocular depth ripples by about depth_noise * z, which a normal map turns
+    into false streaks under grazing light. Height below 3 sigma of that noise is set to 0, larger height keeps its
+    excess (soft threshold, no step at the edge)."""
+    if args.no_relief:
+        return np.zeros(np.shape(height), np.float32)
+    floor = 3 * args.depth_noise * np.nan_to_num(z)
+    height = np.nan_to_num(height)
+    return (np.sign(height) * np.maximum(np.abs(height) - floor, 0)).astype(np.float32)
+
+
+def texel_for(view, origin, u_axis, v_axis, normal, size_u, size_v, valid_px, args):
+    """Texel size that keeps the photo's detail: the footprint of one photo pixel on the plane at the near end (10th
+    percentile) of the seen part. The footprint is z / f across the view direction (only the other direction is
+    stretched by the view angle, and a square texel must resolve both). A fixed size blurs near surfaces."""
+    a, b = np.meshgrid(np.arange(0.025, size_u, 0.05), np.arange(0.025, size_v, 0.05))
+    P = origin + a[..., None] * u_axis + b[..., None] * v_axis
+    u, v, z = view.project(P)
+    inside = (z > 0.05) & (u >= 0) & (u < view.W - 1) & (v >= 0) & (v < view.H - 1)
+    if not inside.any():
+        return args.texel_m
+    ok = valid_px[np.clip(np.round(np.where(inside, v, 0)).astype(int), 0, view.H - 1), np.clip(np.round(np.where(inside, u, 0)).astype(int), 0, view.W - 1)]
+    pick = inside & ok if (inside & ok).any() else inside
+    footprint = z[pick] / view.fx
+    return float(np.clip(np.percentile(footprint, 10), args.texel_min_m, args.texel_m))
+
+
 def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, size_v, valid_px, args, structure=True, fallback=None, cutout=False, emissive=False):
     """A planar primitive with relief and PBR maps. valid_px: pixels whose depth belongs to this surface."""
-    texel = max(args.texel_m, max(size_u, size_v) / args.max_texture)
+    texel = max(texel_for(view, origin, u_axis, v_axis, normal, size_u, size_v, valid_px, args), max(size_u, size_v) / args.max_texture)
     tw, th = max(4, int(round(size_u / texel))), max(4, int(round(size_v / texel)))
     a, b = np.meshgrid((np.arange(tw) + 0.5) / tw * size_u, (np.arange(th)[::-1] + 0.5) / th * size_v)
     P = origin + a[..., None] * u_axis + b[..., None] * v_axis
@@ -201,26 +236,32 @@ def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, s
     rough_src = maps.plate_rough if structure else maps.photo_rough
     emit_src = maps.plate_emit if structure else maps.photo_emit
     color = sample(albedo_src, uu, vv)
+    emit = np.where(seen[..., None] & emissive, sample(emit_src, uu, vv), 0).astype(np.float32)
+    if emissive and seen.any():
+        # Glass behind things in front of it (hanging plants) glows like the glass around it.
+        emit = fill(emit, seen, np.zeros(3, np.float32)).astype(np.float32)
+    lit = emit.max(-1) > 0.02
     if fallback is None:
-        fallback = np.median(color[seen], 0) if seen.any() else np.array([0.6, 0.6, 0.6])
+        wall = seen & ~lit  # the surface's own color: glass texels are not wall
+        fallback = np.median(color[wall], 0) if wall.any() else np.array([0.6, 0.6, 0.6])
     color = fill(np.where(seen[..., None], color, 0), seen, fallback)
     rough = np.where(seen, sample(rough_src, uu, vv), 0.8).astype(np.float32)
-    emit = np.where(seen[..., None] & emissive, sample(emit_src, uu, vv), 0).astype(np.float32)
     # Windows are glass: no diffuse color of their own; the photo's light comes from the emission.
     glow = np.clip(emit.max(-1) * 4, 0, 1)[..., None]
     color = color * (1 - glow) + 0.04 * glow
-    h = np.where(seen, height, 0).astype(np.float32)
-    h = cv2.GaussianBlur(h, (0, 0), 1.0)
+    h = relief(np.where(seen, height, 0), np.where(seen, obs_z, 0), args)
+    h = cv2.GaussianBlur(h, (0, 0), args.relief_sigma_m / texel)
     normal_map = height_to_normal(h, texel)
 
     # Geometry: a coarser grid displaced by the relief where seen.
     G, faces, uv = plane_grid(origin, u_axis, v_axis, size_u, size_v, args.grid_m)
     gu, gv, gz = view.project(G)
     gin = (gz > 0.05) & (gu >= 0) & (gu < view.W - 1) & (gv >= 0) & (gv < view.H - 1)
-    gobs, _ = view.observed(np.where(gin, gu, 0), np.where(gin, gv, 0))
+    gobs, gobs_z = view.observed(np.where(gin, gu, 0), np.where(gin, gv, 0))
     gh = (gobs - G) @ normal
     gok = valid_px[np.clip(np.round(np.where(gin, gv, 0)).astype(int), 0, view.H - 1), np.clip(np.round(np.where(gin, gu, 0)).astype(int), 0, view.W - 1)]
-    gh = np.where(gin & gok & (np.abs(gh) < args.relief_m), gh, 0)
+    keep = gin & gok & (np.abs(gh) < args.relief_m)
+    gh = relief(np.where(keep, gh, 0), np.where(keep, gobs_z, 0), args)
     gh = cv2.GaussianBlur(gh.astype(np.float32), (0, 0), 0.7)
     G = G + gh[..., None] * normal
     mesh = trimesh.Trimesh(vertices=G.reshape(-1, 3), faces=faces, process=False)
@@ -253,10 +294,19 @@ def clip_polygon(poly, point, normal):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--world", required=True)
-    parser.add_argument("--texel-m", type=float, default=0.01)
-    parser.add_argument("--max-texture", type=int, default=1024)
+    parser.add_argument("--texel-m", type=float, default=0.01, help="largest texel (surfaces seen from far or not at all)")
+    parser.add_argument("--texel-min-m", type=float, default=0.002, help="smallest texel")
+    parser.add_argument("--max-texture", type=int, default=4096)
     parser.add_argument("--grid-m", type=float, default=0.04, help="geometry grid spacing for relief")
     parser.add_argument("--relief-m", type=float, default=0.12, help="largest relief accepted from depth")
+    parser.add_argument("--relief-sigma-m", type=float, default=0.01, help="smoothing of the relief before the normal map")
+    parser.add_argument("--no-relief", action="store_true", help="flat primitives: no displacement, flat normal maps")
+    parser.add_argument("--depth-noise", type=float, default=0.01, help="relative noise of the depth (sigma / depth)")
+    parser.add_argument("--voxel-m", type=float, default=0.01, help="smallest voxel of the object carving")
+    parser.add_argument("--voxels", type=int, default=80, help="voxels along an object's longest side (sets the voxel size)")
+    parser.add_argument("--uv-grid-m", type=float, default=0.1, help="largest triangle edge of object meshes (projective UV error stays under a pixel)")
+    parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
+    parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
     args = parser.parse_args()
 
     layout_index, layout_path, layout = load_layout(args.world)
@@ -331,7 +381,7 @@ def main():
         if (view.position - np.array([a[0], 0, a[1]])) @ inward < 0:
             inward = -inward
         fallback = np.median(wall_colors, 0) if (owner[k] is None and wall_colors) else None
-        mesh, info = textured_surface(f"wall-{k}", maps, view, np.array([a[0], 0, a[1]]), u_axis, np.array([0, 1.0, 0]), inward,
+        mesh, info = textured_surface(f"room-wall-{k}", maps, view, np.array([a[0], 0, a[1]]), u_axis, np.array([0, 1.0, 0]), inward,
                                       length, room_h, structure_px, args, fallback=fallback, emissive=owner[k] in lit)
         if owner[k]:
             wall_colors.append(np.asarray(mesh.visual.material.baseColorTexture.convert("RGB")).reshape(-1, 3).mean(0) / 255)
@@ -353,7 +403,7 @@ def main():
         if (view.position - c) @ n < 0:
             n = -n
         origin = c - u_axis * p["size"][0] / 2 - v_axis * p["size"][1] / 2
-        mesh, info = textured_surface(p["id"], maps, view, origin, u_axis, v_axis, n, p["size"][0], p["size"][1], structure_px, args, cutout=True,
+        mesh, info = textured_surface(f"panel-{p['id']}", maps, view, origin, u_axis, v_axis, n, p["size"][0], p["size"][1], structure_px, args, cutout=True,
                                       emissive=p["id"] in lit)
         if info["seen_fraction"] < 0.15:  # mostly covered by a listed object: that object's own primitive shows it
             report["surfaces"].append({"name": p["id"], "class": p["class"], "skipped": "covered by objects", **info})
@@ -371,9 +421,20 @@ def main():
                 under |= other_mask
             elif other is not inst:
                 others |= other_mask
-        mesh = object_primitive(obj, inst, under, maps, view, args, exclude=room_px | (others & ~under))
+        mesh, info = object_primitive(obj, inst, under, maps, view, args, exclude=room_px | (others & ~under))
         scene.add_geometry(mesh, geom_name=inst["id"])
-        report["objects"].append({"id": inst["id"], "primitive": "cylinder" if ROUND.search(obj["name"]) else "box"})
+        report["objects"].append({"id": inst["id"], **info})
+
+    # Clutter: observed surfaces that no plane and no listed object explains (hanging plants, things on desks
+    # and shelves). Each connected part becomes a carved primitive too, so it does not stay painted on the plane
+    # behind it.
+    for k, (mask, inst) in enumerate(clutter_parts(layout, view, object_px, args)):
+        mesh, info = object_primitive({"name": "clutter"}, inst, mask, maps, view, args, exclude=object_px)
+        if info["faces_seen"] < 0.1:  # the view shows almost none of the box: no evidence for a solid there
+            report["objects"].append({"id": inst["id"], "clutter": True, "skipped": "faces mostly unseen", **info})
+            continue
+        scene.add_geometry(mesh, geom_name=inst["id"])
+        report["objects"].append({"id": inst["id"], "clutter": True, "pixels": int(mask.sum()), **info})
 
     scene_dir = world_path(args.world, "output", "scene")
     n = next_index(scene_dir)
@@ -382,14 +443,217 @@ def main():
     write_request(os.path.join(scene_dir, f".{n}-primitive-scene-request.json"), {
         "kind": "primitive-scene", "provider": "local/primitives", "endpoint": "local/primitives", "index": n, "status": "completed",
         "input_files": [layout_path, layout["source_image"], maps.plate_path], "output_files": [out],
-        "input": {k: getattr(args, k) for k in ("texel_m", "max_texture", "grid_m", "relief_m")},
+        "input": {k: getattr(args, k) for k in ("texel_m", "texel_min_m", "max_texture", "grid_m", "relief_m", "relief_sigma_m", "no_relief", "depth_noise", "voxel_m", "voxels", "uv_grid_m", "clutter_min_px", "clutter_depth_m")},
         "maps": {"structure_albedo": maps.plate_light["files"]["albedo"] if maps.plate_light else None,
                  "object_albedo": maps.photo_light["files"]["albedo"] if maps.photo_light else None},
         "result": report})
     print(json.dumps({"scene": out, "surfaces": len(report["surfaces"]), "objects": len(report["objects"]), "bytes": os.path.getsize(out)}))
 
 
+def greedy_rects(M):
+    """Covers the True cells of a 2D array with rectangles (greedy: widest run first, then grown down)."""
+    M = M.copy()
+    rects = []
+    for i, j in zip(*np.nonzero(M)):
+        if not M[i, j]:
+            continue
+        j1 = j
+        while j1 + 1 < M.shape[1] and M[i, j1 + 1]:
+            j1 += 1
+        i1 = i
+        while i1 + 1 < M.shape[0] and M[i1 + 1, j:j1 + 1].all():
+            i1 += 1
+        M[i:i1 + 1, j:j1 + 1] = False
+        rects.append((i, j, i1 + 1, j1 + 1))
+    return rects
+
+
+def voxel_surface(occ, lo, vox, drop_bottom):
+    """Boundary of a voxel occupancy as merged quads (greedy meshing): a union of box primitives without inner
+    faces. Local coordinates; lo is the corner of voxel (0, 0, 0). drop_bottom removes the down faces of the lowest
+    layer (they lie on the support and are never seen)."""
+    V, F = [], []
+    padded = np.pad(occ, 1)
+    for d in range(3):
+        a_ax, b_ax = [k for k in range(3) if k != d]
+        for sgn in (-1, 1):
+            neighbor = np.roll(padded, -sgn, axis=d)[1:-1, 1:-1, 1:-1]
+            face = occ & ~neighbor
+            for c in range(occ.shape[d]):
+                if d == 1 and sgn < 0 and c == 0 and drop_bottom:
+                    continue
+                M = np.take(face, c, axis=d)
+                for i0, j0, i1, j1 in greedy_rects(M):
+                    corners = []
+                    for ia, jb in ((i0, j0), (i1, j0), (i1, j1), (i0, j1)):
+                        q = np.zeros(3)
+                        q[d] = lo[d] + (c + (sgn > 0)) * vox
+                        q[a_ax], q[b_ax] = lo[a_ax] + ia * vox, lo[b_ax] + jb * vox
+                        corners.append(q)
+                    k = len(V)
+                    V += corners
+                    tri = [[k, k + 1, k + 2], [k, k + 2, k + 3]]
+                    n = np.cross(corners[1] - corners[0], corners[2] - corners[0])
+                    if n[d] * sgn < 0:
+                        tri = [t[::-1] for t in tri]
+                    F += tri
+    return np.array(V, float).reshape(-1, 3), np.array(F, int).reshape(-1, 3)
+
+
+def carve(center, size, axes, mask, exclude, view, args):
+    """Occupancy of the object inside its box from one view (space carving with an extrusion prior).
+
+    A voxel is empty when the camera sees past it (observed depth farther than the voxel), or when its pixel shows
+    another surface at its depth (room or another object). Voxels on the object's observed surface are full.
+    Occluded voxels (behind the object or behind something else) are kept where the front silhouette, extruded
+    along the box axis closest to the view direction, says the object is; a silhouette cell is empty when the
+    camera sees through its extrusion line (the gap under a desk between its legs)."""
+    vox = max(args.voxel_m, float(size.max()) / args.voxels)
+    n = np.maximum(1, np.round(size / vox).astype(int))
+    lo = -n * vox / 2
+    grid = np.stack(np.meshgrid(*[lo[k] + (np.arange(n[k]) + 0.5) * vox for k in range(3)], indexing="ij"), -1)
+    P = center + grid @ axes.T
+    u, v, z = view.project(P)
+    inside = (z > 0.05) & (u >= 0) & (u <= view.W - 1) & (v >= 0) & (v <= view.H - 1)
+    ui = np.clip(np.round(np.nan_to_num(u)).astype(int), 0, view.W - 1)
+    vi = np.clip(np.round(np.nan_to_num(v)).astype(int), 0, view.H - 1)
+    zobs = view.depth[vi, ui]
+    known = inside & np.isfinite(zobs)
+    tol = 0.02 + 2 * args.depth_noise * np.nan_to_num(zobs)
+    in_mask = mask[vi, ui] & inside
+    surface = known & in_mask & (np.abs(z - zobs) <= tol)
+    free = known & (z < zobs - tol)
+    other = known & ~in_mask & (exclude[vi, ui] | (np.abs(z - zobs) <= tol))  # someone else's surface
+    empty = free | (other & (z <= zobs + tol))
+    # Extrusion axis: the horizontal box axis closest to the view direction.
+    view_dir = center - view.position
+    d = 0 if abs(axes[:, 0] @ view_dir) > abs(axes[:, 2] @ view_dir) else 2
+    seen_through = (free & ~surface).sum(axis=d) >= 2
+    silhouette = surface.any(axis=d) | ~seen_through
+    silhouette = cv2.morphologyEx(silhouette.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
+    silhouette = cv2.blur(silhouette.astype(np.float32), (5, 5), borderType=cv2.BORDER_REPLICATE) > 0.5  # majority: straight edges
+    occ = (surface | (~empty & np.expand_dims(silhouette, d))) & ~(empty & ~surface)
+    # Depth noise makes ragged faces: a 3x3x3 majority vote smooths them to the primitive's planes.
+    from scipy import ndimage
+    occ = ndimage.uniform_filter(occ.astype(np.float32), 3, mode="nearest") > 0.5
+    # Floating crumbs (single voxels from depth noise) go: keep the parts connected to the largest one.
+    labels, count = ndimage.label(occ)
+    if count > 1:
+        sizes = ndimage.sum(occ, labels, range(1, count + 1))
+        occ = np.isin(labels, 1 + np.nonzero(sizes >= max(8, 0.02 * sizes.max()))[0])
+    return occ, lo, vox
+
+
+def textured_object(mesh, inst, mask, maps, view, args, alpha_mask, supported):
+    """Projective texture on the faces the camera saw (photo albedo crop, alpha from the mask), the object's median
+    albedo on hidden faces (back, bottom, occluded), so nothing is pasted twice."""
+    mesh = mesh.subdivide_to_size(args.uv_grid_m, max_iter=8)  # projective UVs are affine per triangle: keep them small
+    mesh.unmerge_vertices()
+    x0, y0, x1, y1 = inst["image_bbox_px"]
+    pad = 8
+    x0, y0, x1, y1 = max(0, x0 - pad), max(0, y0 - pad), min(view.W, x1 + pad), min(view.H, y1 + pad)
+    w, h = x1 - x0, y1 - y0
+    crop = maps.photo_albedo[y0:y1, x0:x1]
+    rough = maps.photo_rough[y0:y1, x0:x1]
+    seen_px = mask[y0:y1, x0:x1]
+    base = np.median(crop[seen_px], 0) if seen_px.any() else np.array([0.5, 0.5, 0.5])
+    base_rough = float(np.median(rough[seen_px])) if seen_px.any() else 0.8
+    # Atlas: the crop, then a strip of the median color for hidden faces.
+    strip = 8
+    color = np.concatenate([crop, np.broadcast_to(base, (h, strip, 3))], 1)
+    alpha = np.concatenate([cv2.dilate(alpha_mask[y0:y1, x0:x1].astype(np.uint8), np.ones((5, 5), np.uint8)).astype(np.float32), np.ones((h, strip), np.float32)], 1)
+    rough = np.concatenate([rough, np.full((h, strip), base_rough, np.float32)], 1)
+    wa = w + strip
+    # Per-face visibility: facing the camera, and the observed depth at the face's pixel is the face itself.
+    C = mesh.triangles_center
+    u, v, z = view.project(C)
+    inside = (z > 0.05) & (u >= 0) & (u <= view.W - 1) & (v >= 0) & (v <= view.H - 1)
+    ui = np.clip(np.round(np.nan_to_num(u)).astype(int), 0, view.W - 1)
+    vi = np.clip(np.round(np.nan_to_num(v)).astype(int), 0, view.H - 1)
+    zobs = view.depth[vi, ui]
+    facing = np.einsum("ij,ij->i", mesh.face_normals, view.position - C) > 0
+    tol = 0.03 + 3 * args.depth_noise * np.nan_to_num(zobs, nan=0)
+    visible = inside & facing & ((np.abs(z - zobs) <= tol) | ~np.isfinite(zobs)) & alpha_mask[vi, ui]
+    V = np.array(mesh.vertices)
+    vu, vv, _ = view.project(V)
+    uv = np.stack([(np.clip(vu, x0, x1 - 1) - x0 + 0.5) / wa, 1 - (np.clip(vv, y0, y1 - 1) - y0 + 0.5) / h], 1)
+    hidden_uv = np.array([(w + strip / 2) / wa, 0.5])
+    # A hidden face takes the color of the nearest visible face of the object (the back of a black leg stays
+    # black); the object's median color only when the view shows none of it.
+    order = mesh.faces.reshape(-1)
+    face_uv = np.full((len(C), 2), hidden_uv)
+    seen_face = visible & np.isfinite(u) & np.isfinite(v) & (alpha_mask[vi, ui])
+    face_uv[seen_face] = np.stack([(u[seen_face] - x0 + 0.5) / wa, 1 - (v[seen_face] - y0 + 0.5) / h], 1)
+    hidden = ~visible
+    if seen_face.any() and hidden.any():
+        from scipy.spatial import cKDTree
+        _, nearest = cKDTree(C[seen_face]).query(C[hidden])
+        face_uv[hidden] = face_uv[seen_face][nearest]
+    face_hidden = np.repeat(hidden, 3)
+    uv[order[face_hidden]] = np.repeat(face_uv[hidden], 3, axis=0)
+    uv = np.where(np.isfinite(uv), uv, hidden_uv)
+    material = trimesh.visual.material.PBRMaterial(
+        name=inst["id"], baseColorTexture=image_of(color, alpha), alphaMode="MASK", alphaCutoff=0.5, doubleSided=False,
+        metallicRoughnessTexture=image_of(np.dstack([np.zeros_like(rough), rough, np.zeros_like(rough)])), metallicFactor=0.0, roughnessFactor=1.0)
+    mesh.visual = trimesh.visual.TextureVisuals(uv=uv, material=material)
+    return mesh, {"faces_seen": round(float(visible.mean()), 3)}
+
+
+def clutter_parts(layout, view, object_px, args):
+    """Pixels whose observed point is off every structure plane (inside its extent) by more than the relief limit
+    and the depth noise, outside the listed objects; connected parts of at least clutter_min_px pixels. Each part
+    gets a box in the room's frame: its observed extent, as deep as it is wide (to clutter_depth_m) away from the
+    camera, since one view shows only its front."""
+    H, W = object_px.shape
+    vv, uu = np.mgrid[0:H, 0:W].astype(np.float64)
+    P, z = view.observed(uu, vv)
+    best = np.full((H, W), np.inf)
+    for p in layout["structure"]:
+        c, n, u, v = (np.array(p[k]) for k in ("center", "normal", "u_axis", "v_axis"))
+        rel = P - c
+        within = (np.abs(rel @ u) <= p["size"][0] / 2 + 0.3) & (np.abs(rel @ v) <= p["size"][1] / 2 + 0.3)
+        if p["class"] in ("floor", "ceiling"):
+            within[:] = True
+        best = np.where(within, np.minimum(best, np.abs(rel @ n)), best)
+    off = np.isfinite(z) & ~object_px & (best > np.maximum(args.relief_m, 3 * args.depth_noise * np.nan_to_num(z)))
+    # Parts split at depth edges (a jump larger than the noise between neighbors): image adjacency alone joins a
+    # plant to the shelf far behind it.
+    zf = np.nan_to_num(z)
+    jump = np.maximum(np.abs(np.diff(zf, axis=0, prepend=zf[:1])), np.abs(np.diff(zf, axis=1, prepend=zf[:, :1])))
+    jump = np.maximum(jump, np.maximum(np.abs(np.diff(zf, axis=0, append=zf[-1:])), np.abs(np.diff(zf, axis=1, append=zf[:, -1:]))))
+    off &= jump < 0.02 + 3 * args.depth_noise * zf
+    off = cv2.morphologyEx(off.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    count, labels, stats, _ = cv2.connectedComponentsWithStats(off, connectivity=4)
+    walls = [p for p in layout["structure"] if p["class"] == "wall"]
+    yaw0 = math.degrees(math.atan2(walls[0]["normal"][0], walls[0]["normal"][2])) if walls else 0.0  # box z along the main wall's normal
+    parts = []
+    for k in np.argsort(-stats[:, 4]):
+        if k == 0 or stats[k, 4] < args.clutter_min_px:
+            continue
+        mask = labels == k
+        pts = P[mask]
+        yaw = math.radians(yaw0)
+        axes = np.stack([[math.cos(yaw), 0, -math.sin(yaw)], [0, 1.0, 0], [math.sin(yaw), 0, math.cos(yaw)]], 1)
+        local = pts @ axes
+        lo, hi = np.percentile(local, 2, 0), np.percentile(local, 98, 0)
+        width = max(hi[0] - lo[0], 0.03)
+        to_cam = view.position @ axes
+        depth = max(hi[2] - lo[2], min(width, args.clutter_depth_m))
+        if to_cam[2] > (lo[2] + hi[2]) / 2:  # extend away from the camera
+            lo[2] = hi[2] - depth
+        else:
+            hi[2] = lo[2] + depth
+        lo[1] = max(lo[1], 0.0)
+        size = np.maximum(hi - lo, 0.03)
+        x, y, w, h = stats[k, :4]
+        parts.append((mask, {"id": f"clutter-{len(parts) + 1}", "center": (axes @ ((lo + hi) / 2)).tolist(), "size": size.tolist(),
+                             "yaw_deg": yaw0, "image_bbox_px": [int(x), int(y), int(x + w), int(y + h)], "support": "none_detected"}))
+    return parts
+
+
 def object_primitive(obj, inst, mask, maps, view, args, exclude=None):
+    """An object as box primitives: a tight box from its observed points, carved to the shape the view shows
+    (round names: one cylinder). Returns the mesh and a report."""
     center, size = np.array(inst["center"], float), np.array(inst["size"], float)
     yaw = math.radians(inst["yaw_deg"])
     axes = np.stack([[math.cos(yaw), 0, -math.sin(yaw)], [0, 1.0, 0], [math.sin(yaw), 0, math.cos(yaw)]], 1)  # columns: box x, y, z
@@ -416,55 +680,44 @@ def object_primitive(obj, inst, mask, maps, view, args, exclude=None):
                 size = hi - lo
     # Evidence beyond the mask: pixels whose observed surface lies inside the fitted box along the camera ray
     # (masks miss parts, such as a desk top behind papers), unless the label map says floor, wall or ceiling.
-    if exclude is not None:
-        x0, y0, x1, y1 = inst["image_bbox_px"]
-        pad = 40
-        x0, y0, x1, y1 = max(0, x0 - pad), max(0, y0 - pad), min(view.W, x1 + pad), min(view.H, y1 + pad)
-        vv, uu = np.mgrid[y0:y1, x0:x1].astype(np.float64)
-        d = np.stack([(uu - view.cx) / view.fx, (vv - view.cy) / view.fy, np.ones_like(uu)], -1) @ view.R.T  # z = 1 per step
-        o = (view.position - center) @ axes
-        dl = d @ axes
-        with np.errstate(divide="ignore", invalid="ignore"):
-            t1, t2 = (-size / 2 - o) / dl, (size / 2 - o) / dl
-        tmin, tmax = np.nanmax(np.minimum(t1, t2), -1), np.nanmin(np.maximum(t1, t2), -1)
-        zobs = view.depth[y0:y1, x0:x1]
-        tol = 0.03 + 0.02 * np.nan_to_num(zobs)
-        inside_box = (tmax >= tmin) & (tmin > 0) & (zobs >= tmin - tol) & (zobs <= tmax + tol)
-        evidence = np.zeros_like(mask)
-        evidence[y0:y1, x0:x1] = inside_box & ~exclude[y0:y1, x0:x1]
-        evidence = cv2.morphologyEx(evidence.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)) > 0
-        mask = mask | evidence
-        inst = {**inst, "image_bbox_px": [int(x0), int(y0), int(x1), int(y1)]}
+    exclude = np.zeros_like(mask) if exclude is None else exclude
+    x0, y0, x1, y1 = inst["image_bbox_px"]
+    pad = 40
+    x0, y0, x1, y1 = max(0, x0 - pad), max(0, y0 - pad), min(view.W, x1 + pad), min(view.H, y1 + pad)
+    vv, uu = np.mgrid[y0:y1, x0:x1].astype(np.float64)
+    dirs = np.stack([(uu - view.cx) / view.fx, (vv - view.cy) / view.fy, np.ones_like(uu)], -1) @ view.R.T  # z = 1 per step
+    o = (view.position - center) @ axes
+    dl = dirs @ axes
+    with np.errstate(divide="ignore", invalid="ignore"):
+        t1, t2 = (-size / 2 - o) / dl, (size / 2 - o) / dl
+    tmin, tmax = np.nanmax(np.minimum(t1, t2), -1), np.nanmin(np.maximum(t1, t2), -1)
+    zobs = view.depth[y0:y1, x0:x1]
+    tol = 0.03 + 0.02 * np.nan_to_num(zobs)
+    inside_box = (tmax >= tmin) & (tmin > 0) & (zobs >= tmin - tol) & (zobs <= tmax + tol)
+    evidence = np.zeros_like(mask)
+    evidence[y0:y1, x0:x1] = inside_box & ~exclude[y0:y1, x0:x1]
+    evidence = cv2.morphologyEx(evidence.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)) > 0
+    mask = mask | evidence
+    inst = {**inst, "image_bbox_px": [int(x0), int(y0), int(x1), int(y1)]}
+    supported = inst.get("support") not in (None, "none_detected")
+    # The surface continues under what stands on it (a laptop on a desk): close the mask's gaps for the alpha.
+    alpha_mask = cv2.morphologyEx(mask.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8)) > 0
     if ROUND.search(obj["name"]):
         radius = max(size[0], size[2]) / 2
-        base = trimesh.creation.cylinder(radius=radius, height=size[1], sections=48)
-        base.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))  # z axis -> y axis
-        mesh = trimesh.Trimesh(vertices=base.vertices + center, faces=base.faces, process=False)
+        mesh = trimesh.creation.cylinder(radius=radius, height=size[1], sections=48)
+        mesh.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))  # z axis -> y axis
+        if supported:  # the cap on the support is never seen
+            mesh.update_faces(mesh.face_normals[:, 1] > -0.9)
+        mesh = trimesh.Trimesh(vertices=mesh.vertices + center, faces=mesh.faces, process=False)
+        info = {"primitive": "cylinder"}
     else:
-        box = trimesh.creation.box(extents=size)
-        mesh = trimesh.Trimesh(vertices=box.vertices @ axes.T + center, faces=box.faces, process=False)
-    mesh = mesh.subdivide_to_size(args.grid_m, max_iter=8)  # projective UVs need dense vertices to stay accurate
-    V = np.array(mesh.vertices)
-    u, v, z = view.project(V)
-    # Texture: the instance's bounding crop of the photo albedo (alpha = mask), projective UVs.
-    x0, y0, x1, y1 = inst["image_bbox_px"]
-    pad = 8
-    x0, y0, x1, y1 = max(0, x0 - pad), max(0, y0 - pad), min(view.W, x1 + pad), min(view.H, y1 + pad)
-    crop = maps.photo_albedo[y0:y1, x0:x1]
-    # The surface continues under what stands on it (a laptop on a desk): fill the mask's holes, close its gaps.
-    solid = cv2.morphologyEx(mask[y0:y1, x0:x1].astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
-    flood = np.pad(solid, 1).copy()
-    cv2.floodFill(flood, None, (0, 0), 2)
-    solid = ((flood[1:-1, 1:-1] != 2) | (solid > 0)).astype(np.float32)
-    alpha = cv2.GaussianBlur(solid, (0, 0), 0.8)
-    rough = maps.photo_rough[y0:y1, x0:x1]
-    uv = np.stack([(np.clip(u, x0, x1 - 1) - x0) / (x1 - x0), 1 - (np.clip(v, y0, y1 - 1) - y0) / (y1 - y0)], 1)
-    uv = np.where(np.isfinite(uv), uv, 0.5)
-    material = trimesh.visual.material.PBRMaterial(
-        name=inst["id"], baseColorTexture=image_of(crop, alpha), alphaMode="MASK", alphaCutoff=0.5, doubleSided=True,
-        metallicRoughnessTexture=image_of(np.dstack([np.zeros_like(rough), rough, np.zeros_like(rough)])), metallicFactor=0.0, roughnessFactor=1.0)
-    mesh.visual = trimesh.visual.TextureVisuals(uv=uv, material=material)
-    return mesh
+        occ, lo, vox = carve(center, size, axes, mask, exclude, view, args)
+        Vl, F = voxel_surface(occ, lo, vox, drop_bottom=supported)
+        mesh = trimesh.Trimesh(vertices=Vl @ axes.T + center, faces=F, process=False)
+        info = {"primitive": "carved boxes", "voxel_m": round(vox, 4), "voxels": int(occ.sum()), "occupancy": round(float(occ.mean()), 3),
+                "quads": len(F) // 2}
+    mesh, tex = textured_object(mesh, inst, mask, maps, view, args, alpha_mask, supported)
+    return mesh, {**info, **tex}
 
 
 if __name__ == "__main__":
