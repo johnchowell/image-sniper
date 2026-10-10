@@ -177,7 +177,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
   // least light_min_support of the ring cells (not on objects, not in other bright regions) lie on it within
   // light_plane_tol_m. Each region cell goes to the holder its camera ray meets first inside that plane's extent
   // (from inside a room the nearest surface along a ray is the one seen), so a region spanning a corner splits
-  // between the two walls. Parts on floors and tabletops are sunlight spill. Parts on one plane merge only when
+  // between the two walls. Parts on surfaces facing up (floors, tabletops) are sunlight spill. Parts on one plane merge only when
   // their rectangles are within light_merge_gap_m (mullions, frames); separate windows stay separate.
   const P = { tol: params.light_plane_tol_m, support: params.light_min_support, gap: params.light_merge_gap_m, margin: params.light_extent_margin_m };
   const rayOf = (cell) => {
@@ -259,7 +259,9 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     }
     for (const { plane, points: lifted } of byPlane.values()) {
       if (lifted.length < 5) continue;
-      if (plane.class === "floor" || plane.class === "horizontal_surface") {
+      // A surface facing up (floor, tabletop, a tilted desk top) is lit, not lighting: a bright patch on it is
+      // sunlight spill. Windows face into the room and ceiling lights face down.
+      if (plane.normal[1] > 0.5) {
         sunlitPatches.push({ region: emitter.id, on_surface: plane.id, cells: lifted.length });
         continue;
       }
