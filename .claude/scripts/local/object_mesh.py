@@ -142,7 +142,7 @@ def main():
         n = next_index(object_dir)
         glb = os.path.join(object_dir, f"{n}-{obj['object_id']}.glb")
         reference = os.path.join(object_dir, f"{n}-{obj['object_id']}.png")
-        mesh.export(glb)
+        mesh.export(glb, include_normals=True)  # without normals, viewers shade the mesh black
         photo_crop.save(reference)
         summary = {
             "object_id": obj["object_id"],

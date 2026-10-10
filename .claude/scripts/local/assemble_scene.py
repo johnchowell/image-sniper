@@ -128,7 +128,7 @@ def main():
     n = next_index(scene_dir)
     out = os.path.join(scene_dir, f"{n}-scene.glb")
     with open(out, "wb") as f:
-        f.write(add_extensions(scene.export(file_type="glb"), camera, lights))
+        f.write(add_extensions(scene.export(file_type="glb", include_normals=True), camera, lights))
     manifest = {
         "schema_version": 1,
         "world": args.world,

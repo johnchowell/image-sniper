@@ -97,7 +97,7 @@ def main():
     scene_dir = world_path(args.world, "output", "scene")
     n = next_index(scene_dir)
     out_path = os.path.join(scene_dir, f"{n}-scene-environment.glb")
-    mesh.export(out_path)
+    mesh.export(out_path, include_normals=True)
     summary = {
         "environment": out_path,
         "vertices": int(len(vertices)),
