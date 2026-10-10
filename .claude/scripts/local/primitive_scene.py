@@ -305,6 +305,8 @@ def main():
     parser.add_argument("--voxel-m", type=float, default=0.01, help="smallest voxel of the object carving")
     parser.add_argument("--voxels", type=int, default=80, help="voxels along an object's longest side (sets the voxel size)")
     parser.add_argument("--uv-grid-m", type=float, default=0.1, help="largest triangle edge of object meshes (projective UV error stays under a pixel)")
+    parser.add_argument("--surface", choices=["smooth", "voxels"], default="smooth", help="object surface: smoothed marching cubes or voxel box faces")
+    parser.add_argument("--smooth-iterations", type=int, default=10)
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
     parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
     args = parser.parse_args()
@@ -443,7 +445,7 @@ def main():
     write_request(os.path.join(scene_dir, f".{n}-primitive-scene-request.json"), {
         "kind": "primitive-scene", "provider": "local/primitives", "endpoint": "local/primitives", "index": n, "status": "completed",
         "input_files": [layout_path, layout["source_image"], maps.plate_path], "output_files": [out],
-        "input": {k: getattr(args, k) for k in ("texel_m", "texel_min_m", "max_texture", "grid_m", "relief_m", "relief_sigma_m", "no_relief", "depth_noise", "voxel_m", "voxels", "uv_grid_m", "clutter_min_px", "clutter_depth_m")},
+        "input": {k: getattr(args, k) for k in ("texel_m", "texel_min_m", "max_texture", "grid_m", "relief_m", "relief_sigma_m", "no_relief", "depth_noise", "voxel_m", "voxels", "uv_grid_m", "surface", "smooth_iterations", "clutter_min_px", "clutter_depth_m")},
         "maps": {"structure_albedo": maps.plate_light["files"]["albedo"] if maps.plate_light else None,
                  "object_albedo": maps.photo_light["files"]["albedo"] if maps.photo_light else None},
         "result": report})
@@ -498,6 +500,27 @@ def voxel_surface(occ, lo, vox, drop_bottom):
                         tri = [t[::-1] for t in tri]
                     F += tri
     return np.array(V, float).reshape(-1, 3), np.array(F, int).reshape(-1, 3)
+
+
+def smooth_surface(occ, lo, vox, drop_bottom, iterations):
+    """Boundary of a voxel occupancy without stair steps: marching cubes on the binary grid, then Taubin smoothing
+    (no shrinking, so one-voxel slabs such as a desk top stay). drop_bottom removes the faces on the support."""
+    from skimage.measure import marching_cubes
+    padded = np.pad(occ.astype(np.float32), 1)
+    verts, faces, _, _ = marching_cubes(padded, 0.5)
+    verts = lo + (verts - 1 + 0.5) * vox
+    mesh = trimesh.Trimesh(vertices=verts, faces=faces[:, ::-1], process=True)
+    if iterations:
+        trimesh.smoothing.filter_taubin(mesh, lamb=0.5, nu=0.53, iterations=iterations)
+    if len(mesh.faces) > 2000:  # flat parts need few triangles: quadric decimation to a quarter
+        import fast_simplification
+        points, tris = fast_simplification.simplify(np.asarray(mesh.vertices, np.float32), np.asarray(mesh.faces, np.int32), 0.75)
+        mesh = trimesh.Trimesh(vertices=points, faces=tris, process=True)
+    if drop_bottom:
+        bottom = (mesh.triangles_center[:, 1] < lo[1] + 0.75 * vox) & (mesh.face_normals[:, 1] < -0.7)
+        mesh.update_faces(~bottom)
+        mesh.remove_unreferenced_vertices()
+    return np.asarray(mesh.vertices), np.asarray(mesh.faces)
 
 
 def carve(center, size, axes, mask, exclude, view, args):
@@ -712,10 +735,13 @@ def object_primitive(obj, inst, mask, maps, view, args, exclude=None):
         info = {"primitive": "cylinder"}
     else:
         occ, lo, vox = carve(center, size, axes, mask, exclude, view, args)
-        Vl, F = voxel_surface(occ, lo, vox, drop_bottom=supported)
+        if args.surface == "smooth":
+            Vl, F = smooth_surface(occ, lo, vox, drop_bottom=supported, iterations=args.smooth_iterations)
+        else:
+            Vl, F = voxel_surface(occ, lo, vox, drop_bottom=supported)
         mesh = trimesh.Trimesh(vertices=Vl @ axes.T + center, faces=F, process=False)
-        info = {"primitive": "carved boxes", "voxel_m": round(vox, 4), "voxels": int(occ.sum()), "occupancy": round(float(occ.mean()), 3),
-                "quads": len(F) // 2}
+        info = {"primitive": "carved " + ("mesh" if args.surface == "smooth" else "boxes"), "voxel_m": round(vox, 4), "voxels": int(occ.sum()),
+                "occupancy": round(float(occ.mean()), 3), "faces": len(F)}
     mesh, tex = textured_object(mesh, inst, mask, maps, view, args, alpha_mask, supported)
     return mesh, {**info, **tex}
 

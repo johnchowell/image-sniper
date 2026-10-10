@@ -2,7 +2,7 @@
 name: image-blast-local
 description: Run the full IMAGE-BLAST pass on local open-weight models (no FAL or World Labs credit needed) - lighting, layout, clean plate, environment mesh, object meshes, and one assembled scene GLB. Use when the user wants a model from an image locally, or when FAL or World Labs are unavailable.
 argument-hint: [world-name] [--skip light|layout|plate|environment|objects|scene]
-allowed-tools: Read Write Glob Bash(ls *) Bash(node .claude/scripts/project/project-state.mjs *) Bash(bash .claude/scripts/local/setup.sh) Bash(.venv/bin/python .claude/scripts/local/*)
+allowed-tools: Read Write Glob Bash(ls *) Bash(node .claude/scripts/project/project-state.mjs *) Bash(bash .claude/scripts/local/setup.sh) Bash(bash .claude/scripts/bench/setup.sh) Bash(.venv/bin/python .claude/scripts/local/*) Bash(.venv-render/bin/python .claude/scripts/local/*)
 context: fork
 agent: image-blast-local
 ---
@@ -43,6 +43,17 @@ Add `--skip <step>` to reuse the latest output of a step (for example `--skip li
 | environment | MoGe-2 on the plate, fov locked to the layout camera, scale fit to the original depth on unchanged pixels | `output/scene/N-scene-environment.glb` (textured, layout frame) |
 | objects | TripoSR (geometry from the photo crop, vertex colors from the albedo crop, 30k faces) | `output/<object>/N-<object>.glb` (canonical: meters, +Y up, front +Z, base at y=0) and `N-<object>.png` (input crop); placement in `.N-<object>__model-request.json` |
 | scene | assembly | `output/scene/N-scene.glb` (environment + placed objects + source camera + KHR_lights_punctual lights) and `N-scene.json` (manifest) |
+
+## Primitive scene (PBR primitives instead of TripoSR meshes)
+
+After the light and layout steps, the layout can also become a scene of textured primitives: a closed room shell and panels with base color (lighting-free albedo), roughness, normal (relief above the depth noise) and window emission maps, and each object and each unlisted part (clutter) carved from the view's depth and textured by projection.
+
+```bash
+.venv/bin/python .claude/scripts/local/primitive_scene.py --world "$0"
+.venv-render/bin/python .claude/scripts/local/render_check.py --world "$0"
+```
+
+The first writes `output/scene/N-primitive-scene.glb`. The second (Blender runtime: `bash .claude/scripts/bench/setup.sh` once) fits the light powers and the camera response to the photo and writes `N-primitive-scene-check.json` (PSNR against the photo), `-check.png` (photo, render, difference, two orbit views) and `-lights.json` (the fitted light rig).
 
 Do not load the PNG outputs into context to do quality checks. Use the printed summary and the JSON files.
 

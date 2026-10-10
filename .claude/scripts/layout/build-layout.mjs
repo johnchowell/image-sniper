@@ -44,6 +44,8 @@ export const DEFAULT_PARAMS = {
   light_plane_tol_m: 0.06,
   light_min_support: 0.2,
   light_merge_gap_m: 0.25,
+  light_wall_behind_min_m: 0.15,
+  light_wall_behind_max_m: 1.2,
   light_extent_margin_m: 0.3,
   // Metric scale anchors: real-world sizes combined with the depth model's own scale (chosen on train, checked on val).
   scale_anchors: 1,

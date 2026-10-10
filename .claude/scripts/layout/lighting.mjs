@@ -179,7 +179,8 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
   // (from inside a room the nearest surface along a ray is the one seen), so a region spanning a corner splits
   // between the two walls. Parts on surfaces facing up (floors, tabletops) are sunlight spill. Parts on one plane merge only when
   // their rectangles are within light_merge_gap_m (mullions, frames); separate windows stay separate.
-  const P = { tol: params.light_plane_tol_m, support: params.light_min_support, gap: params.light_merge_gap_m, margin: params.light_extent_margin_m };
+  const P = { tol: params.light_plane_tol_m, support: params.light_min_support, gap: params.light_merge_gap_m, margin: params.light_extent_margin_m,
+    behind_min: params.light_wall_behind_min_m ?? 0.15, behind_max: params.light_wall_behind_max_m ?? 1.2 };
   const rayOf = (cell) => {
     const px = (cell % gw) * step + step / 2, py = Math.floor(cell / gw) * step + step / 2;
     return normalize(mulMat3Vec(R, [(px - intrinsics.cx) / intrinsics.fx, (py - intrinsics.cy) / intrinsics.fy, 1]));
@@ -198,6 +199,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
   const parts = [];
   const highlights = [];
   const sunlitPatches = [];
+  const furniturePatches = [];
   const unplaced = [];
   for (const emitter of light.json.emitters) {
     if (emitter.kind !== "light_source") continue;
@@ -264,6 +266,24 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
       if (plane.normal[1] > 0.5) {
         sunlitPatches.push({ region: emitter.id, on_surface: plane.id, cells: lifted.length });
         continue;
+      }
+      // A window is in the room's boundary. A vertical surface with a parallel room wall close behind the bright
+      // part is furniture (a glass cabinet, a white box on a shelf): bright, not a light source. Only a wall counts:
+      // the view through a window opening can fit a small vertical plane behind it.
+      if (Math.abs(plane.normal[1]) < 0.26) {
+        const mid = scale(lifted.reduce((sum, p) => add(sum, p), [0, 0, 0]), 1 / lifted.length);
+        const toCamera = dot(sub(cameraPosition, plane.center), plane.normal) > 0 ? plane.normal : scale(plane.normal, -1);
+        const wall = structure.find((other) => other !== plane && other.class === "wall" && Math.abs(dot(other.normal, plane.normal)) > Math.cos((15 * Math.PI) / 180)
+          && (() => {
+            const behind = -dot(sub(other.center, mid), toCamera);
+            if (!(behind > P.behind_min && behind < P.behind_max)) return false;
+            const rel = sub(mid, other.center);
+            return Math.abs(dot(rel, other.u_axis)) <= other.size[0] / 2 && Math.abs(dot(rel, other.v_axis)) <= other.size[1] / 2;
+          })());
+        if (wall) {
+          furniturePatches.push({ region: emitter.id, on_surface: plane.id, wall_behind: wall.id, cells: lifted.length });
+          continue;
+        }
       }
       parts.push({ surface: plane, points: lifted, regions: [emitter.id], luminance: [emitter.relative_luminance] });
     }
@@ -375,6 +395,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     emitters,
     highlights_on_objects: highlights,
     sunlit_patches: sunlitPatches,
+    furniture_patches: furniturePatches,
     unplaced_light_regions: unplaced
   };
   return { lighting, emitters, emitterOf };

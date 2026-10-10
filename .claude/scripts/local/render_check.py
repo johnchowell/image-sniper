@@ -149,7 +149,6 @@ def main():
         light.data.energy = 0.0
         light.matrix_world = Matrix.Translation(center) @ (-facing).normalized().to_track_quat("Z", "Y").to_matrix().to_4x4()
         light.visible_camera = False
-        light.visible_glossy = False
         basis[name] = light
 
     source_cam = G @ Matrix(layout["camera"]["matrix_world_from_camera_opencv"])
