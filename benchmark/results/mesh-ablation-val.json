@@ -1,0 +1,460 @@
+{
+  "split": "val",
+  "summary": {
+    "objects": 20,
+    "photo_chamfer_mean": 0.05444519805692074,
+    "albedo_chamfer_mean": 0.05166606610185089,
+    "photo_fscore_mean": 0.6048365627869192,
+    "albedo_fscore_mean": 0.6051667717933731,
+    "albedo_minus_photo_chamfer_ci95": [
+      -0.0114241696139454,
+      0.004732475681394513
+    ],
+    "pose_check_objects": 9,
+    "photo_best_yaw_offset_deg_median": 15.0,
+    "photo_best_yaw_within_20deg": 0.5555555555555556,
+    "photo_best_yaw_within_20deg_of_180": 0.3333333333333333
+  },
+  "objects": [
+    {
+      "view": "bench-val-room-1061-view-0",
+      "object": "antique_ceramic_vase_01-2",
+      "name": "antique ceramic vase",
+      "pixel_fraction": 0.01125,
+      "photo": {
+        "chamfer_expected_pose": 0.04973996150775331,
+        "fscore_expected_pose": 0.5606339423288577,
+        "chamfer_best_yaw": 0.04929783044889295,
+        "best_yaw_offset_deg": 100,
+        "yaw_contrast": 0.042,
+        "seconds": 30.6
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.06022803156781902,
+        "fscore_expected_pose": 0.45123865456486917,
+        "chamfer_best_yaw": 0.059709968623834715,
+        "best_yaw_offset_deg": -125,
+        "yaw_contrast": 0.043,
+        "seconds": 28.9
+      }
+    },
+    {
+      "view": "bench-val-room-1061-view-0",
+      "object": "painted_wooden_shelves-3",
+      "name": "painted wooden shelves",
+      "pixel_fraction": 0.039970703125,
+      "photo": {
+        "chamfer_expected_pose": 0.034708148457979655,
+        "fscore_expected_pose": 0.781235672790077,
+        "chamfer_best_yaw": 0.034708148457979655,
+        "best_yaw_offset_deg": 0,
+        "yaw_contrast": 0.522,
+        "seconds": 27.8
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.036224265032921525,
+        "fscore_expected_pose": 0.7387880229696472,
+        "chamfer_best_yaw": 0.036224265032921525,
+        "best_yaw_offset_deg": 0,
+        "yaw_contrast": 0.428,
+        "seconds": 28.2
+      }
+    },
+    {
+      "view": "bench-val-room-1061-view-0",
+      "object": "painted_wooden_nightstand-7",
+      "name": "painted wooden nightstand",
+      "pixel_fraction": 0.010498046875,
+      "photo": {
+        "chamfer_expected_pose": 0.06122647490756338,
+        "fscore_expected_pose": 0.5440548984601652,
+        "chamfer_best_yaw": 0.05200733986350643,
+        "best_yaw_offset_deg": -40,
+        "yaw_contrast": 0.171,
+        "seconds": 28.7
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.0595804101031753,
+        "fscore_expected_pose": 0.4972181551976574,
+        "chamfer_best_yaw": 0.05675630998517644,
+        "best_yaw_offset_deg": -40,
+        "yaw_contrast": 0.051,
+        "seconds": 29.3
+      }
+    },
+    {
+      "view": "bench-val-room-1062-view-0",
+      "object": "Television_01-2",
+      "name": "television",
+      "pixel_fraction": 0.0158203125,
+      "photo": {
+        "chamfer_expected_pose": 0.07826133143625227,
+        "fscore_expected_pose": 0.36779957995799584,
+        "chamfer_best_yaw": 0.07534130530619172,
+        "best_yaw_offset_deg": -20,
+        "yaw_contrast": 0.305,
+        "seconds": 27.5
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.05527512669267279,
+        "fscore_expected_pose": 0.5297051886792452,
+        "chamfer_best_yaw": 0.05254506875334159,
+        "best_yaw_offset_deg": -20,
+        "yaw_contrast": 0.274,
+        "seconds": 28.5
+      }
+    },
+    {
+      "view": "bench-val-room-1064-view-0",
+      "object": "CashRegister_01-4",
+      "name": "cash register",
+      "pixel_fraction": 0.018668619791666667,
+      "photo": {
+        "chamfer_expected_pose": 0.025378963490503857,
+        "fscore_expected_pose": 0.8832500352957786,
+        "chamfer_best_yaw": 0.025490280286414313,
+        "best_yaw_offset_deg": 5,
+        "yaw_contrast": 1.48,
+        "seconds": 27.5
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.058484061594932635,
+        "fscore_expected_pose": 0.4688548601864181,
+        "chamfer_best_yaw": 0.055263178245234426,
+        "best_yaw_offset_deg": -35,
+        "yaw_contrast": 0.585,
+        "seconds": 27.2
+      }
+    },
+    {
+      "view": "bench-val-room-1066-view-0",
+      "object": "WoodenTable_03-3",
+      "name": "wooden table",
+      "pixel_fraction": 0.14480794270833333,
+      "photo": {
+        "chamfer_expected_pose": 0.040036995365011235,
+        "fscore_expected_pose": 0.6710119634060521,
+        "chamfer_best_yaw": 0.03669380999222586,
+        "best_yaw_offset_deg": 170,
+        "yaw_contrast": 0.692,
+        "seconds": 29.0
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.04159969073858188,
+        "fscore_expected_pose": 0.6586167664670659,
+        "chamfer_best_yaw": 0.038640255387668486,
+        "best_yaw_offset_deg": 170,
+        "yaw_contrast": 0.599,
+        "seconds": 28.7
+      }
+    },
+    {
+      "view": "bench-val-room-1066-view-0",
+      "object": "WoodenTable_01-4",
+      "name": "wooden table",
+      "pixel_fraction": 0.029212239583333334,
+      "photo": {
+        "chamfer_expected_pose": 0.027815730699479034,
+        "fscore_expected_pose": 0.8749875802997858,
+        "chamfer_best_yaw": 0.027599264236610088,
+        "best_yaw_offset_deg": -175,
+        "yaw_contrast": 3.142,
+        "seconds": 29.1
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.032610553022463566,
+        "fscore_expected_pose": 0.7920706912730686,
+        "chamfer_best_yaw": 0.032923168904384625,
+        "best_yaw_offset_deg": -180,
+        "yaw_contrast": 2.849,
+        "seconds": 29.3
+      }
+    },
+    {
+      "view": "bench-val-room-1068-view-0",
+      "object": "modern_coffee_table_02-2",
+      "name": "modern coffee table",
+      "pixel_fraction": 0.08111002604166667,
+      "photo": {
+        "chamfer_expected_pose": 0.09072680791284693,
+        "fscore_expected_pose": 0.3543414379993053,
+        "chamfer_best_yaw": 0.08565992774365053,
+        "best_yaw_offset_deg": -145,
+        "yaw_contrast": 0.097,
+        "seconds": 28.7
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.08005908110327788,
+        "fscore_expected_pose": 0.3595400340715503,
+        "chamfer_best_yaw": 0.07838182025827711,
+        "best_yaw_offset_deg": -105,
+        "yaw_contrast": 0.047,
+        "seconds": 29.3
+      }
+    },
+    {
+      "view": "bench-val-room-1069-view-0",
+      "object": "wooden_bookshelf_worn-3",
+      "name": "wooden bookshelf worn",
+      "pixel_fraction": 0.08361653645833333,
+      "photo": {
+        "chamfer_expected_pose": 0.018643298681751498,
+        "fscore_expected_pose": 0.9924433249370278,
+        "chamfer_best_yaw": 0.018643298681751498,
+        "best_yaw_offset_deg": 0,
+        "yaw_contrast": 2.128,
+        "seconds": 29.9
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.018374595833146486,
+        "fscore_expected_pose": 0.9940902803973344,
+        "chamfer_best_yaw": 0.018374595833146486,
+        "best_yaw_offset_deg": 0,
+        "yaw_contrast": 2.187,
+        "seconds": 30.5
+      }
+    },
+    {
+      "view": "bench-val-room-1069-view-0",
+      "object": "scandinavian_masonry_heater-5",
+      "name": "scandinavian masonry heater",
+      "pixel_fraction": 0.09555338541666666,
+      "photo": {
+        "chamfer_expected_pose": 0.05920759256658745,
+        "fscore_expected_pose": 0.5658464178464179,
+        "chamfer_best_yaw": 0.05706120485403411,
+        "best_yaw_offset_deg": 135,
+        "yaw_contrast": 0.079,
+        "seconds": 30.8
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.05021363786902468,
+        "fscore_expected_pose": 0.5291437175247992,
+        "chamfer_best_yaw": 0.037788123257860365,
+        "best_yaw_offset_deg": 65,
+        "yaw_contrast": 0.484,
+        "seconds": 30.2
+      }
+    },
+    {
+      "view": "bench-val-room-1070-view-0",
+      "object": "painted_wooden_shelves-2",
+      "name": "painted wooden shelves",
+      "pixel_fraction": 0.05869140625,
+      "photo": {
+        "chamfer_expected_pose": 0.04389533090990507,
+        "fscore_expected_pose": 0.6741977453335798,
+        "chamfer_best_yaw": 0.03508621825312905,
+        "best_yaw_offset_deg": 175,
+        "yaw_contrast": 0.592,
+        "seconds": 29.8
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.03770172550520662,
+        "fscore_expected_pose": 0.7369978799185888,
+        "chamfer_best_yaw": 0.0376334823251364,
+        "best_yaw_offset_deg": 5,
+        "yaw_contrast": 0.84,
+        "seconds": 30.0
+      }
+    },
+    {
+      "view": "bench-val-room-1070-view-0",
+      "object": "painted_wooden_nightstand-4",
+      "name": "painted wooden nightstand",
+      "pixel_fraction": 0.057939453125,
+      "photo": {
+        "chamfer_expected_pose": 0.06269777009315369,
+        "fscore_expected_pose": 0.5253795945644909,
+        "chamfer_best_yaw": 0.06353111156573107,
+        "best_yaw_offset_deg": 90,
+        "yaw_contrast": 0.129,
+        "seconds": 29.1
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.058264964893110435,
+        "fscore_expected_pose": 0.5195529176836033,
+        "chamfer_best_yaw": 0.058264964893110435,
+        "best_yaw_offset_deg": 0,
+        "yaw_contrast": 0.193,
+        "seconds": 28.8
+      }
+    },
+    {
+      "view": "bench-val-room-1070-view-0",
+      "object": "WoodenTable_03-5",
+      "name": "wooden table",
+      "pixel_fraction": 0.08079752604166666,
+      "photo": {
+        "chamfer_expected_pose": 0.029568793722895365,
+        "fscore_expected_pose": 0.8230678421996414,
+        "chamfer_best_yaw": 0.02910325825223397,
+        "best_yaw_offset_deg": 5,
+        "yaw_contrast": 1.389,
+        "seconds": 28.4
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.029244814287625383,
+        "fscore_expected_pose": 0.8390699321333727,
+        "chamfer_best_yaw": 0.028462505116150068,
+        "best_yaw_offset_deg": 10,
+        "yaw_contrast": 1.531,
+        "seconds": 29.7
+      }
+    },
+    {
+      "view": "bench-val-room-1070-view-0",
+      "object": "Television_01-6",
+      "name": "television",
+      "pixel_fraction": 0.018395182291666666,
+      "photo": {
+        "chamfer_expected_pose": 0.05385467940140119,
+        "fscore_expected_pose": 0.5548880680546228,
+        "chamfer_best_yaw": 0.03167551561207676,
+        "best_yaw_offset_deg": 90,
+        "yaw_contrast": 0.682,
+        "seconds": 28.6
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.04823899378795243,
+        "fscore_expected_pose": 0.5922397476340694,
+        "chamfer_best_yaw": 0.033516252890366804,
+        "best_yaw_offset_deg": 90,
+        "yaw_contrast": 0.443,
+        "seconds": 28.5
+      }
+    },
+    {
+      "view": "bench-val-room-1071-view-0",
+      "object": "coffee_table_round_01-1",
+      "name": "coffee table round",
+      "pixel_fraction": 0.020250651041666668,
+      "photo": {
+        "chamfer_expected_pose": 0.06097877348811062,
+        "fscore_expected_pose": 0.510349344978166,
+        "chamfer_best_yaw": 0.05981491031534818,
+        "best_yaw_offset_deg": -95,
+        "yaw_contrast": 0.272,
+        "seconds": 28.5
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.07417601045657257,
+        "fscore_expected_pose": 0.4089238210399033,
+        "chamfer_best_yaw": 0.07359475583342684,
+        "best_yaw_offset_deg": 85,
+        "yaw_contrast": 0.122,
+        "seconds": 28.1
+      }
+    },
+    {
+      "view": "bench-val-room-1071-view-0",
+      "object": "wooden_display_shelves_01-6",
+      "name": "wooden display shelves",
+      "pixel_fraction": 0.016966145833333335,
+      "photo": {
+        "chamfer_expected_pose": 0.11591511141766617,
+        "fscore_expected_pose": 0.17328410475030454,
+        "chamfer_best_yaw": 0.09050814748782728,
+        "best_yaw_offset_deg": 70,
+        "yaw_contrast": 0.281,
+        "seconds": 28.9
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.10363952825943308,
+        "fscore_expected_pose": 0.2636284549161758,
+        "chamfer_best_yaw": 0.07734196277214744,
+        "best_yaw_offset_deg": 110,
+        "yaw_contrast": 0.297,
+        "seconds": 28.2
+      }
+    },
+    {
+      "view": "bench-val-room-1072-view-0",
+      "object": "wooden_table_02-4",
+      "name": "wooden table",
+      "pixel_fraction": 0.02203125,
+      "photo": {
+        "chamfer_expected_pose": 0.07409591042711483,
+        "fscore_expected_pose": 0.4177486607142857,
+        "chamfer_best_yaw": 0.06810437162729893,
+        "best_yaw_offset_deg": 15,
+        "yaw_contrast": 0.776,
+        "seconds": 28.0
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.09420034359166915,
+        "fscore_expected_pose": 0.30437383177570093,
+        "chamfer_best_yaw": 0.07788643470222442,
+        "best_yaw_offset_deg": 65,
+        "yaw_contrast": 0.768,
+        "seconds": 29.1
+      }
+    },
+    {
+      "view": "bench-val-room-1074-view-0",
+      "object": "Television_01-3",
+      "name": "television",
+      "pixel_fraction": 0.03892578125,
+      "photo": {
+        "chamfer_expected_pose": 0.08877132488515392,
+        "fscore_expected_pose": 0.3667009576768613,
+        "chamfer_best_yaw": 0.08299029625351563,
+        "best_yaw_offset_deg": -70,
+        "yaw_contrast": 0.416,
+        "seconds": 28.9
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.021173631963018726,
+        "fscore_expected_pose": 0.9756085062772226,
+        "chamfer_best_yaw": 0.018946440435082923,
+        "best_yaw_offset_deg": -10,
+        "yaw_contrast": 1.129,
+        "seconds": 28.6
+      }
+    },
+    {
+      "view": "bench-val-room-1075-view-0",
+      "object": "coffee_table_round_01-1",
+      "name": "coffee table round",
+      "pixel_fraction": 0.024443359375,
+      "photo": {
+        "chamfer_expected_pose": 0.045868149013916476,
+        "fscore_expected_pose": 0.5802414944013782,
+        "chamfer_best_yaw": 0.045033817752162794,
+        "best_yaw_offset_deg": -180,
+        "yaw_contrast": 0.182,
+        "seconds": 29.2
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.04317204330090649,
+        "fscore_expected_pose": 0.6111023517382412,
+        "chamfer_best_yaw": 0.04277449109263132,
+        "best_yaw_offset_deg": -175,
+        "yaw_contrast": 0.243,
+        "seconds": 29.6
+      }
+    },
+    {
+      "view": "bench-val-room-1080-view-0",
+      "object": "antique_ceramic_vase_01-4",
+      "name": "antique ceramic vase",
+      "pixel_fraction": 0.019703776041666666,
+      "photo": {
+        "chamfer_expected_pose": 0.02751281275336885,
+        "fscore_expected_pose": 0.8752685897435898,
+        "chamfer_best_yaw": 0.027167372735168036,
+        "best_yaw_offset_deg": -170,
+        "yaw_contrast": 0.054,
+        "seconds": 29.4
+      },
+      "albedo": {
+        "chamfer_expected_pose": 0.030859812433507425,
+        "fscore_expected_pose": 0.832571621418929,
+        "chamfer_best_yaw": 0.030492800250286854,
+        "best_yaw_offset_deg": -130,
+        "yaw_contrast": 0.04,
+        "seconds": 30.0
+      }
+    }
+  ]
+}
