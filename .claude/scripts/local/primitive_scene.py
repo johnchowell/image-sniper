@@ -364,6 +364,8 @@ def main():
             n2 = -n2
         poly = clip_polygon(poly, np.array(w["center"])[[0, 2]], n2)
     room_h = ceiling["center"][1] if ceiling else max([2.5] + [p["center"][1] + p["size"][1] / 2 for p in walls])
+    report["room"] = {"polygon_xz": [[round(float(p[0]), 4), round(float(p[1]), 4)] for p in poly], "height_m": round(float(room_h), 4),
+                      "frame": "layout (+Y up); polygon on the floor, (x, z)"}
     wall_colors = []
     for k in range(len(poly)):
         a, b = poly[k], poly[(k + 1) % len(poly)]

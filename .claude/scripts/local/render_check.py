@@ -156,20 +156,27 @@ def main():
         middle = source_cam.translation + (source_cam.to_3x3() @ Vector((0, 0, 1))) * 2.0
         d = to_blender(dominant["direction"]).normalized()
         area("fill", middle + d * 2.5, -d, 2.0, 2.0)
-    floor_obj = bpy.data.objects.get("room-floor")
-    ceiling_obj = bpy.data.objects.get("room-ceiling")
-    if args.light_basis and floor_obj is not None:
-        corners = [floor_obj.matrix_world @ Vector(c) for c in floor_obj.bound_box]
-        x0, x1 = min(c.x for c in corners), max(c.x for c in corners)
-        y0, y1 = min(c.y for c in corners), max(c.y for c in corners)
-        top = max((ceiling_obj.matrix_world @ Vector(c)).z for c in ceiling_obj.bound_box) if ceiling_obj else 2.6
-        for i, (fx, fy) in enumerate(((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))):
-            area(f"ceiling-{i + 1}", Vector((x0 + fx * (x1 - x0), y0 + fy * (y1 - y0), top - 0.05)), Vector((0, 0, -1)), 0.4 * (x1 - x0), 0.4 * (y1 - y0))
-        mid_x, mid_y, h = (x0 + x1) / 2, (y0 + y1) / 2, min(1.4, top / 2)
-        area("side-x0", Vector((x0 + 0.1, mid_y, h)), Vector((1, 0, 0)), 0.8 * (y1 - y0), 1.6)
-        area("side-x1", Vector((x1 - 0.1, mid_y, h)), Vector((-1, 0, 0)), 0.8 * (y1 - y0), 1.6)
-        area("side-y0", Vector((mid_x, y0 + 0.1, h)), Vector((0, 1, 0)), 0.8 * (x1 - x0), 1.6)
-        area("side-y1", Vector((mid_x, y1 - 0.1, h)), Vector((0, -1, 0)), 0.8 * (x1 - x0), 1.6)
+    # Basis lights inside the room (the scene's room polygon): one along each wall, facing in, and one under the
+    # ceiling toward each wall. Lights outside the closed shell would only leak in, and a viewer without
+    # occlusion would show them at full power.
+    request = os.path.join(os.path.dirname(glb), "." + os.path.basename(glb).replace(".glb", "-request.json"))
+    room = json.load(open(request))["result"].get("room") if os.path.exists(request) else None
+    if args.light_basis and room:
+        poly = [Vector((x, -z, 0.0)) for x, z in room["polygon_xz"]]  # layout (x, z) on the floor -> Blender (x, -z)
+        top = room["height_m"]
+        centroid = sum(poly, Vector((0, 0, 0))) / len(poly)
+        for k in range(len(poly)):
+            p0, p1 = poly[k], poly[(k + 1) % len(poly)]
+            length = (p1 - p0).length
+            if length < 0.5:
+                continue
+            mid = (p0 + p1) / 2
+            inward = Vector((-(p1 - p0).y, (p1 - p0).x, 0)).normalized()
+            if inward.dot(centroid - mid) < 0:
+                inward = -inward
+            area(f"side-{k + 1}", mid + inward * 0.1 + Vector((0, 0, min(1.4, top / 2))), inward, 0.8 * length, min(1.6, 0.8 * top))
+            spot = (mid + centroid) / 2
+            area(f"ceiling-{k + 1}", Vector((spot.x, spot.y, top - 0.05)), Vector((0, 0, -1)), 0.5 * length, 0.5 * (centroid - mid).length)
     if dominant and dominant.get("confidence") in ("medium", "high"):
         bpy.ops.object.light_add(type="SUN")
         sun = bpy.context.active_object
