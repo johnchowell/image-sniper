@@ -2,8 +2,8 @@
 """ModelNet40 indoor categories as solid voxel grids for the shape prior (shape_prior_train.py).
 
 Each mesh is centered on its bounding box and scaled so its longest side is 1; +Y is up (ModelNet's +Z). The
-solid is the voxels of densely sampled surface points, closed once and with inner cavities filled (open meshes
-stay shells, which is right for thin parts such as table tops). Writes benchmark/shapes/modelnet40-<res>.npz:
+solid is the voxels of densely sampled surface points, closed once, then filled where the boundary is hidden along
+5 or 6 of the axis directions (ModelNet meshes have gaps, so a flood fill from outside leaks in). Writes benchmark/shapes/modelnet40-<res>.npz:
 occ (packed bits, res^3 per shape), extent (normalized box size), category, split (ModelNet's train/test).
 """
 import argparse
@@ -42,6 +42,20 @@ def read_off(text):
     return V, np.array(faces, dtype=np.int64).reshape(-1, 3)
 
 
+def solid(shell):
+    """Shell voxels to a solid: a cell is outside when it sees the grid boundary along at least 2 of the 6 axis
+    directions (a gap in the mesh lets it see out along 1 only; under a table top or between chair legs is open
+    along several)."""
+    clear = np.zeros(shell.shape, np.int8)
+    for axis in range(3):
+        for flip in (False, True):
+            s = np.flip(shell, axis) if flip else shell
+            hit = np.cumsum(s, axis=axis) > 0  # a surface cell lies between this cell and the boundary (or is it)
+            hit = np.flip(hit, axis) if flip else hit
+            clear += ~hit
+    return shell | (clear < 2)
+
+
 def voxelize(args):
     name, res = args
     with zipfile.ZipFile(os.path.join(SHAPES, "ModelNet40.zip")) as z:
@@ -61,7 +75,7 @@ def voxelize(args):
     occ = np.zeros((res, res, res), bool)
     occ[tuple(idx.T)] = True
     occ = ndimage.binary_closing(np.pad(occ, 1)).astype(bool)[1:-1, 1:-1, 1:-1] | occ
-    occ = ndimage.binary_fill_holes(occ)
+    occ = solid(occ)
     parts = name.split("/")
     return np.packbits(occ.reshape(-1)), (high - low) / side, parts[1], parts[2]
 

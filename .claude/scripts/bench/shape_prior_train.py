@@ -350,7 +350,7 @@ def train(args):
         step += 1
         if step % 250 == 0:
             vl, viou = validate()
-            log.append({"step": step, "minutes": round((time.time() - sched_t0) / 60, 1), "train_loss": round(float(loss), 4), "val_loss": round(vl, 4), "val_iou_unknown": round(viou, 4)})
+            log.append({"step": step, "minutes": round((time.time() - sched_t0) / 60, 1), "train_loss": round(loss.item(), 4), "val_loss": round(vl, 4), "val_iou_unknown": round(viou, 4)})
             print(json.dumps(log[-1]), flush=True)
             if vl < best:
                 best = vl
