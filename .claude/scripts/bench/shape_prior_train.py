@@ -3,10 +3,10 @@
 
   generate  simulated views: a shape (benchmark/shapes/modelnet40-64.npz) at a random size and yaw on a floor or a
             table top, a wall behind it, other boxes in front and beside it, a random camera (some views cut the
-            object at the image border), a depth map with noise, edge smearing and a coarse depth grid, a mask with
-            ragged edges, and a box estimate with errors in center, size and yaw. The evidence of the cube around
-            the estimated box (shape_prior.evidence, the same code the pipeline runs) is the input; the true
-            occupancy of the cube is the target. ModelNet's train shapes make the training set, its test shapes
+            object at the image border), a depth map with noise, edge smearing, a coarse depth grid and a
+            heavy-tailed depth offset of the object, a mask with ragged edges, and a box estimate with errors in
+            center, size and yaw. The evidence of the cube around the estimated box (shape_prior.evidence, the
+            same code the pipeline runs) is the input; the true occupancy of the cube is the target. ModelNet's train shapes make the training set, its test shapes
             the validation set; no benchmark asset is a ModelNet shape.
   train     fits the 3D U-Net (binary cross entropy) and keeps the weights with the lowest validation loss in
             .claude/models/shape-prior.pt.
@@ -218,6 +218,9 @@ def sample(job):
     gy, gx = np.mgrid[0:z.shape[0], 0:z.shape[1]] / 100.0
     bias = 1 + rng.normal(0, 0.015) * gx + rng.normal(0, 0.015) * gy + rng.normal(0, 0.01)
     z = z * bias * (1 + rng.normal(0, rng.uniform(0.002, 0.012), z.shape))
+    # The object's own depth offset against the room: heavy-tailed, as monocular depth on the benchmark's train
+    # split (per-object log bias |b| median 0.019, p90 0.118).
+    z = np.where(ident == 1, z * math.exp(rng.normal(0, 0.15 if rng.random() < 0.2 else 0.02)), z)
     if rng.random() < 0.6:
         k = int(rng.choice([3, 5]))
         edge = (cv2.dilate(z.astype(np.float32), np.ones((3, 3))) - cv2.erode(z.astype(np.float32), np.ones((3, 3)))) > 0.05 * z
@@ -226,7 +229,7 @@ def sample(job):
     if step > 1:
         z = cv2.resize(z[::step, ::step].astype(np.float32), (z.shape[1], z.shape[0]), interpolation=cv2.INTER_NEAREST)
     mask = (ident == 1).astype(np.uint8)
-    r = int(rng.choice([0, 0, 1, 2, 3]))
+    r = int(rng.choice([0, 0, 1, 2, 3, 5, 8]))
     if r:
         mask = (cv2.dilate if rng.random() < 0.5 else cv2.erode)(mask, np.ones((2 * r + 1, 2 * r + 1), np.uint8))
     depth = np.full((H, W), np.nan, np.float32)
