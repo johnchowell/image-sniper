@@ -231,6 +231,41 @@ def compare(a, b, draws=1000, seed=0):
     return {"a": a["name"], "b": b["name"], "views": len(views), "objects": sum(len(pairs[v]) for v in views), "metrics": out}
 
 
+def surface_ceiling(split, models, voxels=80):
+    """What the surface step can reach with a perfect occupancy: each true mesh voxelized in its box frame (voxels
+    per longest side), then each surface method, scored against the true mesh."""
+    from scipy import ndimage
+    seen, rows = set(), []
+    for v in evaluate.views(split):
+        for o in json.load(open(os.path.join(v, "gt.json")))["objects"]:
+            if o.get("class", "furniture") != "furniture" or o["model_path"] in seen or len(seen) >= models:
+                continue
+            seen.add(o["model_path"])
+            tm = true_mesh(o)
+            yaw = math.radians(o["yaw_deg"])
+            x_axis = BLENDER_TO_YUP @ np.array([math.cos(yaw), math.sin(yaw), 0])
+            axes = np.stack([x_axis, [0, 1, 0], np.cross(x_axis, [0, 1, 0])], 1)
+            local = tm.vertices @ axes
+            lo = local.min(0)
+            vox = float((local.max(0) - lo).max()) / voxels
+            n = np.ceil((local.max(0) - lo) / vox).astype(int) + 1
+            idx = np.clip(np.floor((trimesh.sample.sample_surface(tm, 300000, seed=0)[0] @ axes - lo) / vox).astype(int), 0, n - 1)
+            occ = np.zeros(n, bool)
+            occ[tuple(idx.T)] = True
+            occ = ndimage.binary_fill_holes(ndimage.binary_closing(np.pad(occ, 1))[1:-1, 1:-1, 1:-1] | occ)
+            tp, tn = surface_samples(tm, POINTS)
+            diag = float(np.linalg.norm(tm.bounds[1] - tm.bounds[0]))
+            surfaces = {"smooth": lambda: ps.smooth_surface(occ, lo, vox, False, 10), "voxels": lambda: ps.voxel_surface(occ, lo, vox, False),
+                        "planar": lambda: ps.planar_surface(occ, lo, vox, False, lo[1], 12.0, 10)}
+            for name, make in surfaces.items():
+                Vl, F = make()
+                m = metrics(surface_samples(trimesh.Trimesh(Vl @ axes.T, F, process=False), POINTS, seed=1), (tp, tn), np.ones(len(tp), bool), diag)
+                rows.append({"model": os.path.basename(o["model_path"]), "surface": name, "faces": len(F), **m})
+    summary = {name: {k: round(float(np.mean([r[k] for r in rows if r["surface"] == name])), 5) for k in ("nc", "chamfer", "f", "faces")}
+               for name in ("smooth", "voxels", "planar")}
+    return {"split": split, "models": len(seen), "voxels": voxels, "summary": summary, "rows": rows}
+
+
 def main():
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
@@ -241,10 +276,18 @@ def main():
     s.add_argument("--args", default="", help="primitive_scene.py options of the variant (quoted)")
     s.add_argument("--limit", type=int)
     s.add_argument("--workers", type=int, default=os.cpu_count())
+    g = sub.add_parser("ceiling", help="surface methods on the true shapes (perfect occupancy)")
+    g.add_argument("--split", default="train")
+    g.add_argument("--models", type=int, default=40)
     c = sub.add_parser("compare")
     c.add_argument("a")
     c.add_argument("b")
     args = parser.parse_args()
+    if args.command == "ceiling":
+        result = surface_ceiling(args.split, args.models)
+        json.dump(result, open(os.path.join(RESULTS, f"shape-surface-ceiling-{args.split}.json"), "w"), indent=1)
+        print(json.dumps(result["summary"]))
+        return
     if args.command == "compare":
         result = compare(json.load(open(args.a)), json.load(open(args.b)))
         print(json.dumps(result, indent=1))
