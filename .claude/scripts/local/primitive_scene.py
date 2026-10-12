@@ -349,6 +349,8 @@ def build_parser():
     parser.add_argument("--completion", choices=["carve", "prior"], default="carve",
                         help="hidden parts: silhouette extrusion inside the box, or the learned shape prior in a cube around it")
     parser.add_argument("--prior-threshold", type=float, default=0.5)
+    parser.add_argument("--box", choices=["tight", "evidence"], default="tight",
+                        help="object box: layout box shrunk to the observed faces, or rebuilt from the observed points")
     parser.add_argument("--normal-yaw", type=int, default=1, help="1: object yaw from its visible face normals (else the layout yaw)")
     parser.add_argument("--round", choices=["cylinder", "shape"], default="cylinder", help="round names: one cylinder, or the shape like any object")
     parser.add_argument("--plane-angle", type=float, default=12.0, help="planar surface: largest normal angle inside one plane (deg)")
@@ -789,9 +791,16 @@ def evidence_box(center, size, axes, core, view, supported):
     local = (obs[np.isfinite(obs).all(1)] - center) @ axes
     if len(local) < 50:
         return center, size
-    med = np.median(local, 0)
-    mad = np.median(np.abs(local - med), 0)
-    local = local[np.all(np.abs(local - med) <= np.maximum(6 * mad, 0.1), axis=1)]  # stray points far from the bulk
+    # Stray points (mask bleed onto other surfaces) are separated from the object by an empty gap along some axis;
+    # the object's own parts (legs under a top, a bed behind its headboard) fill their range without gaps.
+    zc = view.depth[vs, us]
+    zc = zc[np.isfinite(zc)]
+    gap = 0.1 + 0.03 * (float(np.median(zc)) if len(zc) else 0.0)
+    for k in range(3):
+        order = np.argsort(local[:, k])
+        cuts = np.nonzero(np.diff(local[order, k]) > gap)[0] + 1
+        segments = np.split(order, cuts)
+        local = local[max(segments, key=len)]
     olo, ohi = np.percentile(local, 2, 0), np.percentile(local, 98, 0)
     lo, hi = -size / 2, size / 2
     med = np.median(local, 0)
@@ -833,7 +842,7 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
     if args.normal_yaw:
         yaw = math.radians(normal_yaw(core, view, inst["yaw_deg"])[0])
         axes = np.stack([[math.cos(yaw), 0, -math.sin(yaw)], [0, 1.0, 0], [math.sin(yaw), 0, math.cos(yaw)]], 1)
-    if args.completion == "prior":
+    if args.box == "evidence":
         center, size = evidence_box(center, size, axes, core, view, inst.get("support") not in (None, "none_detected"))
     elif len(us) > 50:
         pick = np.random.default_rng(0).choice(len(us), min(len(us), 20000), replace=False)
