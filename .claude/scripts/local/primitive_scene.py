@@ -24,6 +24,7 @@ import numpy as np
 import trimesh
 from PIL import Image
 
+import shape_prior
 from common import latest, load_layout, next_index, world_path, write_request
 
 ROUND = re.compile(r"vase|pot\b|carafe|bottle|cup|mug|\bcans?\b|jar|bucket|round|urn|barrel|stool", re.I)
@@ -291,7 +292,44 @@ def clip_polygon(poly, point, normal):
     return out
 
 
-def main():
+def scene_inputs(layout):
+    """The source view (layout depth at full resolution), the listed object instances with their masks, and the
+    pixels of listed objects and of room surfaces (floor, walls, ceiling from the label map)."""
+    W, H = layout["camera"]["image_size"]
+    depth_grid = np.asarray(Image.open(layout["files"]["depth_png"])).astype(np.float32) / 1000
+    depth = cv2.resize(depth_grid, (W, H), interpolation=cv2.INTER_NEAREST)
+    depth[depth <= 0] = np.nan
+    view = View(layout, depth)
+    object_px = np.zeros((H, W), bool)
+    instances = []
+    for obj in layout["objects"]:
+        for inst in obj["instances"]:
+            mask = np.asarray(Image.open(inst["mask_file"]).convert("L").resize((W, H), Image.NEAREST)) > 127
+            object_px |= mask
+            instances.append((obj, inst, mask))
+    labels = np.asarray(Image.open(layout["labels"]["file"]).convert("RGB").resize((W, H), Image.NEAREST)).astype(int)
+    room_colors = {tuple(e["color"]) for e in layout["labels"]["palette"] if e["class"] in ("floor", "wall", "ceiling")}
+    room_px = np.zeros((H, W), bool)
+    for color in room_colors:
+        room_px |= np.all(labels == color, axis=-1)
+    return view, instances, object_px, room_px
+
+
+def object_masks(instances, room_px):
+    """Per instance: its mask with the objects it supports (the desk top continues under the laptop), and the
+    pixels that are certainly not it (room surfaces and the other objects)."""
+    for obj, inst, mask in instances:
+        under = mask.copy()
+        others = np.zeros_like(mask)
+        for _, other, other_mask in instances:
+            if other.get("support") == inst["id"]:
+                under |= other_mask
+            elif other is not inst:
+                others |= other_mask
+        yield obj, inst, under, room_px | (others & ~under)
+
+
+def build_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--world", required=True)
     parser.add_argument("--texel-m", type=float, default=0.01, help="largest texel (surfaces seen from far or not at all)")
@@ -305,36 +343,28 @@ def main():
     parser.add_argument("--voxel-m", type=float, default=0.01, help="smallest voxel of the object carving")
     parser.add_argument("--voxels", type=int, default=80, help="voxels along an object's longest side (sets the voxel size)")
     parser.add_argument("--uv-grid-m", type=float, default=0.1, help="largest triangle edge of object meshes (projective UV error stays under a pixel)")
-    parser.add_argument("--surface", choices=["smooth", "voxels"], default="smooth", help="object surface: smoothed marching cubes or voxel box faces")
+    parser.add_argument("--surface", choices=["smooth", "voxels", "planar"], default="smooth",
+                        help="object surface: smoothed marching cubes, voxel box faces, or marching cubes snapped to fitted planes")
     parser.add_argument("--smooth-iterations", type=int, default=10)
+    parser.add_argument("--completion", choices=["carve", "prior"], default="carve",
+                        help="hidden parts: silhouette extrusion inside the box, or the learned shape prior in a cube around it")
+    parser.add_argument("--prior-threshold", type=float, default=0.5)
+    parser.add_argument("--normal-yaw", type=int, default=1, help="1: object yaw from its visible face normals (else the layout yaw)")
+    parser.add_argument("--round", choices=["cylinder", "shape"], default="cylinder", help="round names: one cylinder, or the shape like any object")
+    parser.add_argument("--plane-angle", type=float, default=12.0, help="planar surface: largest normal angle inside one plane (deg)")
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
     parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
-    args = parser.parse_args()
+    return parser
+
+
+def main():
+    args = build_parser().parse_args()
 
     layout_index, layout_path, layout = load_layout(args.world)
-    W, H = layout["camera"]["image_size"]
-    step = layout["depth"]["grid_step_px"]
-    depth_grid = np.asarray(Image.open(layout["files"]["depth_png"])).astype(np.float32) / 1000
-    depth = cv2.resize(depth_grid, (W, H), interpolation=cv2.INTER_NEAREST)
-    depth[depth <= 0] = np.nan
-    view = View(layout, depth)
+    view, instances, object_px, room_px = scene_inputs(layout)
+    W, H = view.W, view.H
     maps = Maps(args.world, layout, view)
-
-    # Object masks (listed objects): their depth does not belong to structure.
-    object_px = np.zeros((H, W), bool)
-    instances = []
-    for obj in layout["objects"]:
-        for inst in obj["instances"]:
-            mask = np.asarray(Image.open(inst["mask_file"]).convert("L").resize((W, H), Image.NEAREST)) > 127
-            object_px |= mask
-            instances.append((obj, inst, mask))
     structure_px = ~object_px
-    # Room surfaces (floor, walls, ceiling) from the layout's label map: never part of an object.
-    labels = np.asarray(Image.open(layout["labels"]["file"]).convert("RGB").resize((W, H), Image.NEAREST)).astype(int)
-    room_colors = {tuple(e["color"]) for e in layout["labels"]["palette"] if e["class"] in ("floor", "wall", "ceiling")}
-    room_px = np.zeros((H, W), bool)
-    for color in room_colors:
-        room_px |= np.all(labels == color, axis=-1)
 
     scene = trimesh.Scene()
     report = {"world": args.world, "layout_index": layout_index, "surfaces": [], "objects": []}
@@ -417,15 +447,8 @@ def main():
 
     # Objects: box or cylinder primitives, camera-facing parts displaced to the observed depth, textured by
     # projection into the photo's albedo with the mask as alpha.
-    for obj, inst, mask in instances:
-        under = mask.copy()
-        others = np.zeros_like(mask)
-        for _, other, other_mask in instances:
-            if other.get("support") == inst["id"]:
-                under |= other_mask
-            elif other is not inst:
-                others |= other_mask
-        mesh, info = object_primitive(obj, inst, under, maps, view, args, exclude=room_px | (others & ~under))
+    for obj, inst, under, exclude in object_masks(instances, room_px):
+        mesh, info = object_primitive(obj, inst, under, maps, view, args, exclude=exclude)
         scene.add_geometry(mesh, geom_name=inst["id"])
         report["objects"].append({"id": inst["id"], **info})
 
@@ -520,6 +543,38 @@ def smooth_surface(occ, lo, vox, drop_bottom, iterations):
         mesh = trimesh.Trimesh(vertices=points, faces=tris, process=True)
     if drop_bottom:
         bottom = (mesh.triangles_center[:, 1] < lo[1] + 0.75 * vox) & (mesh.face_normals[:, 1] < -0.7)
+        mesh.update_faces(~bottom)
+        mesh.remove_unreferenced_vertices()
+    return np.asarray(mesh.vertices), np.asarray(mesh.faces)
+
+
+def largest_parts(occ):
+    """Drops floating crumbs: keeps the connected parts of at least 2% of the largest."""
+    from scipy import ndimage
+    labels, count = ndimage.label(occ)
+    if count > 1:
+        sizes = ndimage.sum(occ, labels, range(1, count + 1))
+        occ = np.isin(labels, 1 + np.nonzero(sizes >= max(8, 0.02 * sizes.max()))[0])
+    return occ
+
+
+def planar_surface(occ, lo, vox, supported, support_y, angle_deg, iterations):
+    """Flat-faced boundary of an occupancy: marching cubes, Taubin smoothing (stair steps become slopes), vertices
+    moved onto the fitted planes of the planar regions (box-aligned where close), then decimated (flat regions
+    need few triangles). The faces on the support are dropped."""
+    from skimage.measure import marching_cubes
+    verts, faces, _, _ = marching_cubes(np.pad(occ.astype(np.float32), 1), 0.5)
+    mesh = trimesh.Trimesh(vertices=lo + (verts - 1 + 0.5) * vox, faces=faces[:, ::-1], process=True)
+    if iterations:
+        trimesh.smoothing.filter_taubin(mesh, lamb=0.5, nu=0.53, iterations=iterations)
+    V = shape_prior.planar_snap(np.asarray(mesh.vertices), np.asarray(mesh.faces), np.eye(3), angle_deg=angle_deg)
+    mesh = trimesh.Trimesh(vertices=V, faces=mesh.faces, process=True)
+    if len(mesh.faces) > 500:
+        import fast_simplification
+        points, tris = fast_simplification.simplify(np.asarray(mesh.vertices, np.float32), np.asarray(mesh.faces, np.int32), 0.8)
+        mesh = trimesh.Trimesh(vertices=points, faces=tris, process=True)
+    if supported:
+        bottom = (mesh.triangles_center[:, 1] < support_y + 0.75 * vox) & (mesh.face_normals[:, 1] < -0.7)
         mesh.update_faces(~bottom)
         mesh.remove_unreferenced_vertices()
     return np.asarray(mesh.vertices), np.asarray(mesh.faces)
@@ -676,9 +731,97 @@ def clutter_parts(layout, view, object_px, args):
     return parts
 
 
+def normal_yaw(core, view, yaw0, step=2, min_pixels=150, min_concentration=0.35):
+    """The object's yaw from its visible vertical faces: normals from the depth (finite differences), and the
+    circular mean of 4 x their horizontal angle (box faces repeat every 90 degrees). Returns the yaw nearest the
+    layout's (so the axes keep their sizes) and the concentration; the layout's yaw when the normals do not decide
+    (round objects, only the top seen)."""
+    vs, us = np.nonzero(core)
+    if len(us) < min_pixels:
+        return yaw0, 0.0
+    y0, y1, x0, x1 = max(0, vs.min() - step), min(view.H, vs.max() + step + 1), max(0, us.min() - step), min(view.W, us.max() + step + 1)
+    vv, uu = np.mgrid[y0:y1, x0:x1].astype(np.float64)
+    P, z = view.observed(uu, vv)
+    dPu = P[:, 2 * step:] - P[:, :-2 * step]
+    dPv = P[2 * step:] - P[:-2 * step]
+    n = np.cross(dPu[step:-step], dPv[:, step:-step])
+    norm = np.linalg.norm(n, axis=-1, keepdims=True)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        n = n / norm
+    inner = core[y0 + step:y1 - step, x0 + step:x1 - step]
+    zc = z[step:-step, step:-step]
+    # Smooth patches only: the depth change across the stencil stays small (no depth edges inside it).
+    span = np.maximum(np.abs(dPu[step:-step, :, 2]), np.abs(dPv[:, step:-step, 2]))
+    ok = inner & np.isfinite(n).all(-1) & (np.abs(n[..., 1]) < 0.5) & (span < 0.1 + 0.05 * np.nan_to_num(zc))
+    if ok.sum() < min_pixels:
+        return yaw0, 0.0
+    theta = np.arctan2(-n[..., 2][ok], n[..., 0][ok])
+    w = np.hypot(n[..., 0][ok], n[..., 2][ok])
+    m = np.sum(w * np.exp(4j * theta)) / np.sum(w)
+    concentration = float(abs(m))
+    if concentration < min_concentration:
+        return yaw0, concentration
+    yaw4 = math.degrees(np.angle(m)) / 4
+    k = round((yaw0 - yaw4) / 90)
+    return yaw4 + 90 * k, concentration
+
+
+def evidence_box(center, size, axes, core, view, supported):
+    """The object's box from what the view shows, the layout box filling in what it cannot show. Along each
+    horizontal axis the side toward the camera is the observed surface; the far side is the layout's when the
+    layout box holds the observed object (it lies beyond what is seen), else the observed extent deepened by half
+    the object's width (the layout box is somewhere else, so its extent says nothing). The bottom stays on the
+    support; the top is the higher of both."""
+    vs, us = np.nonzero(core)
+    if len(us) < 50:
+        return center, size
+    # Pixels at depth edges (mask bleed onto the background, depth smeared across the edge) are not the object.
+    y0, y1, x0, x1 = vs.min(), vs.max() + 1, us.min(), us.max() + 1
+    z = np.nan_to_num(view.depth[y0:y1, x0:x1].astype(np.float32), nan=0.0)
+    k = np.ones((5, 5), np.uint8)
+    edge = (cv2.dilate(z, k) - cv2.erode(z, k)) > 0.03 + 0.03 * z
+    keep = ~edge[vs - y0, us - x0]
+    vs, us = vs[keep], us[keep]
+    if len(us) < 50:
+        return center, size
+    pick = np.random.default_rng(0).choice(len(us), min(len(us), 20000), replace=False)
+    obs, _ = view.observed(us[pick].astype(np.float64), vs[pick].astype(np.float64))
+    local = (obs[np.isfinite(obs).all(1)] - center) @ axes
+    if len(local) < 50:
+        return center, size
+    med = np.median(local, 0)
+    mad = np.median(np.abs(local - med), 0)
+    local = local[np.all(np.abs(local - med) <= np.maximum(6 * mad, 0.1), axis=1)]  # stray points far from the bulk
+    olo, ohi = np.percentile(local, 2, 0), np.percentile(local, 98, 0)
+    lo, hi = -size / 2, size / 2
+    med = np.median(local, 0)
+    agrees = bool(np.all(np.abs(med[[0, 2]]) <= size[[0, 2]] / 2 + 0.1))
+    to_cam = (view.position - center) @ axes
+    width = float(max(ohi[0] - olo[0], ohi[2] - olo[2]))
+    for k in (0, 2):
+        if to_cam[k] > 0:  # the +k side faces the camera
+            hi[k] = ohi[k]
+            lo[k] = min(lo[k], olo[k]) if agrees else olo[k] - max(0.05, 0.5 * width)
+        else:
+            lo[k] = olo[k]
+            hi[k] = max(hi[k], ohi[k]) if agrees else ohi[k] + max(0.05, 0.5 * width)
+    if not (supported and olo[1] >= lo[1] - 0.05):
+        lo[1] = olo[1]
+    hi[1] = max(hi[1], ohi[1]) if agrees else ohi[1]
+    return center + axes @ ((lo + hi) / 2), np.maximum(hi - lo, 0.03)
+
+
 def object_primitive(obj, inst, mask, maps, view, args, exclude=None):
-    """An object as box primitives: a tight box from its observed points, carved to the shape the view shows
-    (round names: one cylinder). Returns the mesh and a report."""
+    """An object as a textured primitive (see object_geometry). Returns the mesh and a report."""
+    mesh, inst, mask, alpha_mask, supported, info = object_geometry(obj, inst, mask, view, args, exclude)
+    mesh, tex = textured_object(mesh, inst, mask, maps, view, args, alpha_mask, supported)
+    return mesh, {**info, **tex}
+
+
+def object_geometry(obj, inst, mask, view, args, exclude=None):
+    """An object's shape in the layout frame: a tight box from its observed points, carved to the shape the view
+    shows (round names: one cylinder). Returns the untextured mesh, the instance with the widened image box, the
+    mask with the box's depth evidence, the alpha mask, whether it stands on a support, and a report."""
     center, size = np.array(inst["center"], float), np.array(inst["size"], float)
     yaw = math.radians(inst["yaw_deg"])
     axes = np.stack([[math.cos(yaw), 0, -math.sin(yaw)], [0, 1.0, 0], [math.sin(yaw), 0, math.cos(yaw)]], 1)  # columns: box x, y, z
@@ -687,7 +830,12 @@ def object_primitive(obj, inst, mask, maps, view, args, exclude=None):
     H, W = mask.shape
     core = cv2.erode(mask.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
     vs, us = np.nonzero(core)
-    if len(us) > 50:
+    if args.normal_yaw:
+        yaw = math.radians(normal_yaw(core, view, inst["yaw_deg"])[0])
+        axes = np.stack([[math.cos(yaw), 0, -math.sin(yaw)], [0, 1.0, 0], [math.sin(yaw), 0, math.cos(yaw)]], 1)
+    if args.completion == "prior":
+        center, size = evidence_box(center, size, axes, core, view, inst.get("support") not in (None, "none_detected"))
+    elif len(us) > 50:
         pick = np.random.default_rng(0).choice(len(us), min(len(us), 20000), replace=False)
         obs, _ = view.observed(us[pick].astype(np.float64), vs[pick].astype(np.float64))
         local = (obs[np.isfinite(obs).all(1)] - center) @ axes
@@ -727,7 +875,7 @@ def object_primitive(obj, inst, mask, maps, view, args, exclude=None):
     supported = inst.get("support") not in (None, "none_detected")
     # The surface continues under what stands on it (a laptop on a desk): close the mask's gaps for the alpha.
     alpha_mask = cv2.morphologyEx(mask.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8)) > 0
-    if ROUND.search(obj["name"]):
+    if ROUND.search(obj["name"]) and args.round == "cylinder":
         radius = max(size[0], size[2]) / 2
         mesh = trimesh.creation.cylinder(radius=radius, height=size[1], sections=48)
         mesh.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))  # z axis -> y axis
@@ -736,16 +884,27 @@ def object_primitive(obj, inst, mask, maps, view, args, exclude=None):
         mesh = trimesh.Trimesh(vertices=mesh.vertices + center, faces=mesh.faces, process=False)
         info = {"primitive": "cylinder"}
     else:
-        occ, lo, vox = carve(center, size, axes, mask, exclude, view, args)
+        if args.completion == "prior":
+            occ, lo, vox, _ = shape_prior.complete(center, size, axes, mask, exclude, view, supported, args.depth_noise, args.voxels, args.prior_threshold)
+            occ = largest_parts(occ)
+            support_y = -size[1] / 2
+        else:
+            occ, lo, vox = carve(center, size, axes, mask, exclude, view, args)
+            support_y = lo[1]
+        if not occ.any():  # the box holds none of the object's evidence: keep the box
+            lo, vox = -size / 2, float(size.max()) / max(occ.shape)
+            occ = np.ones(np.maximum(1, np.round(size / vox).astype(int)), bool)
+            support_y = lo[1]
         if args.surface == "smooth":
             Vl, F = smooth_surface(occ, lo, vox, drop_bottom=supported, iterations=args.smooth_iterations)
+        elif args.surface == "planar":
+            Vl, F = planar_surface(occ, lo, vox, supported, support_y, args.plane_angle, args.smooth_iterations)
         else:
             Vl, F = voxel_surface(occ, lo, vox, drop_bottom=supported)
         mesh = trimesh.Trimesh(vertices=Vl @ axes.T + center, faces=F, process=False)
-        info = {"primitive": "carved " + ("mesh" if args.surface == "smooth" else "boxes"), "voxel_m": round(vox, 4), "voxels": int(occ.sum()),
+        info = {"primitive": f"{args.completion} {args.surface}", "yaw_deg": round(math.degrees(math.atan2(-axes[2, 0], axes[0, 0])), 2), "voxel_m": round(vox, 4), "voxels": int(occ.sum()),
                 "occupancy": round(float(occ.mean()), 3), "faces": len(F)}
-    mesh, tex = textured_object(mesh, inst, mask, maps, view, args, alpha_mask, supported)
-    return mesh, {**info, **tex}
+    return mesh, inst, mask, alpha_mask, supported, info
 
 
 if __name__ == "__main__":
