@@ -15,6 +15,7 @@ import argparse
 import json
 import math
 import os
+import shutil
 import sys
 import time
 from multiprocessing import Pool
@@ -321,24 +322,25 @@ def train(args):
     sched_t0 = time.time()
     best, step, log = float("inf"), 0, []
     out_path = os.path.abspath(sp.WEIGHTS)
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    best_path = os.path.join(SHAPES, "shape-prior-best.pt")  # checkpoints stay out of the repository until the end
     val_idx = np.arange(min(len(V["target"]), 512))
 
     def validate():
         model.eval()
-        losses, ious = [], []
+        losses, ious = [], {th: [] for th in (0.2, 0.3, 0.5)}
         with torch.no_grad():
             for k in range(0, len(val_idx), 16):
                 x, y = batch(V, val_idx[k:k + 16], False)
                 logit = model(x)
                 losses.append(float(torch.nn.functional.binary_cross_entropy_with_logits(logit, y)) * len(x))
-                p = logit > 0
                 unknown = (x[:, 0:1] < 0.5) & (x[:, 1:2] < 0.5)  # cells the view does not decide
-                inter = ((p & (y > 0.5)) & unknown).sum((1, 2, 3, 4)).float()
-                union = ((p | (y > 0.5)) & unknown).sum((1, 2, 3, 4)).float().clamp(min=1)
-                ious += (inter / union).tolist()
+                for th in ious:
+                    p = torch.sigmoid(logit) > th
+                    inter = ((p & (y > 0.5)) & unknown).sum((1, 2, 3, 4)).float()
+                    union = ((p | (y > 0.5)) & unknown).sum((1, 2, 3, 4)).float().clamp(min=1)
+                    ious[th] += (inter / union).tolist()
         model.train()
-        return sum(losses) / len(val_idx), float(np.mean(ious))
+        return sum(losses) / len(val_idx), {f"iou_unknown_{th}": round(float(np.mean(v)), 4) for th, v in ious.items()}
 
     while time.time() - sched_t0 < total:
         frac = (time.time() - sched_t0) / total
@@ -353,15 +355,17 @@ def train(args):
         step += 1
         if step % 250 == 0:
             vl, viou = validate()
-            log.append({"step": step, "minutes": round((time.time() - sched_t0) / 60, 1), "train_loss": round(loss.item(), 4), "val_loss": round(vl, 4), "val_iou_unknown": round(viou, 4)})
+            log.append({"step": step, "minutes": round((time.time() - sched_t0) / 60, 1), "train_loss": round(loss.item(), 4), "val_loss": round(vl, 4), **viou})
             print(json.dumps(log[-1]), flush=True)
             if vl < best:
                 best = vl
-                torch.save(model.state_dict(), out_path)
+                torch.save(model.state_dict(), best_path)
     vl, viou = validate()
-    log.append({"step": step, "val_loss": round(vl, 4), "val_iou_unknown": round(viou, 4), "final": True})
+    log.append({"step": step, "val_loss": round(vl, 4), **viou, "final": True})
     if vl < best:
-        torch.save(model.state_dict(), out_path)
+        torch.save(model.state_dict(), best_path)
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    shutil.copyfile(best_path, out_path)
     json.dump({"args": vars(args), "samples": int(len(D["target"])), "log": log}, open(os.path.join(REPO, "benchmark", "results", "shape-prior-train-log.json"), "w"), indent=1)
     print(json.dumps({"weights": os.path.relpath(out_path, REPO), "best_val_loss": round(min(best, vl), 4), "steps": step}))
 
