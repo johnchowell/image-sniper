@@ -98,24 +98,24 @@ def network():
     return UNet3D()
 
 
-_MODEL = None
+_MODELS = {}
 
 
-def load_model(path=WEIGHTS):
-    global _MODEL
-    if _MODEL is None:
+def load_model(path=None):
+    path = os.path.abspath(path or WEIGHTS)
+    if path not in _MODELS:
         import torch
         model = network()
         model.load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
         model.eval()
-        _MODEL = model
-    return _MODEL
+        _MODELS[path] = model
+    return _MODELS[path]
 
 
-def predict(feat):
+def predict(feat, weights=None):
     import torch
     with torch.no_grad():
-        logits = load_model()(torch.from_numpy(feat)[None])[0, 0].numpy()
+        logits = load_model(weights)(torch.from_numpy(feat)[None])[0, 0].numpy()
     return 1 / (1 + np.exp(-logits))
 
 
@@ -196,7 +196,7 @@ def planar_snap(V, F, axes, angle_deg=12.0, axis_deg=10.0, min_area=None, dist_t
     return np.linalg.solve(A, b[..., None])[..., 0]
 
 
-def complete(center, size, axes, mask, exclude, view, supported, depth_noise, n_fine, threshold):
+def complete(center, size, axes, mask, exclude, view, supported, depth_noise, n_fine, threshold, weights=None):
     """Occupancy of a cube around the box (n_fine cells per side) from the evidence and the learned prior.
     A cell is full where the prior says so and the view does not see past it; cells on the observed surface (within
     a cell of the measured depth) are full whatever the prior says, so thin parts the view shows stay. Returns the
@@ -207,7 +207,7 @@ def complete(center, size, axes, mask, exclude, view, supported, depth_noise, n_
     s, e, o, b, _ = evidence(P.reshape(-1, 3), mask, exclude, view, depth_noise)
     shape = (n,) * 3
     feat = features(s.reshape(shape), e.reshape(shape), o.reshape(shape), b.reshape(shape), L, (center - view.position) @ axes)
-    prob = predict(feat)
+    prob = predict(feat, weights)
     Pf, _ = grid_points(center, axes, lo, L, n_fine)
     vox = L / n_fine
     sf, ef, _, _, dz = evidence(Pf.reshape(-1, 3), mask, exclude, view, depth_noise)

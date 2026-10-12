@@ -349,6 +349,7 @@ def build_parser():
     parser.add_argument("--completion", choices=["carve", "prior"], default="carve",
                         help="hidden parts: silhouette extrusion inside the box, or the learned shape prior in a cube around it")
     parser.add_argument("--prior-threshold", type=float, default=0.5)
+    parser.add_argument("--prior-weights", help="shape prior weights (default .claude/models/shape-prior.pt)")
     parser.add_argument("--box", choices=["tight", "evidence"], default="tight",
                         help="object box: layout box shrunk to the observed faces, or rebuilt from the observed points")
     parser.add_argument("--normal-yaw", type=int, default=1, help="1: object yaw from its visible face normals (else the layout yaw)")
@@ -894,7 +895,7 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
         info = {"primitive": "cylinder"}
     else:
         if args.completion == "prior":
-            occ, lo, vox, _ = shape_prior.complete(center, size, axes, mask, exclude, view, supported, args.depth_noise, args.voxels, args.prior_threshold)
+            occ, lo, vox, _ = shape_prior.complete(center, size, axes, mask, exclude, view, supported, args.depth_noise, args.voxels, args.prior_threshold, args.prior_weights)
             occ = largest_parts(occ)
             support_y = -size[1] / 2
         else:
