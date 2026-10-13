@@ -346,6 +346,7 @@ def build_parser():
     parser.add_argument("--surface", choices=["smooth", "voxels", "planar"], default="smooth",
                         help="object surface: smoothed marching cubes, voxel box faces, or marching cubes snapped to fitted planes")
     parser.add_argument("--smooth-iterations", type=int, default=10)
+    parser.add_argument("--decimate-tol", type=float, default=0.5, help="surface error of the object mesh decimation, in voxels")
     parser.add_argument("--completion", choices=["carve", "prior"], default="prior",
                         help="hidden parts: silhouette extrusion inside the box, or the learned shape prior in a cube around it")
     parser.add_argument("--prior-threshold", type=float, default=0.2, help="occupancy probability of a hidden cell (train-split sweep)")
@@ -530,9 +531,36 @@ def voxel_surface(occ, lo, vox, drop_bottom):
     return np.array(V, float).reshape(-1, 3), np.array(F, int).reshape(-1, 3)
 
 
-def smooth_surface(occ, lo, vox, drop_bottom, iterations):
+def decimate(mesh, tol):
+    """Fewest triangles whose surface stays within tol of the mesh: bisection on the triangle count of quadric
+    decimation. The error is the 99th percentile of the exact distance from surface samples of each mesh to the
+    other. Flat regions become a few large triangles."""
+    import fast_simplification
+    if tol <= 0 or len(mesh.faces) <= 12:
+        return mesh
+    ref = trimesh.sample.sample_surface(mesh, 5000, seed=0)[0]
+    V, F = np.asarray(mesh.vertices, np.float64), np.asarray(mesh.faces, np.int32)
+    best, lo_n, hi_n = mesh, 12, len(F)
+    while hi_n > 1.15 * lo_n:  # invariant: hi_n triangles stay within tol
+        n = int(math.sqrt(lo_n * hi_n))
+        points, tris = fast_simplification.simplify(V, F, target_count=n)
+        out = trimesh.Trimesh(vertices=points, faces=tris, process=True)
+        ok = len(out.faces) > 0 and out.area > 0
+        if ok:
+            test = trimesh.sample.sample_surface(out, 5000, seed=1)[0]
+            err = max(np.percentile(trimesh.proximity.closest_point(out, ref)[1], 99), np.percentile(trimesh.proximity.closest_point(mesh, test)[1], 99))
+            ok = err <= tol
+        if ok:
+            best, hi_n = out, n
+        else:
+            lo_n = n
+    return best
+
+
+def smooth_surface(occ, lo, vox, drop_bottom, iterations, tol):
     """Boundary of a voxel occupancy without stair steps: marching cubes on the binary grid, then Taubin smoothing
-    (no shrinking, so one-voxel slabs such as a desk top stay). drop_bottom removes the faces on the support."""
+    (no shrinking, so one-voxel slabs such as a desk top stay), then decimation to the error tol. drop_bottom removes
+    the faces on the support."""
     from skimage.measure import marching_cubes
     padded = np.pad(occ.astype(np.float32), 1)
     verts, faces, _, _ = marching_cubes(padded, 0.5)
@@ -540,10 +568,7 @@ def smooth_surface(occ, lo, vox, drop_bottom, iterations):
     mesh = trimesh.Trimesh(vertices=verts, faces=faces[:, ::-1], process=True)
     if iterations:
         trimesh.smoothing.filter_taubin(mesh, lamb=0.5, nu=0.53, iterations=iterations)
-    if len(mesh.faces) > 2000:  # flat parts need few triangles: quadric decimation to a quarter
-        import fast_simplification
-        points, tris = fast_simplification.simplify(np.asarray(mesh.vertices, np.float32), np.asarray(mesh.faces, np.int32), 0.75)
-        mesh = trimesh.Trimesh(vertices=points, faces=tris, process=True)
+    mesh = decimate(mesh, tol)
     if drop_bottom:
         bottom = (mesh.triangles_center[:, 1] < lo[1] + 0.75 * vox) & (mesh.face_normals[:, 1] < -0.7)
         mesh.update_faces(~bottom)
@@ -561,7 +586,7 @@ def largest_parts(occ):
     return occ
 
 
-def planar_surface(occ, lo, vox, supported, support_y, angle_deg, iterations):
+def planar_surface(occ, lo, vox, supported, support_y, angle_deg, iterations, tol):
     """Flat-faced boundary of an occupancy: marching cubes, Taubin smoothing (stair steps become slopes), vertices
     moved onto the fitted planes of the planar regions (box-aligned where close), then decimated (flat regions
     need few triangles). The faces on the support are dropped."""
@@ -572,10 +597,7 @@ def planar_surface(occ, lo, vox, supported, support_y, angle_deg, iterations):
         trimesh.smoothing.filter_taubin(mesh, lamb=0.5, nu=0.53, iterations=iterations)
     V = shape_prior.planar_snap(np.asarray(mesh.vertices), np.asarray(mesh.faces), np.eye(3), angle_deg=angle_deg)
     mesh = trimesh.Trimesh(vertices=V, faces=mesh.faces, process=True)
-    if len(mesh.faces) > 500:
-        import fast_simplification
-        points, tris = fast_simplification.simplify(np.asarray(mesh.vertices, np.float32), np.asarray(mesh.faces, np.int32), 0.8)
-        mesh = trimesh.Trimesh(vertices=points, faces=tris, process=True)
+    mesh = decimate(mesh, tol)
     if supported:
         bottom = (mesh.triangles_center[:, 1] < support_y + 0.75 * vox) & (mesh.face_normals[:, 1] < -0.7)
         mesh.update_faces(~bottom)
@@ -906,9 +928,9 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
             occ = np.ones(np.maximum(1, np.round(size / vox).astype(int)), bool)
             support_y = lo[1]
         if args.surface == "smooth":
-            Vl, F = smooth_surface(occ, lo, vox, drop_bottom=supported, iterations=args.smooth_iterations)
+            Vl, F = smooth_surface(occ, lo, vox, drop_bottom=supported, iterations=args.smooth_iterations, tol=args.decimate_tol * vox)
         elif args.surface == "planar":
-            Vl, F = planar_surface(occ, lo, vox, supported, support_y, args.plane_angle, args.smooth_iterations)
+            Vl, F = planar_surface(occ, lo, vox, supported, support_y, args.plane_angle, args.smooth_iterations, args.decimate_tol * vox)
         else:
             Vl, F = voxel_surface(occ, lo, vox, drop_bottom=supported)
         mesh = trimesh.Trimesh(vertices=Vl @ axes.T + center, faces=F, process=False)

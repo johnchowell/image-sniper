@@ -255,8 +255,8 @@ def surface_ceiling(split, models, voxels=80):
             occ = ndimage.binary_fill_holes(ndimage.binary_closing(np.pad(occ, 1))[1:-1, 1:-1, 1:-1] | occ)
             tp, tn = surface_samples(tm, POINTS)
             diag = float(np.linalg.norm(tm.bounds[1] - tm.bounds[0]))
-            surfaces = {"smooth": lambda: ps.smooth_surface(occ, lo, vox, False, 10), "voxels": lambda: ps.voxel_surface(occ, lo, vox, False),
-                        "planar": lambda: ps.planar_surface(occ, lo, vox, False, lo[1], 12.0, 10)}
+            surfaces = {"smooth": lambda: ps.smooth_surface(occ, lo, vox, False, 10, 0.5 * vox), "voxels": lambda: ps.voxel_surface(occ, lo, vox, False),
+                        "planar": lambda: ps.planar_surface(occ, lo, vox, False, lo[1], 12.0, 10, 0.5 * vox)}
             for name, make in surfaces.items():
                 Vl, F = make()
                 m = metrics(surface_samples(trimesh.Trimesh(Vl @ axes.T, F, process=False), POINTS, seed=1), (tp, tn), np.ones(len(tp), bool), diag)

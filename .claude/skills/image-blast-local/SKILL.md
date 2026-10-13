@@ -53,7 +53,15 @@ After the light and layout steps, the layout can also become a scene of textured
 .venv-render/bin/python .claude/scripts/local/render_check.py --world "$0"
 ```
 
-The first writes `output/scene/N-primitive-scene.glb`. The second (Blender runtime: `bash .claude/scripts/bench/setup.sh` once) fits the light powers and the camera response to the photo and writes `N-primitive-scene-check.json` (PSNR against the photo), `-check.png` (photo, render, difference, two orbit views) and `-lights.json` (the fitted light rig).
+Each object mesh comes from these steps:
+1. The yaw comes from the depth normals of the visible faces.
+2. The box comes from the observed points.
+3. A learned shape prior (`.claude/models/shape-prior.pt`, a 3D U-Net trained on simulated views of ModelNet40 indoor shapes) completes the hidden part of the occupancy. The observed surface and the free space stay exact.
+4. The surface is decimated to an error bound, so flat faces become a few large triangles.
+
+To compare the variants against the true meshes of the benchmark, use `.claude/scripts/bench/shape_eval.py score --split train --mode gt|pred --name <name> --args "<primitive_scene.py options>"`, then `shape_eval.py compare <a> <b>`. Tune on train, confirm on val, and read test only once.
+
+The first command writes `output/scene/N-primitive-scene.glb`. The second (Blender runtime: `bash .claude/scripts/bench/setup.sh` once) fits the light powers and the camera response to the photo and writes `N-primitive-scene-check.json` (PSNR against the photo), `-check.png` (photo, render, difference, two orbit views) and `-lights.json` (the fitted light rig).
 
 Do not load the PNG outputs into context to do quality checks. Use the printed summary and the JSON files.
 
