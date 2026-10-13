@@ -340,7 +340,6 @@ def build_parser():
     parser.add_argument("--relief-sigma-m", type=float, default=0.01, help="smoothing of the relief before the normal map")
     parser.add_argument("--no-relief", action="store_true", help="flat primitives: no displacement, flat normal maps")
     parser.add_argument("--depth-noise", type=float, default=0.01, help="relative noise of the depth (sigma / depth)")
-    parser.add_argument("--hidden-base", type=int, default=1, help="1: an object without a detected support whose base the view cannot show stands on the floor")
     parser.add_argument("--voxel-m", type=float, default=0.01, help="smallest voxel of the object carving")
     parser.add_argument("--voxels", type=int, default=80, help="voxels along an object's longest side (sets the voxel size)")
     parser.add_argument("--uv-grid-m", type=float, default=0.1, help="largest triangle edge of object meshes (projective UV error stays under a pixel)")
@@ -798,34 +797,6 @@ def normal_yaw(core, view, yaw0, step=2, min_pixels=150, min_concentration=0.35)
     return yaw4 + 90 * k, concentration
 
 
-def hidden_base(inst, mask, view, reach=6):
-    """True when the view cannot show what the object stands on: the mask reaches the bottom image edge, or most of
-    its lowest pixels lie just above a nearer surface (an occluder: a depth jump toward the camera, where a support
-    in contact continues the depth)."""
-    if "bottom" in (inst.get("truncated_edges") or []):
-        return True
-    H = mask.shape[0]
-    cols = np.nonzero(mask.any(0))[0]
-    if len(cols) == 0:
-        return False
-    low = H - 1 - np.argmax(mask[::-1, cols], axis=0)
-    high = np.argmax(mask[:, cols], axis=0)
-    band = max(3, int(0.1 * (low.max() - high.min() + 1)))
-    occluded = checked = 0
-    for u, y in zip(cols, low):
-        if y < low.max() - band or y + reach >= H:
-            continue
-        z_obj = view.depth[max(0, y - 4):y, u]
-        z_below = view.depth[y + 2:y + reach + 1, u]
-        z_obj, z_below = z_obj[np.isfinite(z_obj)], z_below[np.isfinite(z_below)]
-        if len(z_obj) == 0 or len(z_below) == 0:
-            continue
-        z = float(np.median(z_obj))
-        checked += 1
-        occluded += float(z_below.min()) < z - (0.1 + 0.05 * z)
-    return checked > 0 and occluded >= 0.5 * checked
-
-
 def evidence_box(center, size, axes, core, view, supported):
     """The object's box from what the view shows, the layout box filling in what it cannot show. Along each
     horizontal axis the side toward the camera is the observed surface; the far side is the layout's when the
@@ -900,13 +871,6 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
     if args.normal_yaw:
         yaw = math.radians(normal_yaw(core, view, inst["yaw_deg"])[0])
         axes = np.stack([[math.cos(yaw), 0, -math.sin(yaw)], [0, 1.0, 0], [math.sin(yaw), 0, math.cos(yaw)]], 1)
-    if args.hidden_base and inst.get("support") in (None, "none_detected") and center[1] + size[1] / 2 > 0.2 and hidden_base(inst, mask, view):
-        # The base is out of the frame or behind a nearer object: the object stands on the floor (y = 0), and the
-        # shape prior completes the part the view cannot show.
-        top = center[1] + size[1] / 2
-        center, size = center.copy(), size.copy()
-        center[1], size[1] = top / 2, top
-        inst = {**inst, "support": "floor", "support_basis": "hidden_base"}
     if args.box == "evidence":
         center, size = evidence_box(center, size, axes, core, view, inst.get("support") not in (None, "none_detected"))
     elif len(us) > 50:

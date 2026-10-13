@@ -55,7 +55,7 @@ After the light and layout steps, the layout can also become a scene of textured
 
 Each object mesh comes from these steps:
 1. The yaw comes from the depth normals of the visible faces.
-2. The box comes from the observed points. An object without a detected support whose base the view cannot show (cut by the bottom image edge, or a nearer surface directly below it) extends to the floor (`--hidden-base`).
+2. The box comes from the observed points. Its support comes from the layout (an object whose base the view cannot show stands on the floor, `support_basis: hidden_base`).
 3. A learned shape prior (`.claude/models/shape-prior.pt`, a 3D U-Net trained on simulated views of ModelNet40 indoor shapes) completes the hidden part of the occupancy. The observed surface and the free space stay exact. Closed cavities become full, because the view cannot see them.
 4. The surface is decimated to an error bound, so flat faces become a few large triangles.
 
