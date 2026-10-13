@@ -346,11 +346,11 @@ def build_parser():
     parser.add_argument("--surface", choices=["smooth", "voxels", "planar"], default="smooth",
                         help="object surface: smoothed marching cubes, voxel box faces, or marching cubes snapped to fitted planes")
     parser.add_argument("--smooth-iterations", type=int, default=10)
-    parser.add_argument("--completion", choices=["carve", "prior"], default="carve",
+    parser.add_argument("--completion", choices=["carve", "prior"], default="prior",
                         help="hidden parts: silhouette extrusion inside the box, or the learned shape prior in a cube around it")
-    parser.add_argument("--prior-threshold", type=float, default=0.5)
+    parser.add_argument("--prior-threshold", type=float, default=0.2, help="occupancy probability of a hidden cell (train-split sweep)")
     parser.add_argument("--prior-weights", help="shape prior weights (default .claude/models/shape-prior.pt)")
-    parser.add_argument("--box", choices=["tight", "evidence"], default="tight",
+    parser.add_argument("--box", choices=["tight", "evidence"], default="evidence",
                         help="object box: layout box shrunk to the observed faces, or rebuilt from the observed points")
     parser.add_argument("--normal-yaw", type=int, default=1, help="1: object yaw from its visible face normals (else the layout yaw)")
     parser.add_argument("--round", choices=["cylinder", "shape"], default="cylinder", help="round names: one cylinder, or the shape like any object")
@@ -829,8 +829,8 @@ def object_primitive(obj, inst, mask, maps, view, args, exclude=None):
 
 
 def object_geometry(obj, inst, mask, view, args, exclude=None):
-    """An object's shape in the layout frame: a tight box from its observed points, carved to the shape the view
-    shows (round names: one cylinder). Returns the untextured mesh, the instance with the widened image box, the
+    """An object's shape in the layout frame: the yaw from its visible faces, a box from its observed points, and
+    the occupancy of the shape prior (or the carving of the view) in it (round names: one cylinder). Returns the untextured mesh, the instance with the widened image box, the
     mask with the box's depth evidence, the alpha mask, whether it stands on a support, and a report."""
     center, size = np.array(inst["center"], float), np.array(inst["size"], float)
     yaw = math.radians(inst["yaw_deg"])
