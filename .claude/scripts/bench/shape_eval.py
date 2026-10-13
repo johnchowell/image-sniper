@@ -9,7 +9,7 @@ Modes:
   gt    true depth, true instance masks and true camera; the object box comes from the layout (mapped into the
         true frame with the view's depth scale). Shape completion is then the main error.
   pred  the pipeline as it runs: layout depth, layout masks; the shape is mapped into the true frame with the
-        view's depth scale (true / predicted median depth).
+        view's depth scale (true / predicted median depth). --oracle swaps in true inputs to find the error sources.
 
 The true surface is split into the part the camera sees (visible) and the rest (hidden: back sides, occluded
 parts). Metrics per object (meters; tau = 5% of the true box diagonal):
@@ -32,6 +32,7 @@ import subprocess
 import sys
 from multiprocessing import Pool
 
+import cv2
 import numpy as np
 import trimesh
 from PIL import Image
@@ -109,7 +110,7 @@ def metrics(pred, true, visible_true, diag):
 
 
 def score_view(job):
-    view_dir, mode, extra = job
+    view_dir, mode, extra, oracle = job
     args = ps.build_parser().parse_args(["--world", "-"] + shlex.split(extra))
     gt = json.load(open(os.path.join(view_dir, "gt.json")))
     arrays = np.load(os.path.join(view_dir, "gt.npz"))
@@ -162,7 +163,26 @@ def score_view(job):
             inst_t["image_bbox_px"] = [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]
             mesh, *_, info = ps.object_geometry(obj, inst_t, mask_t, vt, args, exclude_t)
         else:
-            mesh, *_, info = ps.object_geometry(obj, inst, under, view_pred, args, exclude)
+            view_obj, under_o, exclude_o = view_pred, under, exclude
+            if "mask" in oracle:  # true instance mask (and what stands on it) in place of the layout mask
+                under_o = gt_mask.copy()
+                for o in gt["objects"]:
+                    if o.get("support") == true_obj["id"]:
+                        under_o |= masks[o["pass_index"]]
+                exclude_o = (instance != true_obj["pass_index"]) & ~under_o
+            if "depth" in oracle:  # true depth in the predicted frame's units
+                view_obj = ps.View.__new__(ps.View)
+                view_obj.__dict__.update(view_pred.__dict__)
+                view_obj.depth = (depth_true / scale).astype(np.float32)
+            elif "objscale" in oracle:  # the predicted depth with this object's own scale error removed
+                ok = gt_mask & np.isfinite(view_pred.depth) & np.isfinite(depth_true)
+                if ok.sum() > 20:
+                    ratio = float(np.median(depth_true[ok] / scale / view_pred.depth[ok]))
+                    view_obj = ps.View.__new__(ps.View)
+                    view_obj.__dict__.update(view_pred.__dict__)
+                    region = cv2.dilate((under_o | gt_mask).astype(np.uint8), np.ones((15, 15), np.uint8)) > 0
+                    view_obj.depth = np.where(region, view_pred.depth * ratio, view_pred.depth).astype(np.float32)
+            mesh, *_, info = ps.object_geometry(obj, inst, under_o, view_obj, args, exclude_o)
             mesh = trimesh.Trimesh(vertices=to_true(mesh.vertices), faces=mesh.faces, process=False)
         tm = true_mesh(true_obj)
         tp, tn = surface_samples(tm, POINTS)
@@ -276,6 +296,7 @@ def main():
     s.add_argument("--args", default="", help="primitive_scene.py options of the variant (quoted)")
     s.add_argument("--limit", type=int)
     s.add_argument("--workers", type=int, default=os.cpu_count())
+    s.add_argument("--oracle", default="", help="pred mode diagnostics, comma list: mask (true masks), depth (true depth), objscale (per-object depth scale removed)")
     g = sub.add_parser("ceiling", help="surface methods on the true shapes (perfect occupancy)")
     g.add_argument("--split", default="train")
     g.add_argument("--models", type=int, default=40)
@@ -293,11 +314,11 @@ def main():
         print(json.dumps(result, indent=1))
         return
     view_dirs = evaluate.views(args.split)[: args.limit]
-    jobs = [(v, args.mode, args.args) for v in view_dirs]
+    jobs = [(v, args.mode, args.args, args.oracle) for v in view_dirs]
     with Pool(args.workers) as pool:
         views = pool.map(score_view, jobs, chunksize=1)
     summary = summarize(views)
-    out = {"name": args.name, "split": args.split, "mode": args.mode, "args": args.args, "summary": summary,
+    out = {"name": args.name, "split": args.split, "mode": args.mode, "args": args.args, "oracle": args.oracle, "summary": summary,
            "ci95": bootstrap([v for v in views if "objects" in v]), "views": views}
     os.makedirs(RESULTS, exist_ok=True)
     path = os.path.join(RESULTS, f"shape-{args.name}-{args.mode}-{args.split}.json")
