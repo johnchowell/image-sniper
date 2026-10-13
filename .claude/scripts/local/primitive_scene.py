@@ -346,7 +346,7 @@ def build_parser():
     parser.add_argument("--surface", choices=["smooth", "voxels", "planar"], default="smooth",
                         help="object surface: smoothed marching cubes, voxel box faces, or marching cubes snapped to fitted planes")
     parser.add_argument("--smooth-iterations", type=int, default=10)
-    parser.add_argument("--decimate-tol", type=float, default=0.5, help="surface error of the object mesh decimation, in voxels")
+    parser.add_argument("--decimate-tol", type=float, default=1.0, help="surface error of the object mesh decimation, in voxels")
     parser.add_argument("--completion", choices=["carve", "prior"], default="prior",
                         help="hidden parts: silhouette extrusion inside the box, or the learned shape prior in a cube around it")
     parser.add_argument("--prior-threshold", type=float, default=0.2, help="occupancy probability of a hidden cell (train-split sweep)")
