@@ -39,6 +39,10 @@ export const DEFAULT_PARAMS = {
   wall_min_height_m: 1.5,
   support_snap_min_m: 0.08,
   support_snap_fraction: 0.1,
+  hidden_base: 1,
+  hidden_base_min_top_m: 0.2,
+  hidden_base_jump_m: 0.1,
+  hidden_base_jump_fraction: 0.05,
   flat_mask_min_extent_m: 1.5,
   flat_mask_max_height_ratio: 0.1,
   light_plane_tol_m: 0.06,
@@ -82,7 +86,7 @@ export function scaleFromAnchors(layout, params) {
       if (!prior) continue;
       for (const instance of object.instances) {
         // Only a whole object standing on the floor gives its full height.
-        if (instance.truncated || instance.size_basis.y !== "observed_to_support" || instance.support !== "floor") continue;
+        if (instance.truncated || instance.size_basis.y !== "observed_to_support" || instance.support !== "floor" || instance.support_basis === "hidden_base") continue;
         evidence.push({ source: `${instance.id} height prior (${prior.basis})`, measured_m: instance.size[1], log_scale: Math.log(prior.height_m / instance.size[1]), sigma: prior.sigma });
       }
     }
@@ -744,6 +748,30 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
   };
   const floorLabel = palette.find((entry) => entry.class === "floor")?.label;
   const surfaceLabels = palette.filter((entry) => entry.class === "horizontal_surface");
+  // A base the view cannot show: cut by the bottom image edge, or behind a nearer object (a depth jump toward the
+  // camera just below the lowest mask cells; a support in contact continues the depth instead).
+  const hiddenBase = (draft) => {
+    if (draft.image_bbox_px[3] >= height - Math.max(2, step)) return true;
+    const reach = Math.max(2, Math.ceil(6 / step));
+    const above = Math.max(1, Math.ceil(4 / step));
+    const distance = (cell) => (valid[cell] ? Math.hypot(...cellPoint(cell)) : NaN);
+    let checked = 0;
+    let occluded = 0;
+    for (const [gx, gy] of contactBelow(draft, () => false).resting) {
+      if (gy + reach >= gh) continue;
+      const own = [];
+      for (let y = Math.max(0, gy - above); y < gy; y += 1) own.push(distance(y * gw + gx));
+      const below = [];
+      for (let y = gy + Math.max(1, Math.round(2 / step)); y <= gy + reach; y += 1) below.push(distance(y * gw + gx));
+      const ownValid = sortedValues(own.filter(Number.isFinite));
+      const belowValid = below.filter(Number.isFinite);
+      if (!ownValid.length || !belowValid.length) continue;
+      const d = percentile(ownValid, 0.5);
+      checked += 1;
+      if (Math.min(...belowValid) < d - (params.hidden_base_jump_m + params.hidden_base_jump_fraction * d)) occluded += 1;
+    }
+    return checked > 0 && occluded >= 0.5 * checked;
+  };
   for (const draft of drafts) {
     if (draft.support !== "none_detected") continue;
     const base = drafts
@@ -777,6 +805,12 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
         draft.support_basis = "image_contact";
         break;
       }
+    }
+    // Hidden base: the object stands on the floor; the part the view cannot show lies between it and the floor.
+    if (draft.support === "none_detected" && params.hidden_base && draft.top > params.hidden_base_min_top_m && hiddenBase(draft)) {
+      draft.bottom = 0;
+      draft.support = floorPlane ? "floor" : "floor_estimate";
+      draft.support_basis = "hidden_base";
     }
   }
 

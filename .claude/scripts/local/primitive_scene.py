@@ -340,7 +340,7 @@ def build_parser():
     parser.add_argument("--relief-sigma-m", type=float, default=0.01, help="smoothing of the relief before the normal map")
     parser.add_argument("--no-relief", action="store_true", help="flat primitives: no displacement, flat normal maps")
     parser.add_argument("--depth-noise", type=float, default=0.01, help="relative noise of the depth (sigma / depth)")
-    parser.add_argument("--hidden-base", type=int, default=0, help="1: an object without a detected support whose base the view cannot show stands on the floor")
+    parser.add_argument("--hidden-base", type=int, default=1, help="1: an object without a detected support whose base the view cannot show stands on the floor")
     parser.add_argument("--voxel-m", type=float, default=0.01, help="smallest voxel of the object carving")
     parser.add_argument("--voxels", type=int, default=80, help="voxels along an object's longest side (sets the voxel size)")
     parser.add_argument("--uv-grid-m", type=float, default=0.1, help="largest triangle edge of object meshes (projective UV error stays under a pixel)")
