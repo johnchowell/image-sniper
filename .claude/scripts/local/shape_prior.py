@@ -196,11 +196,13 @@ def planar_snap(V, F, axes, angle_deg=12.0, axis_deg=10.0, min_area=None, dist_t
     return np.linalg.solve(A, b[..., None])[..., 0]
 
 
-def complete(center, size, axes, mask, exclude, view, supported, depth_noise, n_fine, threshold, weights=None):
+def complete(center, size, axes, mask, exclude, view, supported, depth_noise, n_fine, threshold, weights=None, hint=None, hint_mode="union"):
     """Occupancy of a cube around the box (n_fine cells per side) from the evidence and the learned prior.
     A cell is full where the prior says so and the view does not see past it; cells on the observed surface (within
-    a cell of the measured depth) are full whatever the prior says, so thin parts the view shows stay. Returns the
-    occupancy, the cube's corner (local box frame), the cell size and the prior's probabilities."""
+    a cell of the measured depth) are full whatever the prior says, so thin parts the view shows stay. hint: a
+    function (corner, cell size, cells per side) -> occupancy of another shape hypothesis (a generated asset);
+    hint_mode says how it joins the prior: replace it, union, or intersect. Returns the occupancy, the cube's
+    corner (local box frame), the cell size and the prior's probabilities."""
     lo, L = cube_frame(center, size, axes, supported)
     n = GRID
     P, _ = grid_points(center, axes, lo, L, n)
@@ -215,5 +217,9 @@ def complete(center, size, axes, mask, exclude, view, supported, depth_noise, n_
     sf, ef, dz = sf.reshape(shape_f), ef.reshape(shape_f), dz.reshape(shape_f)
     pf = upsample(prob, n_fine)
     exact = sf & (np.abs(np.nan_to_num(dz, nan=1e9)) <= vox)
-    occ = exact | (~ef & (pf > threshold))
+    hidden = pf > threshold
+    if hint is not None:
+        g = hint(lo, vox, n_fine)
+        hidden = {"replace": g, "union": hidden | g, "intersect": hidden & g}[hint_mode]
+    occ = exact | (~ef & hidden)
     return occ, lo, vox, prob

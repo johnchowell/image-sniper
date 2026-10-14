@@ -24,6 +24,7 @@ import numpy as np
 import trimesh
 from PIL import Image
 
+import generated_object
 import shape_prior
 from common import latest, load_layout, next_index, world_path, write_request
 
@@ -356,6 +357,10 @@ def build_parser():
     parser.add_argument("--normal-yaw", type=int, default=1, help="1: object yaw from its visible face normals (else the layout yaw)")
     parser.add_argument("--round", choices=["cylinder", "shape"], default="cylinder", help="round names: one cylinder, or the shape like any object")
     parser.add_argument("--plane-angle", type=float, default=12.0, help="planar surface: largest normal angle inside one plane (deg)")
+    parser.add_argument("--generated", choices=["off", "mesh", "replace", "union", "intersect"], default="off",
+                        help="the object's generated asset (object_mesh.py), registered to the view: used as the mesh, or as the hidden-part "
+                             "hypothesis of the completion (in place of the prior, with it, or where both agree)")
+    parser.add_argument("--free-weight", type=float, default=0.15, help="registration: cost (m) of the asset's surface fraction in seen-through space")
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
     parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
     return parser
@@ -913,7 +918,25 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
     supported = inst.get("support") not in (None, "none_detected")
     # The surface continues under what stands on it (a laptop on a desk): close the mask's gaps for the alpha.
     alpha_mask = cv2.morphologyEx(mask.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8)) > 0
-    if ROUND.search(obj["name"]) and args.round == "cylinder":
+    generated, generated_info = None, {}
+    if args.generated != "off":
+        found = generated_object.load_generated(inst["mask_file"], obj["object_id"])
+        if found is not None:
+            asset, generated_info["generated_file"] = found
+            if len(asset.faces) > 8000:
+                import fast_simplification
+                Va, Fa = fast_simplification.simplify(np.asarray(asset.vertices, np.float64), np.asarray(asset.faces, np.int32), target_count=8000)
+                asset = trimesh.Trimesh(vertices=Va, faces=Fa, process=True)
+            generated, reg = generated_object.register(asset, center, size, core, mask, exclude, view, supported, args.depth_noise, args.free_weight)
+            generated_info.update(reg)
+    if generated is not None and args.generated == "mesh":
+        vox = float(max(args.voxel_m, shape_prior.PAD * size.max() / args.voxels))
+        mesh = decimate(generated, args.decimate_tol * vox)
+        if supported:  # the base on the support is never seen
+            keep = ~((mesh.face_normals[:, 1] < -0.9) & (mesh.triangles_center[:, 1] < center[1] - size[1] / 2 + 2 * vox))
+            mesh = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces[keep], process=False)
+        info = {"primitive": "generated", **generated_info, "faces": len(mesh.faces)}
+    elif ROUND.search(obj["name"]) and args.round == "cylinder":
         radius = max(size[0], size[2]) / 2
         mesh = trimesh.creation.cylinder(radius=radius, height=size[1], sections=48)
         mesh.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))  # z axis -> y axis
@@ -923,7 +946,11 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
         info = {"primitive": "cylinder"}
     else:
         if args.completion == "prior":
-            occ, lo, vox, _ = shape_prior.complete(center, size, axes, mask, exclude, view, supported, args.depth_noise, args.voxels, args.prior_threshold, args.prior_weights)
+            hint = None
+            if generated is not None:
+                hint = lambda lo, vox, n: generated_object.solid(generated, lo, vox, n, center, axes)
+            occ, lo, vox, _ = shape_prior.complete(center, size, axes, mask, exclude, view, supported, args.depth_noise, args.voxels, args.prior_threshold, args.prior_weights,
+                                                   hint=hint, hint_mode=args.generated if args.generated != "off" else "union")
             occ = largest_parts(fill_cavities(occ))
             support_y = -size[1] / 2
         else:
@@ -941,7 +968,7 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
             Vl, F = voxel_surface(occ, lo, vox, drop_bottom=supported)
         mesh = trimesh.Trimesh(vertices=Vl @ axes.T + center, faces=F, process=False)
         info = {"primitive": f"{args.completion} {args.surface}", "yaw_deg": round(math.degrees(math.atan2(-axes[2, 0], axes[0, 0])), 2), "voxel_m": round(vox, 4), "voxels": int(occ.sum()),
-                "occupancy": round(float(occ.mean()), 3), "faces": len(F)}
+                "occupancy": round(float(occ.mean()), 3), "faces": len(F), **generated_info}
     return mesh, inst, mask, alpha_mask, supported, info
 
 

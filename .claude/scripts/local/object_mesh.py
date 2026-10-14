@@ -48,28 +48,33 @@ def largest_parts(mesh):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--world", required=True)
+    parser.add_argument("--world", required=True, action="append", help="world slug (repeatable: the model loads once)")
     parser.add_argument("--object", action="append", help="object id (repeatable); default: every found object")
     parser.add_argument("--resolution", type=int, default=256, help="marching cubes resolution")
     parser.add_argument("--foreground-ratio", type=float, default=0.85)
     parser.add_argument("--faces", type=int, default=30000, help="target face count after decimation")
+    parser.add_argument("--colors", choices=["auto", "none"], default="auto",
+                        help="auto: vertex colors from the albedo crop (photo crop without a light estimate); none: geometry only")
     args = parser.parse_args()
-
-    layout_index, layout_path, layout = load_layout(args.world)
-    photo = Image.open(layout["source_image"]).convert("RGB")
-    size = photo.size
-    light = latest(world_path(args.world, "output", "light"), "light", ".json")
-    albedo = None
-    if light:
-        light_json = json.load(open(light[1]))
-        if os.path.normpath(light_json["source_image"]) == os.path.normpath(layout["source_image"]):
-            albedo = Image.open(light_json["files"]["albedo"]).convert("RGB").resize(size, Image.BICUBIC)
 
     torch.set_num_threads(os.cpu_count())
     model = TSR.from_pretrained("stabilityai/TripoSR", config_name="config.yaml", weight_name="model.ckpt")
     model.renderer.set_chunk_size(8192)
-    camera = np.array(layout["camera"]["position"], dtype=np.float64)
+    for world in args.world:
+        generate_world(model, world, args)
 
+
+def generate_world(model, world, args):
+    layout_index, layout_path, layout = load_layout(world)
+    photo = Image.open(layout["source_image"]).convert("RGB")
+    size = photo.size
+    light = latest(world_path(world, "output", "light"), "light", ".json")
+    albedo = None
+    if light and args.colors != "none":
+        light_json = json.load(open(light[1]))
+        if os.path.normpath(light_json["source_image"]) == os.path.normpath(layout["source_image"]):
+            albedo = Image.open(light_json["files"]["albedo"]).convert("RGB").resize(size, Image.BICUBIC)
+    camera = np.array(layout["camera"]["position"], dtype=np.float64)
     results = []
     seen = set()
     for obj, instance in object_instances(layout):
@@ -87,11 +92,13 @@ def main():
             if len(mesh.faces) > args.faces:
                 mesh = mesh.simplify_quadric_decimation(face_count=args.faces)
             # Colors are queried at the final vertices: from the albedo triplane when available.
-            color_codes, color_source = codes[0], "photo"
-            if albedo is not None:
-                color_codes, color_source = model([crop(albedo, mask, args.foreground_ratio)], device="cpu")[0], "albedo"
-            colors = model.renderer.query_triplane(model.decoder, torch.tensor(mesh.vertices, dtype=torch.float32), color_codes)["color"]
-            mesh.visual.vertex_colors = np.c_[(colors.clamp(0, 1).numpy() * 255).astype(np.uint8), np.full(len(colors), 255, np.uint8)]
+            color_source = None
+            if args.colors != "none":
+                color_codes, color_source = codes[0], "photo"
+                if albedo is not None:
+                    color_codes, color_source = model([crop(albedo, mask, args.foreground_ratio)], device="cpu")[0], "albedo"
+                colors = model.renderer.query_triplane(model.decoder, torch.tensor(mesh.vertices, dtype=torch.float32), color_codes)["color"]
+                mesh.visual.vertex_colors = np.c_[(colors.clamp(0, 1).numpy() * 255).astype(np.uint8), np.full(len(colors), 255, np.uint8)]
 
         # Canonical asset: metric height from the layout box, base at y=0, centered on x/z.
         vertices = mesh.vertices @ TSR_TO_CANONICAL.T
@@ -138,7 +145,7 @@ def main():
                 "scale_basis": scale_basis,
             })
 
-        object_dir = world_path(args.world, "output", obj["object_id"])
+        object_dir = world_path(world, "output", obj["object_id"])
         n = next_index(object_dir)
         glb = os.path.join(object_dir, f"{n}-{obj['object_id']}.glb")
         reference = os.path.join(object_dir, f"{n}-{obj['object_id']}.png")
