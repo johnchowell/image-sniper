@@ -57,7 +57,8 @@ Each object mesh comes from these steps:
 1. The yaw comes from the depth normals of the visible faces.
 2. The box comes from the observed points. Its support comes from the layout (an object whose base the view cannot show stands on the floor, `support_basis: hidden_base`).
 3. A learned shape prior (`.claude/models/shape-prior.pt`, a 3D U-Net trained on simulated views of ModelNet40 indoor shapes) completes the hidden part of the occupancy. The observed surface and the free space stay exact. Closed cavities become full, because the view cannot see them.
-4. The surface is decimated to an error bound, so flat faces become a few large triangles.
+4. If the object has a generated asset (`output/<object>/N-<object>.glb` from the objects step: the mask cut-out through TripoSR), the asset is registered to the view (yaw, scale, position; base on the support) so that the observed points lie on it and none of it lies in seen-through space or outside the prior's cube. The registered asset then adds evidence to the prior's log-odds (`--generated fuse`, weight 1). Without an asset, the prior is used alone. Run the objects step (`local_pass.py`, or `object_mesh.py --world "$0"`) before this script to use it.
+5. The surface is decimated to an error bound, so flat faces become a few large triangles.
 
 To compare the variants against the true meshes of the benchmark, use `.claude/scripts/bench/shape_eval.py score --split train --mode gt|pred --name <name> --args "<primitive_scene.py options>"`, then `shape_eval.py compare <a> <b>`. Tune on train, confirm on val, and read test only once.
 

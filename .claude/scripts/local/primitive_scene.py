@@ -357,7 +357,7 @@ def build_parser():
     parser.add_argument("--normal-yaw", type=int, default=1, help="1: object yaw from its visible face normals (else the layout yaw)")
     parser.add_argument("--round", choices=["cylinder", "shape"], default="cylinder", help="round names: one cylinder, or the shape like any object")
     parser.add_argument("--plane-angle", type=float, default=12.0, help="planar surface: largest normal angle inside one plane (deg)")
-    parser.add_argument("--generated", choices=["off", "mesh", "replace", "union", "intersect", "fuse"], default="off",
+    parser.add_argument("--generated", choices=["off", "mesh", "replace", "union", "intersect", "fuse"], default="fuse",
                         help="the object's generated asset (object_mesh.py), registered to the view: used as the mesh, or as the hidden-part "
                              "hypothesis of the completion (in place of the prior, with it, where both agree, or as evidence on the prior's log-odds)")
     parser.add_argument("--generated-weight", type=float, default=1.0, help="fuse: log-odds the generated asset adds where it is full and subtracts where it is empty")
@@ -920,7 +920,7 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
     # The surface continues under what stands on it (a laptop on a desk): close the mask's gaps for the alpha.
     alpha_mask = cv2.morphologyEx(mask.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8)) > 0
     generated, generated_info = None, {}
-    if args.generated != "off":
+    if args.generated != "off" and obj.get("object_id"):  # clutter parts are not layout objects: no asset
         found = generated_object.load_generated(inst["mask_file"], obj["object_id"])
         if found is not None:
             asset, generated_info["generated_file"] = found
