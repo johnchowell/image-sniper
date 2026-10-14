@@ -196,12 +196,13 @@ def planar_snap(V, F, axes, angle_deg=12.0, axis_deg=10.0, min_area=None, dist_t
     return np.linalg.solve(A, b[..., None])[..., 0]
 
 
-def complete(center, size, axes, mask, exclude, view, supported, depth_noise, n_fine, threshold, weights=None, hint=None, hint_mode="union"):
+def complete(center, size, axes, mask, exclude, view, supported, depth_noise, n_fine, threshold, weights=None, hint=None, hint_mode="union", hint_weight=1.0):
     """Occupancy of a cube around the box (n_fine cells per side) from the evidence and the learned prior.
     A cell is full where the prior says so and the view does not see past it; cells on the observed surface (within
     a cell of the measured depth) are full whatever the prior says, so thin parts the view shows stay. hint: a
     function (corner, cell size, cells per side) -> occupancy of another shape hypothesis (a generated asset);
-    hint_mode says how it joins the prior: replace it, union, or intersect. Returns the occupancy, the cube's
+    hint_mode says how it joins the prior: replace it, union, intersect, or fuse (the hint is evidence that adds
+    hint_weight to the prior's log-odds where it is full and subtracts it where it is empty). Returns the occupancy, the cube's
     corner (local box frame), the cell size and the prior's probabilities."""
     lo, L = cube_frame(center, size, axes, supported)
     n = GRID
@@ -220,6 +221,10 @@ def complete(center, size, axes, mask, exclude, view, supported, depth_noise, n_
     hidden = pf > threshold
     if hint is not None:
         g = hint(lo, vox, n_fine)
-        hidden = {"replace": g, "union": hidden | g, "intersect": hidden & g}[hint_mode]
+        if hint_mode == "fuse":
+            p = np.clip(pf, 1e-4, 1 - 1e-4)
+            hidden = np.log(p / (1 - p)) + hint_weight * (2 * g - 1.0) > math.log(threshold / (1 - threshold))
+        else:
+            hidden = {"replace": g, "union": hidden | g, "intersect": hidden & g}[hint_mode]
     occ = exact | (~ef & hidden)
     return occ, lo, vox, prob

@@ -357,9 +357,10 @@ def build_parser():
     parser.add_argument("--normal-yaw", type=int, default=1, help="1: object yaw from its visible face normals (else the layout yaw)")
     parser.add_argument("--round", choices=["cylinder", "shape"], default="cylinder", help="round names: one cylinder, or the shape like any object")
     parser.add_argument("--plane-angle", type=float, default=12.0, help="planar surface: largest normal angle inside one plane (deg)")
-    parser.add_argument("--generated", choices=["off", "mesh", "replace", "union", "intersect"], default="off",
+    parser.add_argument("--generated", choices=["off", "mesh", "replace", "union", "intersect", "fuse"], default="off",
                         help="the object's generated asset (object_mesh.py), registered to the view: used as the mesh, or as the hidden-part "
-                             "hypothesis of the completion (in place of the prior, with it, or where both agree)")
+                             "hypothesis of the completion (in place of the prior, with it, where both agree, or as evidence on the prior's log-odds)")
+    parser.add_argument("--generated-weight", type=float, default=1.0, help="fuse: log-odds the generated asset adds where it is full and subtracts where it is empty")
     parser.add_argument("--free-weight", type=float, default=0.15, help="registration: cost (m) of the asset's surface fraction in seen-through space or outside the prior's cube")
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
     parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
@@ -950,7 +951,7 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
             if generated is not None:
                 hint = lambda lo, vox, n: generated_object.solid(generated, lo, vox, n, center, axes)
             occ, lo, vox, _ = shape_prior.complete(center, size, axes, mask, exclude, view, supported, args.depth_noise, args.voxels, args.prior_threshold, args.prior_weights,
-                                                   hint=hint, hint_mode=args.generated if args.generated != "off" else "union")
+                                                   hint=hint, hint_mode=args.generated if args.generated != "off" else "union", hint_weight=args.generated_weight)
             occ = largest_parts(fill_cavities(occ))
             support_y = -size[1] / 2
         else:
