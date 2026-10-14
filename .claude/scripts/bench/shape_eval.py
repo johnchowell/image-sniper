@@ -201,10 +201,12 @@ def score_view(job):
             e = (math.degrees(math.atan2(-x_axis[2], x_axis[0])) - true_obj["yaw_deg"]) % 90
             yaw_err = round(min(e, 90 - e), 2)
         rows.append({"gt": true_obj["id"], "yaw_err_deg": yaw_err, "slug": true_obj["slug"], "name": obj["name"], "visible_fraction": round(float(visible.mean()), 4),
-                     "pixels": int(gt_mask.sum()), "diag_m": round(diag, 4), "faces": int(len(mesh.faces)), "primitive": info.get("primitive"), **m})
+                     "pixels": int(gt_mask.sum()), "diag_m": round(diag, 4), "faces": int(len(mesh.faces)), "primitive": info.get("primitive"),
+                     **{k: info[k] for k in REGISTRATION_KEYS if k in info}, **m})
     return {"view": os.path.basename(world), "scale": scale, "objects": rows}
 
 
+REGISTRATION_KEYS = ["registration_cost", "scale_vs_box_height", "observed_dist_m_median", "free_space_fraction", "beyond_cube_fraction"]
 KEYS = ["yaw_err_deg", "acc", "comp", "comp_visible", "comp_hidden", "chamfer", "precision", "recall", "recall_hidden", "f", "nc", "nc_near", "faces"]
 
 

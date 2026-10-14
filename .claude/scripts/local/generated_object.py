@@ -3,8 +3,9 @@ of the object's mask, TripoSR, canonical frame) registered to what the view show
 
 Registration: yaw, scale and position of the asset (its base on the support when the object stands on one) that
 explain the view's evidence: the observed surface points of the object lie on the asset's surface, and no part
-of the asset lies where the camera sees past it (shape_prior.evidence). The cost is the mean distance of the
-observed points to the asset plus a penalty per meter for the fraction of the asset's surface in seen-through space.
+of the asset lies where the camera sees past it (shape_prior.evidence) or outside the cube that the shape prior
+completes (shape_prior.cube_frame: the domain that the evidence box allows). The cost is the mean distance of the
+observed points to the asset plus a penalty per meter for the fraction of the asset's surface in either region.
 """
 import math
 import os
@@ -40,7 +41,7 @@ def rotation_y(theta):
     return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
 
 
-def register(mesh, center, size, core, mask, exclude, view, supported, depth_noise, free_weight=0.15, samples=3000, seed=0):
+def register(mesh, center, size, axes, core, mask, exclude, view, supported, depth_noise, free_weight=0.15, samples=3000, seed=0):
     """Similarity transform (yaw about +Y, uniform scale, translation) of a canonical asset onto the view's
     evidence. Returns the registered mesh (layout frame) and a report."""
     rng = np.random.default_rng(seed)
@@ -57,6 +58,13 @@ def register(mesh, center, size, core, mask, exclude, view, supported, depth_noi
     height = float(Pc[:, 1].max() - Pc[:, 1].min())
     base_y = center[1] - size[1] / 2
     s_box = size[1] / max(height, 1e-6)
+    cube_lo, cube_side = shape_prior.cube_frame(center, size, axes, supported)
+
+    def violation(P):
+        local = (P - center) @ axes
+        beyond = np.any((local < cube_lo) | (local > cube_lo + cube_side), axis=1)
+        _, empty, _, _, _ = shape_prior.evidence(P, mask, exclude, view, depth_noise)
+        return empty | beyond
 
     def place(theta, s, t):
         return (s * Pc) @ rotation_y(theta).T + t
@@ -65,8 +73,7 @@ def register(mesh, center, size, core, mask, exclude, view, supported, depth_noi
         P = place(theta, s, t)
         d, _ = cKDTree(P).query(obs, distance_upper_bound=0.15)
         acc = float(np.mean(np.minimum(d, 0.15)))
-        _, empty, _, _, _ = shape_prior.evidence(P, mask, exclude, view, depth_noise)
-        return acc + free_weight * float(empty.mean())
+        return acc + free_weight * float(violation(P).mean())
 
     def align_translation(theta, s, t, iterations=6):
         for _ in range(iterations):
@@ -110,8 +117,11 @@ def register(mesh, center, size, core, mask, exclude, view, supported, depth_noi
     P = place(theta, s, t)
     d, _ = cKDTree(P).query(obs)
     _, empty, _, _, _ = shape_prior.evidence(P, mask, exclude, view, depth_noise)
+    local = (P - center) @ axes
+    beyond = np.any((local < cube_lo) | (local > cube_lo + cube_side), axis=1)
     return out, {"registration_cost": round(c, 4), "asset_yaw_deg": round(math.degrees(theta) % 360, 2), "scale_vs_box_height": round(s / s_box, 3),
-                 "observed_dist_m_median": round(float(np.median(d)), 4), "free_space_fraction": round(float(empty.mean()), 4)}
+                 "observed_dist_m_median": round(float(np.median(d)), 4), "free_space_fraction": round(float(empty.mean()), 4),
+                 "beyond_cube_fraction": round(float(beyond.mean()), 4)}
 
 
 def solid(mesh, lo, vox, n, center, axes):
