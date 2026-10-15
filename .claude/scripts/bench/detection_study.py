@@ -6,6 +6,7 @@ overlaps its own object's true box at IoU >= 0.5. Writes benchmark/results/detec
 """
 import argparse
 import glob
+import hashlib
 import json
 import os
 import sys
@@ -34,10 +35,10 @@ def listed_objects(world, gt, instance):
     return out
 
 
-def score(views, mode, threshold, extra):
+def score(views, mode, threshold, extra, merge):
     tp = fp = fn = 0
     for view in views:
-        kept = assign_boxes(view["scores"], view["boxes"], [o["count"] for o in view["objects"]], threshold, extra, mode)
+        kept = assign_boxes(view["scores"], view["boxes"], [o["count"] for o in view["objects"]], threshold, extra, mode, merge)
         for k, obj in enumerate(view["objects"]):
             hits = [box_iou(view["boxes"][i], obj["box"]) >= 0.5 for i in kept[k]]
             tp += any(hits)
@@ -55,8 +56,7 @@ def main():
     from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
 
     torch.set_num_threads(os.cpu_count())
-    processor = AutoProcessor.from_pretrained(DETECTOR)
-    detector = AutoModelForZeroShotObjectDetection.from_pretrained(DETECTOR).eval()
+    processor = detector = None
     report = {"split": args.split, "results": {}}
     for names in args.names:
         views = []
@@ -68,19 +68,33 @@ def main():
             objects = listed_objects(world, gt, np.load(os.path.join(view_dir, "gt.npz"))["instance"])
             if not objects:
                 continue
-            image = Image.open(os.path.join(view_dir, "rgb.png")).convert("RGB")
-            _, scores, boxes = detector_outputs(processor, detector, image, [o["name"] for o in objects])
+            phrases = [o["name"] for o in objects]
+            # detector outputs are cached by image and phrases (benchmark/detections/, untracked) so strategies rerun offline
+            key = f"{world}-{hashlib.sha1(json.dumps(phrases).encode()).hexdigest()[:10]}"
+            cache = os.path.join(REPO, "benchmark", "detections", f"{key}.npz")
+            if os.path.exists(cache) and json.loads(str(np.load(cache)["phrases"])) == phrases:
+                scores, boxes = np.load(cache)["scores"], np.load(cache)["boxes"]
+            else:
+                if detector is None:
+                    processor = AutoProcessor.from_pretrained(DETECTOR)
+                    detector = AutoModelForZeroShotObjectDetection.from_pretrained(DETECTOR).eval()
+                image = Image.open(os.path.join(view_dir, "rgb.png")).convert("RGB")
+                _, scores, boxes = detector_outputs(processor, detector, image, phrases)
+                os.makedirs(os.path.dirname(cache), exist_ok=True)
+                np.savez(cache, scores=scores, boxes=boxes, phrases=json.dumps(phrases))
             views.append({"objects": objects, "scores": scores, "boxes": boxes})
         rows = []
-        for mode in ("greedy", "global"):
-            for threshold in (0.2, 0.25, 0.3, 0.35):
-                for extra in (0, 1):
-                    rows.append({"mode": mode, "threshold": threshold, "extra": extra, **score(views, mode, threshold, extra)})
+        for merge in (False, True):
+            for mode in ("greedy", "global"):
+                for threshold in (0.15, 0.2, 0.25, 0.3, 0.35):
+                    for extra in (0, 1):
+                        rows.append({"merge": merge, "mode": mode, "threshold": threshold, "extra": extra,
+                                     **score(views, mode, threshold, extra, merge)})
         rows.sort(key=lambda r: -r["f1"])
         report["results"][names] = {"views": len(views), "objects": sum(len(v["objects"]) for v in views), "rows": rows}
         for r in rows[:4]:
             print(names, r, flush=True)
-        print(names, "current", next(r for r in rows if r["mode"] == "greedy" and r["threshold"] == 0.25 and r["extra"] == 1), flush=True)
+        print(names, "before", next(r for r in rows if not r["merge"] and r["mode"] == "greedy" and r["threshold"] == 0.25 and r["extra"] == 0), flush=True)
     json.dump(report, open(os.path.join(REPO, "benchmark", "results", f"detection-{args.split}.json"), "w"), indent=2)
 
 

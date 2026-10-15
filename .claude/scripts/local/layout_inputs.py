@@ -65,17 +65,25 @@ def detector_outputs(processor, detector, image, phrases):
     return prompt, class_scores, boxes.clip([0, 0, 0, 0], [W, H, W, H])
 
 
-def assign_boxes(class_scores, boxes, counts, threshold, extra, mode="global"):
+def assign_boxes(class_scores, boxes, counts, threshold, extra, mode="global", merge=False):
     """Boxes per object (object k may keep counts[k] boxes plus `extra`). Overlapping boxes collapse first (NMS on
-    each box's best score: one image region, one object).
+    each box's best score: one image region, one object). merge: the kept box takes, per name, the best score of the
+    boxes it suppresses, so a duplicate query on the same region that scores another name keeps that evidence.
     greedy: each box goes to its best-scoring object.
     global: one-to-one assignment maximizing the total score (Hungarian), so with similar names ("table",
             "coffee table", "side table") every object gets the box it scores best among the boxes the others do
             not need more; leftover boxes then go to their best object as extras."""
     from scipy.optimize import linear_sum_assignment
 
-    best, score = class_scores.argmax(1), class_scores.max(1)
-    keep = [i for i in nms(boxes, score, iou=0.6) if score[i] >= threshold]
+    score = class_scores.max(1)
+    clusters = nms_clusters(boxes, score, iou=0.6)
+    if merge:
+        class_scores = class_scores.copy()
+        for i, members in clusters.items():
+            class_scores[i] = class_scores[members].max(0)
+        score = class_scores.max(1)
+    best = class_scores.argmax(1)
+    keep = [i for i in clusters if score[i] >= threshold]
     kept = {k: [] for k in range(class_scores.shape[1])}
     if mode == "greedy":
         for i in keep:
@@ -108,12 +116,19 @@ def detect_jointly(processor, detector, image, objects, threshold, extra, mode="
 
 
 def nms(boxes, scores, iou=0.5):
-    order = np.argsort(-scores)
-    keep = []
-    for i in order:
-        if all(box_iou(boxes[i], boxes[j]) < iou for j in keep):
-            keep.append(i)
-    return keep
+    return list(nms_clusters(boxes, scores, iou))
+
+
+def nms_clusters(boxes, scores, iou=0.5):
+    """Greedy NMS: kept box -> the boxes it suppresses (itself included), in descending score order."""
+    clusters = {}
+    for i in np.argsort(-scores):
+        owner = next((j for j in clusters if box_iou(boxes[i], boxes[j]) >= iou), None)
+        if owner is None:
+            clusters[i] = [i]
+        else:
+            clusters[owner].append(i)
+    return clusters
 
 
 def box_iou(a, b):
