@@ -331,7 +331,6 @@ def train(args):
 
     model = sp.network()
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
-    total = int(args.minutes * 60)
     sched_t0 = time.time()
     best, step, log = float("inf"), 0, []
     out_path = os.path.abspath(args.out)
@@ -356,8 +355,9 @@ def train(args):
         model.train()
         return sum(losses) / len(val_idx), {f"iou_unknown_{th}": round(float(np.mean(v)), 4) for th, v in ious.items()}
 
-    while time.time() - sched_t0 < total:
-        frac = (time.time() - sched_t0) / total
+    # The schedule counts steps, not wall time: the result must not depend on what else the machine is running.
+    while step < args.steps:
+        frac = step / args.steps
         for g in opt.param_groups:
             g["lr"] = args.lr * 0.5 * (1 + math.cos(math.pi * min(frac, 1)))
         idx = rng.integers(0, len(D["target"]), args.batch)
@@ -396,7 +396,7 @@ def main():
     t.add_argument("--train", nargs="+", required=True)
     t.add_argument("--val", required=True)
     t.add_argument("--threads", type=int, default=os.cpu_count())
-    t.add_argument("--minutes", type=float, default=90)
+    t.add_argument("--steps", type=int, default=11500)
     t.add_argument("--batch", type=int, default=8)
     t.add_argument("--lr", type=float, default=2e-3)
     t.add_argument("--out", default=sp.WEIGHTS, help="weights file")
