@@ -121,7 +121,7 @@ function directionWords(direction) {
  * Fits a second-order spherical-harmonic irradiance field to the model's diffuse shading against
  * the depth normals, and lifts the model's light-source regions to 3D area lights.
  */
-export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics, params }) {
+export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf, seenThrough, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics, params }) {
   const { gw, gh, step, valid, points } = grid;
   const cellCount = gw * gh;
   const sx = light.shading.width / width;
@@ -221,6 +221,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     const seen = new Uint8Array(cellCount);
     for (const cell of cells) seen[cell] = 1;
     const ring = [];
+    const ringCells = [];
     for (const cell of cells) {
       const gx = cell % gw, gy = Math.floor(cell / gw);
       for (let dy = -3; dy <= 3; dy += 1) {
@@ -234,10 +235,17 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
           const entry = labels[other] ? palette[labels[other] - 1] : undefined;
           if (entry?.class === "object") continue;
           ring.push(pointOf(other));
+          ringCells.push(other);
         }
       }
     }
-    const holders = ring.length < 10 ? [] : structure.filter((plane) => {
+    // A wall that most of the region's depth (and the depth around it) is seen through holds it: the bright view
+    // through a window has depth outdoors, and the window frame may be too thin to support the wall by itself.
+    const throughVotes = new Map();
+    for (const cell of [...validCells, ...ringCells]) if (seenThrough?.[cell] >= 0) throughVotes.set(seenThrough[cell], (throughVotes.get(seenThrough[cell]) || 0) + 1);
+    const throughWalls = [...throughVotes.entries()].filter(([, votes]) => votes >= 0.5 * (validCells.length + ringCells.length)).map(([k]) => structure[k]);
+    const holders = ring.length < 10 ? throughWalls : structure.filter((plane) => {
+      if (throughWalls.includes(plane)) return true;
       const inliers = ring.filter((p) => Math.abs(dot(sub(p, plane.center), plane.normal)) < P.tol).length;
       return inliers >= P.support * ring.length;
     });
@@ -270,7 +278,9 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
       // A window is in the room's boundary. A vertical surface with a parallel room wall close behind the bright
       // part is furniture (a glass cabinet, a white box on a shelf): bright, not a light source. Only a wall counts:
       // the view through a window opening can fit a small vertical plane behind it.
-      if (Math.abs(plane.normal[1]) < 0.26) {
+      // A confirmed wall (nothing seen behind it outside its own region) is the boundary itself: a plane close
+      // behind it is a split of the same wall or a window reveal, not the wall behind a cabinet.
+      if (Math.abs(plane.normal[1]) < 0.26 && plane.class !== "wall") {
         const mid = scale(lifted.reduce((sum, p) => add(sum, p), [0, 0, 0]), 1 / lifted.length);
         const toCamera = dot(sub(cameraPosition, plane.center), plane.normal) > 0 ? plane.normal : scale(plane.normal, -1);
         const wall = structure.find((other) => other !== plane && other.class === "wall" && Math.abs(dot(other.normal, plane.normal)) > Math.cos((15 * Math.PI) / 180)
@@ -289,11 +299,20 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     }
   }
   // Merge parts on the same plane whose rectangles (in that plane) are within the merge gap.
-  const extentOf = (part) => {
-    const us = sortedValues(part.points.map((p) => dot(sub(p, part.surface.center), part.surface.u_axis)));
-    const vs = sortedValues(part.points.map((p) => dot(sub(p, part.surface.center), part.surface.v_axis)));
+  // Rectangle (2nd-98th percentile in u and v) of a point set, and the union of the bright part's and the opening's.
+  const rectOf = (list, origin, u, v) => {
+    const us = sortedValues(list.map((p) => dot(sub(p, origin), u)));
+    const vs = sortedValues(list.map((p) => dot(sub(p, origin), v)));
     return [percentile(us, 0.02), percentile(us, 0.98), percentile(vs, 0.02), percentile(vs, 0.98)];
   };
+  const unionRectOf = (part, origin, u, v) => {
+    const box = rectOf(part.points, origin, u, v);
+    if (!part.opening?.size) return box;
+    const o = rectOf([...part.opening.values()], origin, u, v);
+    return [Math.min(box[0], o[0]), Math.max(box[1], o[1]), Math.min(box[2], o[2]), Math.max(box[3], o[3])];
+  };
+  const extentOf = (part) => unionRectOf(part, part.surface.center, part.surface.u_axis, part.surface.v_axis);
+  const mergeNear = (parts) => {
   const groups = [];
   for (const part of parts) {
     if (!part.surface) {
@@ -305,14 +324,51 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
       const o = extentOf(g);
       return Math.max(o[0] - box[1], box[0] - o[1], o[2] - box[3], box[2] - o[3]) <= P.gap;
     })());
-    const merged = { surface: part.surface, points: [...part.points], regions: [...part.regions], luminance: [...part.luminance] };
+    const merged = { surface: part.surface, points: [...part.points], regions: [...part.regions], luminance: [...part.luminance], opening: new Map(part.opening) };
     for (const g of near) {
       merged.points.push(...g.points);
+      for (const [cell, p] of g.opening || []) merged.opening.set(cell, p);
       merged.regions.push(...g.regions);
       merged.luminance.push(...g.luminance);
       groups.splice(groups.indexOf(g), 1);
     }
     groups.push(merged);
+  }
+  return groups;
+  };
+  let groups = mergeNear(parts);
+
+  // A window is the whole opening, not only its saturated part: on a wall, extend a group to the cells seen through
+  // that wall (depth behind it, inside its image region) connected to the group's own cells, lifted onto the wall.
+  if (seenThrough) {
+    for (const group of groups) {
+      const k = group.surface ? structure.indexOf(group.surface) : -1;
+      if (k < 0 || group.surface.class !== "wall") continue;
+      const regions = new Set(group.regions);
+      const member = new Uint8Array(cellCount);
+      const stack = [];
+      for (let cell = 0; cell < cellCount; cell += 1) if (regions.has(emitterOf[cell])) { member[cell] = 1; stack.push(cell); }
+      const opening = [];
+      while (stack.length) {
+        const cell = stack.pop();
+        if (seenThrough[cell] === k) opening.push(cell);
+        const gx = cell % gw, gy = Math.floor(cell / gw);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const x = gx + dx, y = gy + dy;
+          if (x < 0 || y < 0 || x >= gw || y >= gh) continue;
+          const other = y * gw + x;
+          if (member[other] || seenThrough[other] !== k) continue;
+          member[other] = 1;
+          stack.push(other);
+        }
+      }
+      for (const cell of opening) {
+        const hit = hitPlane(group.surface, rayOf(cell));
+        if (hit) (group.opening ||= new Map()).set(cell, hit.p);
+      }
+    }
+    // Parts of one opening (glass above and below a transom, sky and garden) now overlap: merge them again.
+    groups = mergeNear(groups);
   }
 
   const roomCenter = add(structure.find((plane) => plane.class === "floor")?.center || [0, 0, -3], [0, 1, 0]);
@@ -331,9 +387,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     const u = Math.abs(normal[1]) > 0.999 ? [1, 0, 0] : normalize(cross([0, 1, 0], normal));
     const v = cross(normal, u);
     const origin = scale(layoutPoints.reduce((sum, p) => add(sum, p), [0, 0, 0]), 1 / layoutPoints.length);
-    const us = sortedValues(layoutPoints.map((p) => dot(sub(p, origin), u)));
-    const vs = sortedValues(layoutPoints.map((p) => dot(sub(p, origin), v)));
-    const u0 = percentile(us, 0.02), u1 = percentile(us, 0.98), v0 = percentile(vs, 0.02), v1 = percentile(vs, 0.98);
+    const [u0, u1, v0, v1] = unionRectOf(group, origin, u, v);
     const center = add(origin, add(scale(u, (u0 + u1) / 2), scale(v, (v0 + v1) / 2)));
     const size = [u1 - u0, v1 - v0];
     const vertical = Math.abs(normal[1]) < 0.26;

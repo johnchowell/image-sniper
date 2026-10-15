@@ -42,6 +42,7 @@ export const DEFAULT_PARAMS = {
   wall_behind_max_fraction: 0.01,
   wall_tall_behind_max_fraction: 0.08,
   exterior_min_fraction: 0.5,
+  exterior_wall_min_gap_m: 0.5,
   support_snap_min_m: 0.08,
   support_snap_fraction: 0.1,
   hidden_base: 1,
@@ -574,15 +575,33 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
   let { up, source: gravitySource } = estimateUp(rawPlanes);
   testWalls(rawPlanes, up);
   // A plane whose points lie behind a wall is seen through an opening: outdoor ground, trees, the next room. It is
-  // not room structure, and as the lowest or highest plane it would set a false floor or ceiling.
-  const exterior = rawPlanes.filter((plane) => !plane.wall && rawPlanes.some((wall) => wall.wall && wall !== plane &&
-    Array.from(plane.inliers).filter((cell) => wall.wallPlane.side * (dot(wall.wallPlane.normal, cellPoint(cell)) + wall.wallPlane.offset) < -params.wall_behind_tolerance_m).length >= params.exterior_min_fraction * plane.inliers.length));
-  if (exterior.length) {
-    warnings.push(`Dropped ${exterior.length} plane(s) seen through an opening (behind a wall).`);
+  // not room structure, and as the lowest or highest plane it would set a false floor or ceiling. Dropping one
+  // corrects gravity, which can confirm more walls and expose more exterior planes: repeat until none is left.
+  // A far plane with nothing behind it passes the boundary test too (the view through a window ends there): one
+  // seen through a nearer wall's image region is exterior as well.
+  const behindWall = (wall, cell, inBox) => {
+    const { normal, offset, side, extent } = wall.wallPlane;
+    if (inBox) {
+      const row = Math.floor(cell / gw) / gh, col = (cell % gw) / gw;
+      if (row < extent.top || row > extent.bottom || col < extent.left || col > extent.right) return false;
+    }
+    return side * (dot(normal, cellPoint(cell)) + offset) < -params.wall_behind_tolerance_m;
+  };
+  // Depth error can split one wall into parallel planes a few cm apart; a wall beyond an opening is metres away.
+  const gapBehind = (wall, plane) => percentile(sortedValues(Array.from(plane.inliers, (cell) => -wall.wallPlane.side * (dot(wall.wallPlane.normal, cellPoint(cell)) + wall.wallPlane.offset))), 0.5);
+  const depthOf = (plane) => percentile(sortedValues(Array.from(plane.inliers, (cell) => Math.hypot(...cellPoint(cell)))), 0.5);
+  let droppedExterior = 0;
+  for (let pass = 0; pass < 4; pass += 1) {
+    const exterior = rawPlanes.filter((plane) => rawPlanes.some((wall) => wall.wall && wall !== plane &&
+      (!plane.wall || gapBehind(wall, plane) >= params.exterior_wall_min_gap_m) &&
+      Array.from(plane.inliers).filter((cell) => behindWall(wall, cell, plane.wall)).length >= params.exterior_min_fraction * plane.inliers.length));
+    if (!exterior.length) break;
+    droppedExterior += exterior.length;
     rawPlanes = rawPlanes.filter((plane) => !exterior.includes(plane));
     ({ up, source: gravitySource } = estimateUp(rawPlanes));
     testWalls(rawPlanes, up);
   }
+  if (droppedExterior) warnings.push(`Dropped ${droppedExterior} plane(s) seen through an opening (behind a wall).`);
   if (gravitySource === "assumed_level_camera") warnings.push("No horizontal plane found; gravity assumes a level camera.");
   const heightOf = (plane) => -plane.d * Math.sign(dot(plane.normal, up));
   const horizontalPlanes = rawPlanes.filter((plane) => Math.abs(dot(plane.normal, up)) > cosHorizontal);
@@ -949,8 +968,16 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
   const lightEstimate = await loadLightEstimate(world, depthRequest.input_files?.[0]);
   const planeNormalOf = new Map();
   rawPlanes.forEach((plane, k) => { for (const cell of plane.inliers) planeNormalOf.set(cell, structure[k].normal); });
+  // Openings: a cell whose point lies behind a wall, inside that wall's image region, is seen through it (window,
+  // doorway). The nearest such wall owns the cell.
+  const seenThrough = new Int16Array(cellCount).fill(-1);
+  const wallOrder = rawPlanes.map((plane, k) => k).filter((k) => structure[k].class === "wall" && rawPlanes[k].wallPlane)
+    .sort((a, b) => depthOf(rawPlanes[a]) - depthOf(rawPlanes[b]));
+  for (const k of wallOrder) {
+    for (let cell = 0; cell < cellCount; cell += 1) if (valid[cell] && seenThrough[cell] < 0 && behindWall(rawPlanes[k], cell, true)) seenThrough[cell] = k;
+  }
   const lightResult = lightEstimate
-    ? analyzeLighting({ light: lightEstimate, grid, normals, hasNormal, planeNormalOf, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics, params })
+    ? analyzeLighting({ light: lightEstimate, grid, normals, hasNormal, planeNormalOf, seenThrough, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics, params })
     : undefined;
   const lighting = lightResult?.lighting || { status: "no_light_estimate", hint: "Run image-blast-light before the layout for lighting." };
   const emitterPrimitives = lightResult?.emitters || [];
