@@ -106,6 +106,8 @@ def main():
     parser.add_argument("--fit-samples", type=int, default=16)
     parser.add_argument("--no-emit", default="", help="comma-separated material names whose emission is turned off (experiments)")
     parser.add_argument("--tag", default="", help="suffix for the output files (experiments)")
+    parser.add_argument("--cameras", help="JSON {views: [{name, matrix_world_from_camera_opencv (layout frame), fov_x_deg}]}: "
+                        "extra views rendered with the fitted lights and exposure to <scene>-novel-<name>.png")
     args = parser.parse_args(argv)
 
     scene_dir = os.path.join("worlds", args.world, "output", "scene")
@@ -363,10 +365,18 @@ def main():
         cam.matrix_world = look_at(pivot + rel + Vector((0, 0, 0.7)), pivot)
         orbits.append(linear_to_srgb(tone(render_linear(tmp, size))))
 
+    stem = os.path.splitext(glb)[0] + (f"-{args.tag}" if args.tag else "")
+    if args.cameras:
+        cam_data.shift_x = cam_data.shift_y = 0.0
+        for view in json.load(open(args.cameras))["views"]:
+            cam_data.lens = cam_data.sensor_width / (2 * math.tan(math.radians(view["fov_x_deg"]) / 2))
+            cam.matrix_world = G @ Matrix(view["matrix_world_from_camera_opencv"]) @ CV_TO_BLENDER_CAMERA
+            novel = linear_to_srgb(tone(render_linear(tmp, size)))
+            write_png(f"{stem}-novel-{view['name']}.png", (novel * 255).round().astype(np.uint8))
+
     top = np.hstack([photo, render_srgb, np.stack([np.clip(diff * 3, 0, 1)] * 3, -1)])
     bottom = np.hstack([orbits[0], orbits[1], np.zeros_like(photo)])
     sheet = (np.vstack([top, bottom]) * 255).round().astype(np.uint8)
-    stem = os.path.splitext(glb)[0] + (f"-{args.tag}" if args.tag else "")
     write_png(stem + "-check.png", sheet)
     write_png(stem + "-render.png", (render_srgb * 255).round().astype(np.uint8))
     json.dump({"scene": glb, "psnr_db": round(psnr, 2), "mean_abs_err": round(float(diff.mean()), 4), "exposure": exposure, "light_weights_w": {n: round(v * unit(n), 2) for n, v in weights.items()},

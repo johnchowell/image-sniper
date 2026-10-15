@@ -176,6 +176,78 @@ def wall_frame(wall, H):
     return lambda u, v, w=0.0: origin + t * u + Vector((0, 0, v)) + n * w, t, n
 
 
+def look_at(eye, target):
+    forward = (target - eye).normalized()
+    return Matrix.Translation(eye) @ forward.to_track_quat("-Z", "Y").to_matrix().to_4x4()
+
+
+def novel_views(view_dir, scene, camera, camera_data, placed, render, W, D, H, rng):
+    """Novel-view truth for a view rendered before: the rebuilt room must match it (camera and objects), then
+    the same orbit rule the scene check uses (a pivot 3 m ahead at 1 m height, 35 degrees each side, 0.7 m up)
+    and a 1.2 m step forward, all inside the room. Cameras are also stored relative to the source camera
+    (Blender camera axes), so a reconstruction places them through its own source camera."""
+    gt = json.load(open(os.path.join(view_dir, "gt.json")))
+    source = camera.matrix_world.copy()
+    if not np.allclose(np.array(source), np.array(gt["camera"]["matrix_world"]), atol=1e-4):
+        raise SystemExit(f"{view_dir}: the rebuilt camera does not match gt.json (assets or code changed)")
+    if [round(c, 4) for p in placed for c in p["center"]] != [round(c, 4) for o in gt["objects"] for c in o["center"]]:
+        raise SystemExit(f"{view_dir}: the rebuilt objects do not match gt.json")
+    rng.uniform(0, 1), rng.random()  # the draws of the original view (exposure, tone, noise): later views stay the same
+    if gt["tone"]["curve"] == "rolloff":
+        rng.uniform(0, 1)
+    rng.uniform(0, 1), rng.uniform(0, 1)
+
+    def inside(p, margin):
+        return abs(p.x) < W / 2 - margin and abs(p.y) < D / 2 - margin
+
+    eye = source.translation.copy()
+    forward = -(source.to_3x3() @ Vector((0, 0, 1)))
+    flat = Vector((forward.x, forward.y, 0)).normalized()
+    pivot = eye + flat * 3.0
+    pivot.z = 1.0
+    for _ in range(20):
+        if inside(pivot, 0.5):
+            break
+        pivot = eye + (pivot - eye) * 0.85
+        pivot.z = 1.0
+    cameras = []
+    for angle in (-35, 35):
+        rel = Matrix.Rotation(math.radians(angle), 4, "Z") @ (eye - pivot)
+        for _ in range(20):
+            if inside(pivot + rel, 0.3):
+                break
+            rel = rel * 0.85
+        at = pivot + rel + Vector((0, 0, 0.7))
+        at.z = min(at.z, H - 0.25)
+        cameras.append((f"orbit{angle:+d}", look_at(at, pivot)))
+    step = 1.2
+    while step > 0.1 and not inside(eye + flat * step, 0.3):
+        step *= 0.85
+    cameras.append(("forward", Matrix.Translation(flat * step) @ source))
+
+    exposure, tone = gt["exposure"], gt["tone"]
+    still = np.random.default_rng(0)
+    arrays, records = {}, []
+    for name, matrix in cameras:
+        camera.matrix_world = matrix
+        bpy.context.view_layer.update()
+        exr = render(view_dir, ["Image", "Depth", "IndexOB"])
+        write_png(os.path.join(view_dir, f"novel-{name}.png"), develop(exr["Image"], exposure, tone, {"shot": 0.0, "read": 0.0}, still))
+        depth = exr["Depth"][..., 0]
+        arrays[f"{name}_depth"] = np.where(depth > FAR, np.inf, depth).astype(np.float32)
+        arrays[f"{name}_instance"] = np.rint(exr["IndexOB"][..., 0]).astype(np.int16)
+        records.append({"name": name, "image": f"novel-{name}.png", "matrix_world": [list(r) for r in matrix],
+                        "relative_to_source": [list(r) for r in source.inverted() @ matrix]})
+    camera.matrix_world = source
+    np.savez_compressed(os.path.join(view_dir, "novel.npz"), **arrays)
+    with open(os.path.join(view_dir, "novel.json"), "w") as f:
+        json.dump({"schema_version": 1, "frame": "blender world: meters, +Z up; cameras with Blender axes (-Z forward, +Y up)",
+                   "relative": "relative_to_source = inverse(source matrix_world) @ matrix_world",
+                   "fov_x_deg": gt["camera"]["fov_x_deg"], "image_size": gt["image_size"], "exposure": exposure, "tone": tone,
+                   "views": records}, f, indent=2)
+    print(json.dumps({"novel": view_dir, "views": [r["name"] for r in records]}), flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--assets", default="benchmark/assets/manifest.json")
@@ -186,6 +258,8 @@ def main():
     parser.add_argument("--objects", type=int, nargs=2, default=[5, 8], metavar=("MIN", "MAX"), help="furniture and props tried")
     parser.add_argument("--windows", type=int, nargs="+", default=[1, 2], help="window counts to choose from")
     parser.add_argument("--no-empty", action="store_true", help="skip the furniture-free render (plate truth)")
+    parser.add_argument("--novel", action="store_true", help="rebuild the room of an existing render (same seed) and render "
+                        "novel views of each view: two orbits and a step forward, with its exposure and tone, without noise")
     args = parser.parse_args()
     rng = random.Random(args.seed)
     manifest = json.load(open(args.assets))
@@ -481,6 +555,9 @@ def main():
             if bool(seen) == want_window:
                 break
         view_dir = os.path.join(args.out, f"view-{view}")
+        if args.novel:
+            novel_views(view_dir, scene, camera, camera_data, placed, render, W, D, H, rng)
+            continue
         os.makedirs(view_dir, exist_ok=True)
 
         for obj in furniture:
