@@ -1,271 +1,2897 @@
 {
   "split": "train",
+  "verifier": "google/siglip2-base-patch16-224",
   "results": {
     "oracle": {
       "views": 60,
       "objects": 263,
+      "before": {
+        "merge": false,
+        "mode": "greedy",
+        "threshold": 0.25,
+        "extra": 0,
+        "weight": 0
+      },
       "rows": [
         {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8694,
+          "recall": 0.8099,
+          "f1": 0.8386,
+          "df1_vs_before": 0.0829,
+          "df1_ci95": [
+            0.0366,
+            0.1302
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8672,
+          "recall": 0.7947,
+          "f1": 0.8294,
+          "df1_vs_before": 0.0737,
+          "df1_ci95": [
+            0.0303,
+            0.1174
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8577,
+          "recall": 0.8023,
+          "f1": 0.8291,
+          "df1_vs_before": 0.0734,
+          "df1_ci95": [
+            0.028,
+            0.1216
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8543,
+          "recall": 0.8023,
+          "f1": 0.8275,
+          "df1_vs_before": 0.0718,
+          "df1_ci95": [
+            0.0228,
+            0.123
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8831,
+          "recall": 0.7757,
+          "f1": 0.8259,
+          "df1_vs_before": 0.0703,
+          "df1_ci95": [
+            0.0233,
+            0.1164
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8631,
+          "recall": 0.7909,
+          "f1": 0.8254,
+          "df1_vs_before": 0.0698,
+          "df1_ci95": [
+            0.0184,
+            0.1196
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8631,
+          "recall": 0.7909,
+          "f1": 0.8254,
+          "df1_vs_before": 0.0698,
+          "df1_ci95": [
+            0.0189,
+            0.1205
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8692,
+          "recall": 0.7833,
+          "f1": 0.824,
+          "df1_vs_before": 0.0684,
+          "df1_ci95": [
+            0.0197,
+            0.115
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8595,
+          "recall": 0.7909,
+          "f1": 0.8238,
+          "df1_vs_before": 0.0681,
+          "df1_ci95": [
+            0.0253,
+            0.1123
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8525,
+          "recall": 0.7909,
+          "f1": 0.8205,
+          "df1_vs_before": 0.0649,
+          "df1_ci95": [
+            0.0181,
+            0.114
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8855,
+          "recall": 0.7643,
+          "f1": 0.8204,
+          "df1_vs_before": 0.0648,
+          "df1_ci95": [
+            0.0192,
+            0.1106
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8434,
+          "recall": 0.7985,
+          "f1": 0.8203,
+          "df1_vs_before": 0.0647,
+          "df1_ci95": [
+            0.0102,
+            0.1209
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.865,
+          "recall": 0.7795,
+          "f1": 0.82,
+          "df1_vs_before": 0.0644,
+          "df1_ci95": [
+            0.0127,
+            0.1151
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8681,
+          "recall": 0.7757,
+          "f1": 0.8193,
+          "df1_vs_before": 0.0636,
+          "df1_ci95": [
+            0.0268,
+            0.0999
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8583,
+          "recall": 0.7833,
+          "f1": 0.8191,
+          "df1_vs_before": 0.0634,
+          "df1_ci95": [
+            0.0123,
+            0.1132
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8712,
+          "recall": 0.7719,
+          "f1": 0.8185,
+          "df1_vs_before": 0.0629,
+          "df1_ci95": [
+            0.015,
+            0.1091
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8644,
+          "recall": 0.7757,
+          "f1": 0.8176,
+          "df1_vs_before": 0.062,
+          "df1_ci95": [
+            0.0129,
+            0.1097
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8675,
+          "recall": 0.7719,
+          "f1": 0.8169,
+          "df1_vs_before": 0.0613,
+          "df1_ci95": [
+            0.0148,
+            0.1055
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8811,
+          "recall": 0.7605,
+          "f1": 0.8163,
+          "df1_vs_before": 0.0607,
+          "df1_ci95": [
+            0.0169,
+            0.1038
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8608,
+          "recall": 0.7757,
+          "f1": 0.816,
+          "df1_vs_before": 0.0604,
+          "df1_ci95": [
+            0.0116,
+            0.1101
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8739,
+          "recall": 0.7643,
+          "f1": 0.8154,
+          "df1_vs_before": 0.0598,
+          "df1_ci95": [
+            0.0159,
+            0.1018
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8449,
+          "recall": 0.7871,
+          "f1": 0.815,
+          "df1_vs_before": 0.0593,
+          "df1_ci95": [
+            0.0066,
+            0.1139
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.836,
+          "recall": 0.7947,
+          "f1": 0.8148,
+          "df1_vs_before": 0.0592,
+          "df1_ci95": [
+            0.0124,
+            0.1104
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8387,
+          "recall": 0.7909,
+          "f1": 0.8141,
+          "df1_vs_before": 0.0584,
+          "df1_ci95": [
+            0.0064,
+            0.1154
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8381,
+          "recall": 0.7871,
+          "f1": 0.8118,
+          "df1_vs_before": 0.0561,
+          "df1_ci95": [
+            0.011,
+            0.1053
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8834,
+          "recall": 0.749,
+          "f1": 0.8107,
+          "df1_vs_before": 0.0551,
+          "df1_ci95": [
+            0.0131,
+            0.0947
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8261,
+          "recall": 0.7947,
+          "f1": 0.8101,
+          "df1_vs_before": 0.0544,
+          "df1_ci95": [
+            0.0037,
+            0.111
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8374,
+          "recall": 0.7833,
+          "f1": 0.8094,
+          "df1_vs_before": 0.0538,
+          "df1_ci95": [
+            -0.003,
+            0.1117
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8287,
+          "recall": 0.7909,
+          "f1": 0.8093,
+          "df1_vs_before": 0.0537,
+          "df1_ci95": [
+            0.0037,
+            0.1122
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.869,
+          "recall": 0.7567,
+          "f1": 0.8089,
+          "df1_vs_before": 0.0533,
+          "df1_ci95": [
+            0.0188,
+            0.0867
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.843,
+          "recall": 0.7757,
+          "f1": 0.8079,
+          "df1_vs_before": 0.0523,
+          "df1_ci95": [
+            0.0002,
+            0.1044
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8864,
+          "recall": 0.7414,
+          "f1": 0.8075,
+          "df1_vs_before": 0.0518,
+          "df1_ci95": [
+            -0.0001,
+            0.1022
+          ]
+        },
+        {
+          "merge": true,
           "mode": "greedy",
           "threshold": 0.2,
           "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8864,
+          "recall": 0.7414,
+          "f1": 0.8075,
+          "df1_vs_before": 0.0518,
+          "df1_ci95": [
+            0.0149,
+            0.0871
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8652,
+          "recall": 0.7567,
+          "f1": 0.8073,
+          "df1_vs_before": 0.0517,
+          "df1_ci95": [
+            0.0095,
+            0.0926
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8553,
+          "recall": 0.7643,
+          "f1": 0.8072,
+          "df1_vs_before": 0.0516,
+          "df1_ci95": [
+            0.0159,
+            0.0869
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8615,
+          "recall": 0.7567,
+          "f1": 0.8057,
+          "df1_vs_before": 0.05,
+          "df1_ci95": [
+            -0.006,
+            0.1013
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8646,
+          "recall": 0.7529,
+          "f1": 0.8049,
+          "df1_vs_before": 0.0492,
+          "df1_ci95": [
+            0.0155,
+            0.0815
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8678,
+          "recall": 0.749,
+          "f1": 0.8041,
+          "df1_vs_before": 0.0484,
+          "df1_ci95": [
+            -0.0053,
+            0.0988
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8609,
+          "recall": 0.7529,
+          "f1": 0.8032,
+          "df1_vs_before": 0.0476,
+          "df1_ci95": [
+            -0.006,
+            0.0987
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8327,
+          "recall": 0.7757,
+          "f1": 0.8031,
+          "df1_vs_before": 0.0475,
+          "df1_ci95": [
+            -0.01,
+            0.107
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8705,
+          "recall": 0.7414,
+          "f1": 0.8008,
+          "df1_vs_before": 0.0452,
+          "df1_ci95": [
+            -0.0042,
+            0.0913
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8884,
+          "recall": 0.7262,
+          "f1": 0.7992,
+          "df1_vs_before": 0.0435,
+          "df1_ci95": [
+            0.0049,
+            0.0797
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.87,
+          "recall": 0.7376,
+          "f1": 0.7984,
+          "df1_vs_before": 0.0427,
+          "df1_ci95": [
+            0.0043,
+            0.0808
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8843,
+          "recall": 0.7262,
+          "f1": 0.7975,
+          "df1_vs_before": 0.0418,
+          "df1_ci95": [
+            -0.0062,
+            0.087
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8661,
+          "recall": 0.7376,
+          "f1": 0.7967,
+          "df1_vs_before": 0.0411,
+          "df1_ci95": [
+            -0.0011,
+            0.0811
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8622,
+          "recall": 0.7376,
+          "f1": 0.7951,
+          "df1_vs_before": 0.0394,
+          "df1_ci95": [
+            0.0075,
+            0.0756
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8837,
+          "recall": 0.7224,
+          "f1": 0.795,
+          "df1_vs_before": 0.0393,
+          "df1_ci95": [
+            0.0049,
+            0.0727
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8721,
+          "recall": 0.7262,
+          "f1": 0.7925,
+          "df1_vs_before": 0.0369,
+          "df1_ci95": [
+            0.0072,
+            0.0686
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8721,
+          "recall": 0.7262,
+          "f1": 0.7925,
+          "df1_vs_before": 0.0369,
+          "df1_ci95": [
+            -0.0015,
+            0.076
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8716,
+          "recall": 0.7224,
+          "f1": 0.79,
+          "df1_vs_before": 0.0344,
+          "df1_ci95": [
+            -0.0009,
+            0.0687
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8821,
+          "recall": 0.711,
+          "f1": 0.7874,
+          "df1_vs_before": 0.0317,
+          "df1_ci95": [
+            -0.0034,
+            0.0674
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8857,
+          "recall": 0.7072,
+          "f1": 0.7865,
+          "df1_vs_before": 0.0308,
+          "df1_ci95": [
+            -0.0032,
+            0.0637
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8894,
+          "recall": 0.7034,
+          "f1": 0.7856,
+          "df1_vs_before": 0.0299,
+          "df1_ci95": [
+            -0.0142,
+            0.0714
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8738,
+          "recall": 0.711,
+          "f1": 0.7841,
+          "df1_vs_before": 0.0284,
+          "df1_ci95": [
+            -0.0084,
+            0.0649
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8846,
+          "recall": 0.6996,
+          "f1": 0.7813,
+          "df1_vs_before": 0.0257,
+          "df1_ci95": [
+            -0.0099,
+            0.0618
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.8201,
+          "recall": 0.7452,
+          "f1": 0.7809,
+          "df1_vs_before": 0.0252,
+          "df1_ci95": [
+            -0.0112,
+            0.0623
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.7976,
+          "recall": 0.7643,
+          "f1": 0.7806,
+          "df1_vs_before": 0.0249,
+          "df1_ci95": [
+            -0.0031,
+            0.0534
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8768,
+          "recall": 0.7034,
+          "f1": 0.7806,
+          "df1_vs_before": 0.0249,
+          "df1_ci95": [
+            -0.0109,
+            0.0621
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.7846,
+          "recall": 0.7757,
+          "f1": 0.7801,
+          "df1_vs_before": 0.0245,
+          "df1_ci95": [
+            -0.02,
+            0.0676
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.7724,
+          "recall": 0.7871,
+          "f1": 0.7797,
+          "df1_vs_before": 0.024,
+          "df1_ci95": [
+            -0.0188,
+            0.066
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8804,
+          "recall": 0.6996,
+          "f1": 0.7797,
+          "df1_vs_before": 0.024,
+          "df1_ci95": [
+            -0.0154,
+            0.0625
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.8255,
+          "recall": 0.7376,
+          "f1": 0.7791,
+          "df1_vs_before": 0.0235,
+          "df1_ci95": [
+            -0.0141,
+            0.0617
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8841,
+          "recall": 0.6958,
+          "f1": 0.7787,
+          "df1_vs_before": 0.0231,
+          "df1_ci95": [
+            -0.0166,
+            0.0612
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.8651,
+          "recall": 0.7072,
+          "f1": 0.7782,
+          "df1_vs_before": 0.0226,
+          "df1_ci95": [
+            -0.0173,
+            0.0609
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.7913,
+          "recall": 0.7643,
+          "f1": 0.7776,
+          "df1_vs_before": 0.0219,
+          "df1_ci95": [
+            -0.0064,
+            0.0514
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.7992,
+          "recall": 0.7567,
+          "f1": 0.7773,
+          "df1_vs_before": 0.0217,
+          "df1_ci95": [
+            -0.0058,
+            0.0502
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.8685,
+          "recall": 0.7034,
+          "f1": 0.7773,
+          "df1_vs_before": 0.0217,
+          "df1_ci95": [
+            -0.0161,
+            0.0591
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8798,
+          "recall": 0.6958,
+          "f1": 0.7771,
+          "df1_vs_before": 0.0214,
+          "df1_ci95": [
+            -0.0097,
+            0.0524
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.7937,
+          "recall": 0.7605,
+          "f1": 0.7767,
+          "df1_vs_before": 0.0211,
+          "df1_ci95": [
+            -0.007,
+            0.0502
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.872,
+          "recall": 0.6996,
+          "f1": 0.7764,
+          "df1_vs_before": 0.0207,
+          "df1_ci95": [
+            -0.0162,
+            0.0561
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8835,
+          "recall": 0.692,
+          "f1": 0.7761,
+          "df1_vs_before": 0.0205,
+          "df1_ci95": [
+            -0.0125,
+            0.0522
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.796,
+          "recall": 0.7567,
+          "f1": 0.7758,
+          "df1_vs_before": 0.0202,
+          "df1_ci95": [
+            -0.008,
+            0.0487
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.8756,
+          "recall": 0.6958,
+          "f1": 0.7754,
+          "df1_vs_before": 0.0198,
+          "df1_ci95": [
+            -0.0161,
+            0.0537
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8873,
+          "recall": 0.6882,
+          "f1": 0.7752,
+          "df1_vs_before": 0.0195,
+          "df1_ci95": [
+            -0.0167,
+            0.0537
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.8213,
+          "recall": 0.7338,
+          "f1": 0.7751,
+          "df1_vs_before": 0.0195,
+          "df1_ci95": [
+            -0.0147,
+            0.0534
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.8571,
+          "recall": 0.7072,
+          "f1": 0.775,
+          "df1_vs_before": 0.0194,
+          "df1_ci95": [
+            -0.0201,
+            0.0579
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8911,
+          "recall": 0.6844,
+          "f1": 0.7742,
+          "df1_vs_before": 0.0185,
+          "df1_ci95": [
+            -0.0165,
+            0.0522
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8911,
+          "recall": 0.6844,
+          "f1": 0.7742,
+          "df1_vs_before": 0.0185,
+          "df1_ci95": [
+            -0.0182,
+            0.0539
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.8091,
+          "recall": 0.7414,
+          "f1": 0.7738,
+          "df1_vs_before": 0.0182,
+          "df1_ci95": [
+            -0.0168,
+            0.0563
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.7874,
+          "recall": 0.7605,
+          "f1": 0.7737,
+          "df1_vs_before": 0.018,
+          "df1_ci95": [
+            -0.0108,
+            0.0483
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.8268,
+          "recall": 0.7262,
+          "f1": 0.7733,
+          "df1_vs_before": 0.0176,
+          "df1_ci95": [
+            -0.0175,
+            0.0522
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8033,
+          "recall": 0.7452,
+          "f1": 0.7732,
+          "df1_vs_before": 0.0175,
+          "df1_ci95": [
+            0.0018,
+            0.0354
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8033,
+          "recall": 0.7452,
+          "f1": 0.7732,
+          "df1_vs_before": 0.0175,
+          "df1_ci95": [
+            0.0018,
+            0.0354
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.8638,
+          "recall": 0.6996,
+          "f1": 0.7731,
+          "df1_vs_before": 0.0175,
+          "df1_ci95": [
+            -0.019,
+            0.0528
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8867,
+          "recall": 0.6844,
+          "f1": 0.7725,
+          "df1_vs_before": 0.0169,
+          "df1_ci95": [
+            -0.0236,
+            0.0545
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.8143,
+          "recall": 0.7338,
+          "f1": 0.772,
+          "df1_vs_before": 0.0164,
+          "df1_ci95": [
+            -0.0176,
+            0.0502
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.9031,
+          "recall": 0.673,
+          "f1": 0.7712,
+          "df1_vs_before": 0.0156,
+          "df1_ci95": [
+            -0.0206,
+            0.0504
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.8824,
+          "recall": 0.6844,
+          "f1": 0.7709,
+          "df1_vs_before": 0.0152,
+          "df1_ci95": [
+            -0.0163,
+            0.0475
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8075,
+          "recall": 0.7338,
+          "f1": 0.7689,
+          "df1_vs_before": 0.0133,
+          "df1_ci95": [
+            -0.0144,
+            0.0399
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.7935,
+          "recall": 0.7452,
+          "f1": 0.7686,
+          "df1_vs_before": 0.013,
+          "df1_ci95": [
+            -0.0039,
+            0.0317
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.7935,
+          "recall": 0.7452,
+          "f1": 0.7686,
+          "df1_vs_before": 0.013,
+          "df1_ci95": [
+            -0.0039,
+            0.0317
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.7804,
+          "recall": 0.7567,
+          "f1": 0.7683,
+          "df1_vs_before": 0.0127,
+          "df1_ci95": [
+            -0.0293,
+            0.0552
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.7681,
+          "recall": 0.7681,
+          "f1": 0.7681,
+          "df1_vs_before": 0.0124,
+          "df1_ci95": [
+            -0.028,
+            0.0524
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 0.5,
+          "precision": 0.8939,
+          "recall": 0.673,
+          "f1": 0.7679,
+          "df1_vs_before": 0.0122,
+          "df1_ci95": [
+            -0.0214,
+            0.0442
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.8626,
+          "recall": 0.692,
+          "f1": 0.7679,
+          "df1_vs_before": 0.0123,
+          "df1_ci95": [
+            -0.028,
+            0.0481
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.7565,
+          "recall": 0.7795,
+          "f1": 0.7678,
+          "df1_vs_before": 0.0121,
+          "df1_ci95": [
+            -0.0303,
+            0.0545
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8042,
+          "recall": 0.7338,
+          "f1": 0.7674,
+          "df1_vs_before": 0.0117,
+          "df1_ci95": [
+            -0.003,
+            0.028
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8042,
+          "recall": 0.7338,
+          "f1": 0.7674,
+          "df1_vs_before": 0.0117,
+          "df1_ci95": [
+            -0.003,
+            0.028
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8128,
+          "recall": 0.7262,
+          "f1": 0.7671,
+          "df1_vs_before": 0.0114,
+          "df1_ci95": [
+            -0.0164,
+            0.036
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.731,
+          "recall": 0.8061,
+          "f1": 0.7667,
+          "df1_vs_before": 0.0111,
+          "df1_ci95": [
+            -0.0427,
+            0.0655
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.8155,
+          "recall": 0.7224,
+          "f1": 0.7661,
+          "df1_vs_before": 0.0105,
+          "df1_ci95": [
+            -0.0267,
+            0.0459
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.7176,
+          "recall": 0.8213,
+          "f1": 0.766,
+          "df1_vs_before": 0.0103,
+          "df1_ci95": [
+            -0.0404,
+            0.0607
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8812,
+          "recall": 0.6768,
+          "f1": 0.7656,
+          "df1_vs_before": 0.0099,
+          "df1_ci95": [
+            -0.0304,
+            0.0495
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8182,
+          "recall": 0.7186,
+          "f1": 0.7652,
+          "df1_vs_before": 0.0095,
+          "df1_ci95": [
+            -0.0109,
+            0.0317
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.8732,
+          "recall": 0.6806,
+          "f1": 0.765,
+          "df1_vs_before": 0.0093,
+          "df1_ci95": [
+            -0.0301,
+            0.0464
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 1,
+          "precision": 0.9062,
+          "recall": 0.6616,
+          "f1": 0.7648,
+          "df1_vs_before": 0.0092,
+          "df1_ci95": [
+            -0.0243,
+            0.0409
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8274,
+          "recall": 0.711,
+          "f1": 0.7648,
+          "df1_vs_before": 0.0092,
+          "df1_ci95": [
+            -0.0092,
+            0.0264
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 0,
+          "weight": 0,
           "precision": 0.8174,
           "recall": 0.7148,
-          "f1": 0.7627
+          "f1": 0.7627,
+          "df1_vs_before": 0.007,
+          "df1_ci95": [
+            -0.0015,
+            0.0172
+          ]
         },
         {
-          "mode": "global",
+          "merge": true,
+          "mode": "greedy",
           "threshold": 0.2,
           "extra": 0,
-          "precision": 0.8112,
-          "recall": 0.7186,
-          "f1": 0.7621
+          "weight": 0,
+          "precision": 0.8174,
+          "recall": 0.7148,
+          "f1": 0.7627,
+          "df1_vs_before": 0.007,
+          "df1_ci95": [
+            -0.0015,
+            0.0172
+          ]
         },
         {
+          "merge": false,
           "mode": "global",
-          "threshold": 0.25,
-          "extra": 0,
-          "precision": 0.8186,
-          "recall": 0.7034,
-          "f1": 0.7566
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.7566,
+          "recall": 0.7681,
+          "f1": 0.7623,
+          "df1_vs_before": 0.0066,
+          "df1_ci95": [
+            -0.0339,
+            0.0474
+          ]
         },
         {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.8647,
+          "recall": 0.6806,
+          "f1": 0.7617,
+          "df1_vs_before": 0.0061,
+          "df1_ci95": [
+            -0.0312,
+            0.0396
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.8202,
+          "recall": 0.711,
+          "f1": 0.7617,
+          "df1_vs_before": 0.0061,
+          "df1_ci95": [
+            -0.0331,
+            0.0432
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.7605,
+          "recall": 0.7605,
+          "f1": 0.7605,
+          "df1_vs_before": 0.0048,
+          "df1_ci95": [
+            -0.038,
+            0.0464
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.8756,
+          "recall": 0.6692,
+          "f1": 0.7586,
+          "df1_vs_before": 0.003,
+          "df1_ci95": [
+            -0.0323,
+            0.036
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.7273,
+          "recall": 0.7909,
+          "f1": 0.7577,
+          "df1_vs_before": 0.0021,
+          "df1_ci95": [
+            -0.0497,
+            0.0532
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.9005,
+          "recall": 0.654,
+          "f1": 0.7577,
+          "df1_vs_before": 0.0021,
+          "df1_ci95": [
+            -0.0379,
+            0.0393
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.7138,
+          "recall": 0.8061,
+          "f1": 0.7571,
+          "df1_vs_before": 0.0015,
+          "df1_ci95": [
+            -0.0469,
+            0.0484
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.8122,
+          "recall": 0.7072,
+          "f1": 0.7561,
+          "df1_vs_before": 0.0005,
+          "df1_ci95": [
+            -0.0342,
+            0.0335
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.7026,
+          "recall": 0.8175,
+          "f1": 0.7557,
+          "df1_vs_before": 0.0001,
+          "df1_ci95": [
+            -0.0514,
+            0.0509
+          ]
+        },
+        {
+          "merge": false,
           "mode": "greedy",
           "threshold": 0.25,
           "extra": 0,
+          "weight": 0,
           "precision": 0.8214,
           "recall": 0.6996,
-          "f1": 0.7556
+          "f1": 0.7556,
+          "df1_vs_before": 0.0,
+          "df1_ci95": [
+            0.0,
+            0.0
+          ]
         },
         {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8214,
+          "recall": 0.6996,
+          "f1": 0.7556,
+          "df1_vs_before": 0.0,
+          "df1_ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 0,
+          "weight": 2,
+          "precision": 0.8788,
+          "recall": 0.6616,
+          "f1": 0.7549,
+          "df1_vs_before": -0.0008,
+          "df1_ci95": [
+            -0.0374,
+            0.0344
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.7677,
+          "recall": 0.7414,
+          "f1": 0.7544,
+          "df1_vs_before": -0.0013,
+          "df1_ci95": [
+            -0.0447,
+            0.0397
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.7119,
+          "recall": 0.7985,
+          "f1": 0.7527,
+          "df1_vs_before": -0.003,
+          "df1_ci95": [
+            -0.0529,
+            0.047
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.87,
+          "recall": 0.6616,
+          "f1": 0.7516,
+          "df1_vs_before": -0.004,
+          "df1_ci95": [
+            -0.0484,
+            0.0348
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.817,
+          "recall": 0.6958,
+          "f1": 0.7515,
+          "df1_vs_before": -0.0041,
+          "df1_ci95": [
+            -0.0399,
+            0.0295
+          ]
+        },
+        {
+          "merge": false,
           "mode": "greedy",
           "threshold": 0.3,
           "extra": 0,
+          "weight": 2,
+          "precision": 0.9037,
+          "recall": 0.6426,
+          "f1": 0.7511,
+          "df1_vs_before": -0.0045,
+          "df1_ci95": [
+            -0.0415,
+            0.0287
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.6997,
+          "recall": 0.8061,
+          "f1": 0.7491,
+          "df1_vs_before": -0.0065,
+          "df1_ci95": [
+            -0.0539,
+            0.0414
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 0,
           "precision": 0.8326,
           "recall": 0.6806,
-          "f1": 0.749
+          "f1": 0.749,
+          "df1_vs_before": -0.0067,
+          "df1_ci95": [
+            -0.0235,
+            0.0063
+          ]
         },
         {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 0,
+          "precision": 0.8326,
+          "recall": 0.6806,
+          "f1": 0.749,
+          "df1_vs_before": -0.0067,
+          "df1_ci95": [
+            -0.0235,
+            0.0063
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.7558,
+          "recall": 0.7414,
+          "f1": 0.7486,
+          "df1_vs_before": -0.0071,
+          "df1_ci95": [
+            -0.0481,
+            0.0319
+          ]
+        },
+        {
+          "merge": true,
           "mode": "global",
           "threshold": 0.3,
           "extra": 0,
+          "weight": 0,
+          "precision": 0.8257,
+          "recall": 0.6844,
+          "f1": 0.7484,
+          "df1_vs_before": -0.0072,
+          "df1_ci95": [
+            -0.0285,
+            0.0128
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.7193,
+          "recall": 0.7795,
+          "f1": 0.7482,
+          "df1_vs_before": -0.0075,
+          "df1_ci95": [
+            -0.0569,
+            0.0418
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.3,
+          "extra": 0,
+          "weight": 0,
           "precision": 0.8287,
           "recall": 0.6806,
-          "f1": 0.7474
+          "f1": 0.7474,
+          "df1_vs_before": -0.0083,
+          "df1_ci95": [
+            -0.0288,
+            0.0106
+          ]
         },
         {
-          "mode": "greedy",
-          "threshold": 0.35,
-          "extra": 0,
-          "precision": 0.8557,
-          "recall": 0.654,
-          "f1": 0.7414
-        },
-        {
+          "merge": true,
           "mode": "global",
-          "threshold": 0.35,
-          "extra": 0,
-          "precision": 0.8515,
-          "recall": 0.654,
-          "f1": 0.7398
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.6869,
+          "recall": 0.8175,
+          "f1": 0.7465,
+          "df1_vs_before": -0.0091,
+          "df1_ci95": [
+            -0.0605,
+            0.042
+          ]
         },
         {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.8153,
+          "recall": 0.6882,
+          "f1": 0.7464,
+          "df1_vs_before": -0.0093,
+          "df1_ci95": [
+            -0.0533,
+            0.0316
+          ]
+        },
+        {
+          "merge": false,
           "mode": "greedy",
           "threshold": 0.3,
           "extra": 1,
+          "weight": 2,
+          "precision": 0.8724,
+          "recall": 0.6502,
+          "f1": 0.7451,
+          "df1_vs_before": -0.0105,
+          "df1_ci95": [
+            -0.0523,
+            0.0248
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.6906,
+          "recall": 0.8061,
+          "f1": 0.7439,
+          "df1_vs_before": -0.0118,
+          "df1_ci95": [
+            -0.0632,
+            0.0421
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.7079,
+          "recall": 0.7833,
+          "f1": 0.7437,
+          "df1_vs_before": -0.012,
+          "df1_ci95": [
+            -0.0584,
+            0.034
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.7737,
+          "recall": 0.7148,
+          "f1": 0.7431,
+          "df1_vs_before": -0.0126,
+          "df1_ci95": [
+            -0.0619,
+            0.0337
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.7631,
+          "recall": 0.7224,
+          "f1": 0.7422,
+          "df1_vs_before": -0.0135,
+          "df1_ci95": [
+            -0.0545,
+            0.0245
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.7279,
+          "recall": 0.7529,
+          "f1": 0.7402,
+          "df1_vs_before": -0.0155,
+          "df1_ci95": [
+            -0.0704,
+            0.0377
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.6839,
+          "recall": 0.8061,
+          "f1": 0.74,
+          "df1_vs_before": -0.0157,
+          "df1_ci95": [
+            -0.0659,
+            0.0331
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.7153,
+          "recall": 0.7643,
+          "f1": 0.739,
+          "df1_vs_before": -0.0167,
+          "df1_ci95": [
+            -0.0628,
+            0.0281
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.6898,
+          "recall": 0.7947,
+          "f1": 0.7385,
+          "df1_vs_before": -0.0171,
+          "df1_ci95": [
+            -0.0673,
+            0.0325
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.3,
+          "extra": 1,
+          "weight": 0,
           "precision": 0.7879,
           "recall": 0.692,
-          "f1": 0.7368
+          "f1": 0.7368,
+          "df1_vs_before": -0.0188,
+          "df1_ci95": [
+            -0.0409,
+            0.0018
+          ]
         },
         {
+          "merge": true,
           "mode": "greedy",
-          "threshold": 0.35,
+          "threshold": 0.3,
           "extra": 1,
-          "precision": 0.8255,
-          "recall": 0.6654,
-          "f1": 0.7368
+          "weight": 0,
+          "precision": 0.7879,
+          "recall": 0.692,
+          "f1": 0.7368,
+          "df1_vs_before": -0.0188,
+          "df1_ci95": [
+            -0.0409,
+            0.0018
+          ]
         },
         {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.6887,
+          "recall": 0.7909,
+          "f1": 0.7363,
+          "df1_vs_before": -0.0194,
+          "df1_ci95": [
+            -0.0702,
+            0.0291
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.8119,
+          "recall": 0.673,
+          "f1": 0.736,
+          "df1_vs_before": -0.0197,
+          "df1_ci95": [
+            -0.0612,
+            0.018
+          ]
+        },
+        {
+          "merge": false,
           "mode": "global",
           "threshold": 0.3,
           "extra": 1,
+          "weight": 0,
           "precision": 0.7835,
           "recall": 0.6882,
-          "f1": 0.7328
+          "f1": 0.7328,
+          "df1_vs_before": -0.0229,
+          "df1_ci95": [
+            -0.0466,
+            -0.0013
+          ]
         },
         {
+          "merge": true,
           "mode": "global",
-          "threshold": 0.35,
+          "threshold": 0.3,
           "extra": 1,
-          "precision": 0.8208,
-          "recall": 0.6616,
-          "f1": 0.7326
+          "weight": 0,
+          "precision": 0.7835,
+          "recall": 0.6882,
+          "f1": 0.7328,
+          "df1_vs_before": -0.0229,
+          "df1_ci95": [
+            -0.0458,
+            -0.0011
+          ]
         },
         {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.7393,
+          "recall": 0.7224,
+          "f1": 0.7308,
+          "df1_vs_before": -0.0249,
+          "df1_ci95": [
+            -0.0473,
+            0.0002
+          ]
+        },
+        {
+          "merge": false,
           "mode": "greedy",
-          "threshold": 0.25,
+          "threshold": 0.15,
           "extra": 1,
-          "precision": 0.7315,
-          "recall": 0.7148,
-          "f1": 0.7231
+          "weight": 2,
+          "precision": 0.7239,
+          "recall": 0.7376,
+          "f1": 0.7307,
+          "df1_vs_before": -0.025,
+          "df1_ci95": [
+            -0.0769,
+            0.0241
+          ]
         },
         {
-          "mode": "global",
-          "threshold": 0.25,
-          "extra": 1,
-          "precision": 0.7315,
-          "recall": 0.7148,
-          "f1": 0.7231
-        },
-        {
+          "merge": false,
           "mode": "greedy",
           "threshold": 0.2,
           "extra": 1,
+          "weight": 2,
+          "precision": 0.7689,
+          "recall": 0.6958,
+          "f1": 0.7305,
+          "df1_vs_before": -0.0251,
+          "df1_ci95": [
+            -0.0709,
+            0.0175
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.6856,
+          "recall": 0.7795,
+          "f1": 0.7295,
+          "df1_vs_before": -0.0261,
+          "df1_ci95": [
+            -0.0751,
+            0.0201
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.6656,
+          "recall": 0.8023,
+          "f1": 0.7276,
+          "df1_vs_before": -0.0281,
+          "df1_ci95": [
+            -0.082,
+            0.0255
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.7354,
+          "recall": 0.7186,
+          "f1": 0.7269,
+          "df1_vs_before": -0.0287,
+          "df1_ci95": [
+            -0.0506,
+            -0.0079
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.6564,
+          "recall": 0.8137,
+          "f1": 0.7267,
+          "df1_vs_before": -0.029,
+          "df1_ci95": [
+            -0.0798,
+            0.023
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.6656,
+          "recall": 0.7947,
+          "f1": 0.7244,
+          "df1_vs_before": -0.0312,
+          "df1_ci95": [
+            -0.0815,
+            0.0188
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.6884,
+          "recall": 0.7643,
+          "f1": 0.7243,
+          "df1_vs_before": -0.0313,
+          "df1_ci95": [
+            -0.0876,
+            0.0216
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.7315,
+          "recall": 0.7148,
+          "f1": 0.7231,
+          "df1_vs_before": -0.0326,
+          "df1_ci95": [
+            -0.0498,
+            -0.0156
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.25,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.7315,
+          "recall": 0.7148,
+          "f1": 0.7231,
+          "df1_vs_before": -0.0326,
+          "df1_ci95": [
+            -0.0498,
+            -0.0156
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.6543,
+          "recall": 0.8061,
+          "f1": 0.7223,
+          "df1_vs_before": -0.0333,
+          "df1_ci95": [
+            -0.0819,
+            0.0155
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.6875,
+          "recall": 0.7529,
+          "f1": 0.7187,
+          "df1_vs_before": -0.037,
+          "df1_ci95": [
+            -0.0906,
+            0.0135
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.6334,
+          "recall": 0.8213,
+          "f1": 0.7152,
+          "df1_vs_before": -0.0404,
+          "df1_ci95": [
+            -0.0926,
+            0.0125
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.6405,
+          "recall": 0.8061,
+          "f1": 0.7138,
+          "df1_vs_before": -0.0418,
+          "df1_ci95": [
+            -0.0957,
+            0.0132
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.635,
+          "recall": 0.8137,
+          "f1": 0.7133,
+          "df1_vs_before": -0.0423,
+          "df1_ci95": [
+            -0.0953,
+            0.0104
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.6442,
+          "recall": 0.7985,
+          "f1": 0.7131,
+          "df1_vs_before": -0.0426,
+          "df1_ci95": [
+            -0.0964,
+            0.0121
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.6793,
+          "recall": 0.749,
+          "f1": 0.7125,
+          "df1_vs_before": -0.0432,
+          "df1_ci95": [
+            -0.0778,
+            -0.0092
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.6394,
+          "recall": 0.8023,
+          "f1": 0.7116,
+          "df1_vs_before": -0.044,
+          "df1_ci95": [
+            -0.0953,
+            0.0058
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 1,
+          "precision": 0.6411,
+          "recall": 0.7947,
+          "f1": 0.7097,
+          "df1_vs_before": -0.046,
+          "df1_ci95": [
+            -0.0983,
+            0.0054
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.6246,
+          "recall": 0.8099,
+          "f1": 0.7053,
+          "df1_vs_before": -0.0503,
+          "df1_ci95": [
+            -0.1044,
+            0.004
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.6724,
+          "recall": 0.7414,
+          "f1": 0.7052,
+          "df1_vs_before": -0.0504,
+          "df1_ci95": [
+            -0.0832,
+            -0.0191
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.2,
+          "extra": 1,
+          "weight": 0,
           "precision": 0.6736,
           "recall": 0.7376,
-          "f1": 0.7042
+          "f1": 0.7042,
+          "df1_vs_before": -0.0515,
+          "df1_ci95": [
+            -0.074,
+            -0.027
+          ]
         },
         {
-          "mode": "global",
-          "threshold": 0.2,
-          "extra": 1,
-          "precision": 0.6678,
-          "recall": 0.7338,
-          "f1": 0.6993
-        }
-      ]
-    },
-    "noisy": {
-      "views": 60,
-      "objects": 226,
-      "rows": [
-        {
-          "mode": "greedy",
-          "threshold": 0.2,
-          "extra": 0,
-          "precision": 0.8258,
-          "recall": 0.6504,
-          "f1": 0.7277
-        },
-        {
-          "mode": "greedy",
-          "threshold": 0.25,
-          "extra": 0,
-          "precision": 0.8606,
-          "recall": 0.6283,
-          "f1": 0.7263
-        },
-        {
-          "mode": "global",
-          "threshold": 0.2,
-          "extra": 0,
-          "precision": 0.8122,
-          "recall": 0.6504,
-          "f1": 0.7224
-        },
-        {
-          "mode": "global",
-          "threshold": 0.25,
-          "extra": 0,
-          "precision": 0.8452,
-          "recall": 0.6283,
-          "f1": 0.7208
-        },
-        {
-          "mode": "global",
-          "threshold": 0.3,
-          "extra": 0,
-          "precision": 0.8726,
-          "recall": 0.6062,
-          "f1": 0.7154
-        },
-        {
-          "mode": "greedy",
-          "threshold": 0.3,
-          "extra": 0,
-          "precision": 0.8774,
-          "recall": 0.6018,
-          "f1": 0.7139
-        },
-        {
-          "mode": "greedy",
-          "threshold": 0.35,
-          "extra": 0,
-          "precision": 0.9048,
-          "recall": 0.5885,
-          "f1": 0.7131
-        },
-        {
-          "mode": "greedy",
-          "threshold": 0.25,
-          "extra": 1,
-          "precision": 0.7653,
-          "recall": 0.6637,
-          "f1": 0.7109
-        },
-        {
-          "mode": "global",
-          "threshold": 0.35,
-          "extra": 0,
-          "precision": 0.8926,
-          "recall": 0.5885,
-          "f1": 0.7093
-        },
-        {
-          "mode": "global",
-          "threshold": 0.25,
-          "extra": 1,
-          "precision": 0.7602,
-          "recall": 0.6593,
-          "f1": 0.7062
-        },
-        {
-          "mode": "greedy",
-          "threshold": 0.35,
-          "extra": 1,
-          "precision": 0.8599,
-          "recall": 0.5973,
-          "f1": 0.705
-        },
-        {
-          "mode": "global",
-          "threshold": 0.35,
-          "extra": 1,
-          "precision": 0.8599,
-          "recall": 0.5973,
-          "f1": 0.705
-        },
-        {
-          "mode": "greedy",
-          "threshold": 0.3,
-          "extra": 1,
-          "precision": 0.8081,
-          "recall": 0.615,
-          "f1": 0.6985
-        },
-        {
-          "mode": "global",
-          "threshold": 0.3,
-          "extra": 1,
-          "precision": 0.8081,
-          "recall": 0.615,
-          "f1": 0.6985
-        },
-        {
+          "merge": true,
           "mode": "greedy",
           "threshold": 0.2,
           "extra": 1,
-          "precision": 0.6951,
-          "recall": 0.6858,
-          "f1": 0.6904
+          "weight": 0,
+          "precision": 0.6736,
+          "recall": 0.7376,
+          "f1": 0.7042,
+          "df1_vs_before": -0.0515,
+          "df1_ci95": [
+            -0.074,
+            -0.027
+          ]
         },
         {
-          "mode": "global",
-          "threshold": 0.2,
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.1,
           "extra": 1,
-          "precision": 0.6906,
-          "recall": 0.6814,
-          "f1": 0.686
+          "weight": 0.5,
+          "precision": 0.6203,
+          "recall": 0.8137,
+          "f1": 0.7039,
+          "df1_vs_before": -0.0517,
+          "df1_ci95": [
+            -0.1058,
+            0.0026
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.6435,
+          "recall": 0.7757,
+          "f1": 0.7034,
+          "df1_vs_before": -0.0522,
+          "df1_ci95": [
+            -0.1073,
+            0.0013
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 2,
+          "precision": 0.6474,
+          "recall": 0.7681,
+          "f1": 0.7026,
+          "df1_vs_before": -0.053,
+          "df1_ci95": [
+            -0.1072,
+            0.0012
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.6303,
+          "recall": 0.7909,
+          "f1": 0.7015,
+          "df1_vs_before": -0.0541,
+          "df1_ci95": [
+            -0.0898,
+            -0.0172
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.6119,
+          "recall": 0.8213,
+          "f1": 0.7013,
+          "df1_vs_before": -0.0543,
+          "df1_ci95": [
+            -0.107,
+            -0.0006
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 0.5,
+          "precision": 0.6061,
+          "recall": 0.8251,
+          "f1": 0.6989,
+          "df1_vs_before": -0.0568,
+          "df1_ci95": [
+            -0.108,
+            -0.0043
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.6273,
+          "recall": 0.7871,
+          "f1": 0.6981,
+          "df1_vs_before": -0.0575,
+          "df1_ci95": [
+            -0.0902,
+            -0.0232
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.6215,
+          "recall": 0.7681,
+          "f1": 0.6871,
+          "df1_vs_before": -0.0686,
+          "df1_ci95": [
+            -0.0954,
+            -0.0393
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.15,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.6215,
+          "recall": 0.7681,
+          "f1": 0.6871,
+          "df1_vs_before": -0.0686,
+          "df1_ci95": [
+            -0.0954,
+            -0.0393
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.5921,
+          "recall": 0.7947,
+          "f1": 0.6786,
+          "df1_vs_before": -0.0771,
+          "df1_ci95": [
+            -0.1126,
+            -0.0393
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.5921,
+          "recall": 0.7947,
+          "f1": 0.6786,
+          "df1_vs_before": -0.0771,
+          "df1_ci95": [
+            -0.1102,
+            -0.0443
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.5891,
+          "recall": 0.7795,
+          "f1": 0.671,
+          "df1_vs_before": -0.0846,
+          "df1_ci95": [
+            -0.1127,
+            -0.0558
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.125,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.5891,
+          "recall": 0.7795,
+          "f1": 0.671,
+          "df1_vs_before": -0.0846,
+          "df1_ci95": [
+            -0.1127,
+            -0.0558
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.563,
+          "recall": 0.7985,
+          "f1": 0.6604,
+          "df1_vs_before": -0.0953,
+          "df1_ci95": [
+            -0.1349,
+            -0.0537
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "global",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.5615,
+          "recall": 0.7985,
+          "f1": 0.6593,
+          "df1_vs_before": -0.0963,
+          "df1_ci95": [
+            -0.1363,
+            -0.0533
+          ]
+        },
+        {
+          "merge": false,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.5625,
+          "recall": 0.7871,
+          "f1": 0.6561,
+          "df1_vs_before": -0.0995,
+          "df1_ci95": [
+            -0.1322,
+            -0.0631
+          ]
+        },
+        {
+          "merge": true,
+          "mode": "greedy",
+          "threshold": 0.1,
+          "extra": 1,
+          "weight": 0,
+          "precision": 0.5625,
+          "recall": 0.7871,
+          "f1": 0.6561,
+          "df1_vs_before": -0.0995,
+          "df1_ci95": [
+            -0.1322,
+            -0.0631
+          ]
         }
       ]
     }

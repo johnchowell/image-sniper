@@ -19,9 +19,13 @@ from common import exif_fov_x, next_index, world_path, write_request
 RESERVED = {"world", "sfx", "light", "layout", "scene"}
 DETECTOR = "IDEA-Research/grounding-dino-base"
 SEGMENTER = "facebook/sam2.1-hiera-large"
+VERIFIER = "google/siglip2-base-patch16-224"
 # Chosen on the benchmark training renders by box F1 (bench/detection_study.py, benchmark/results/detection-train.json).
 BOX_THRESHOLD = 0.25
 EXTRA_PER_OBJECT = 0
+ASSIGNMENT = "greedy"
+MERGE_CLUSTERS = False
+VERIFY_WEIGHT = 0.0  # weight of the crop classifier's log p(name | crop); 0 does not load it
 
 
 def confirmed_objects(world):
@@ -65,56 +69,79 @@ def detector_outputs(processor, detector, image, phrases):
     return prompt, class_scores, boxes.clip([0, 0, 0, 0], [W, H, W, H])
 
 
-def assign_boxes(class_scores, boxes, counts, threshold, extra, mode="global", merge=False):
-    """Boxes per object (object k may keep counts[k] boxes plus `extra`). Overlapping boxes collapse first (NMS on
-    each box's best score: one image region, one object). merge: the kept box takes, per name, the best score of the
-    boxes it suppresses, so a duplicate query on the same region that scores another name keeps that evidence.
-    greedy: each box goes to its best-scoring object.
-    global: one-to-one assignment maximizing the total score (Hungarian), so with similar names ("table",
-            "coffee table", "side table") every object gets the box it scores best among the boxes the others do
-            not need more; leftover boxes then go to their best object as extras."""
-    from scipy.optimize import linear_sum_assignment
-
+def box_clusters(class_scores, boxes, threshold, merge=False):
+    """NMS on each box's best score (one image region, one object): kept box indices, in descending score order, and
+    their per-name scores. merge: a kept box takes, per name, the best score of the boxes it suppresses, so a duplicate
+    query on the same region that scores another name keeps that evidence."""
     score = class_scores.max(1)
     # A box below the threshold is never kept, cannot raise a kept box's score to the threshold, and cannot suppress
     # a kept box (NMS visits boxes by descending score), so it leaves NMS first; the result is the same.
     live = np.flatnonzero(score >= threshold)
     clusters = {live[i]: list(live[members]) for i, members in nms_clusters(boxes[live], score[live], iou=0.6).items()}
-    if merge:
-        class_scores = class_scores.copy()
-        for i, members in clusters.items():
-            class_scores[i] = class_scores[members].max(0)
-        score = class_scores.max(1)
-    best = class_scores.argmax(1)
     keep = list(clusters)
-    kept = {k: [] for k in range(class_scores.shape[1])}
-    if mode == "greedy":
-        for i in keep:
-            if len(kept[best[i]]) < max(1, counts[best[i]]) + extra:
-                kept[best[i]].append(i)
+    rows = [class_scores[clusters[i]].max(0) if merge else class_scores[i] for i in keep]
+    return keep, np.array(rows).reshape(len(keep), class_scores.shape[1])
+
+
+def assign_boxes(scores, counts, threshold, extra, mode="global", name_logprob=None, weight=0.0):
+    """Kept boxes per object: object k may keep counts[k] boxes plus `extra`. scores: kept boxes x names (detector).
+    The rank of a (box, name) pair is log score + weight * name_logprob (a crop classifier's log p(name | crop));
+    a pair is accepted only if its detector score is at least the threshold.
+    greedy: each box goes to its best-ranked name.
+    global: one-to-one assignment maximizing the summed rank (Hungarian), so with similar names ("table",
+            "coffee table", "side table") every object gets the box it ranks best among the boxes the others do
+            not need more; leftover boxes then go to their best-ranked name as extras.
+    Returns name index -> row indices of `scores`."""
+    from scipy.optimize import linear_sum_assignment
+
+    n, K = scores.shape
+    kept = {k: [] for k in range(K)}
+    if not n:
         return kept
-    rows = [k for k in range(class_scores.shape[1]) for _ in range(max(1, counts[k]))]
+    rank = np.log(np.maximum(scores, 1e-6))
+    if name_logprob is not None and weight:
+        rank = rank + weight * name_logprob
+    best = rank.argmax(1)
+    room = lambda k: len(kept[k]) < max(1, counts[k]) + extra
     used = set()
-    if rows and keep:
-        matrix = np.array([[class_scores[i, k] for i in keep] for k in rows])
-        for r, c in zip(*linear_sum_assignment(-matrix)):
-            if matrix[r, c] >= threshold:
-                kept[rows[r]].append(keep[c])
-                used.add(keep[c])
-    for i in keep:
-        if i not in used and len(kept[best[i]]) < max(1, counts[best[i]]) + extra:
-            kept[best[i]].append(i)
+    if mode == "global":
+        rows = [k for k in range(K) for _ in range(max(1, counts[k]))]
+        for r, c in zip(*linear_sum_assignment(-rank[:, rows].T)):
+            if scores[c, rows[r]] >= threshold:
+                kept[rows[r]].append(c)
+                used.add(c)
+    for c in range(n):
+        if c not in used and room(best[c]) and scores[c, best[c]] >= threshold:
+            kept[best[c]].append(c)
     return kept
 
 
-def detect_jointly(processor, detector, image, objects, threshold, extra, mode="greedy"):
-    """Boxes for every confirmed object from one Grounding DINO pass in which all names compete
-    (see assign_boxes). Threshold, extra and mode were chosen on the benchmark training renders
+def name_logprobs(verifier, image, boxes, names):
+    """log p(name | crop) for each box (padded 10%) over the names, from a SigLIP 2 image-text model."""
+    processor, model = verifier
+    W, H = image.size
+    crops = []
+    for x0, y0, x1, y1 in boxes:
+        px, py = 0.1 * (x1 - x0), 0.1 * (y1 - y0)
+        crops.append(image.crop((max(0, x0 - px), max(0, y0 - py), min(W, x1 + px), min(H, y1 + py))))
+    with torch.no_grad():
+        inputs = processor(text=[f"a photo of a {name}." for name in names], images=crops, return_tensors="pt",
+                           padding="max_length", max_length=64)
+        logits = model(**inputs).logits_per_image.double()  # crops x names
+    return torch.log_softmax(logits, 1).numpy()
+
+
+def detect_jointly(models, image, objects, threshold, extra, mode=ASSIGNMENT, merge=MERGE_CLUSTERS, weight=VERIFY_WEIGHT):
+    """Boxes for every confirmed object from one Grounding DINO pass in which all names compete, optionally checked
+    by a crop classifier (see assign_boxes). The settings were chosen on the benchmark training renders
     (bench/detection_study.py, results in benchmark/results/detection-*.json)."""
+    processor, detector, verifier = models[0], models[1], models[3]
     phrases = [obj["name"].lower().strip().rstrip(".") for obj in objects]
     prompt, class_scores, boxes = detector_outputs(processor, detector, image, phrases)
-    kept = assign_boxes(class_scores, boxes, [obj["count"] for obj in objects], threshold, extra, mode)
-    detections = {obj["id"]: [(boxes[i], float(class_scores[i, k])) for i in kept[k]] for k, obj in enumerate(objects)}
+    keep, scores = box_clusters(class_scores, boxes, threshold, merge)
+    logprob = name_logprobs(verifier, image, boxes[keep], phrases) if weight and keep else None
+    kept = assign_boxes(scores, [obj["count"] for obj in objects], threshold, extra, mode, logprob, weight)
+    detections = {obj["id"]: [(boxes[keep[c]], float(scores[c, k])) for c in kept[k]] for k, obj in enumerate(objects)}
     return prompt, detections
 
 
@@ -189,15 +216,19 @@ def load_mask_models():
     processor = AutoProcessor.from_pretrained(DETECTOR)
     detector = AutoModelForZeroShotObjectDetection.from_pretrained(DETECTOR).eval()
     predictor = SAM2ImagePredictor.from_pretrained(SEGMENTER, device="cpu")
-    return processor, detector, predictor
+    verifier = None
+    if VERIFY_WEIGHT:
+        from transformers import AutoModel
+        verifier = AutoProcessor.from_pretrained(VERIFIER), AutoModel.from_pretrained(VERIFIER).eval()
+    return processor, detector, predictor, verifier
 
 
 def mask_step(models, image, rgb, objects, out_rel, index, source, threshold, extra):
     """Text -> boxes (Grounding DINO, all names compete) -> masks (SAM 2.1); one request file per object."""
-    processor, detector, predictor = models
+    predictor = models[2]
     predictor.set_image(rgb)
     found = {}
-    prompt, detections = detect_jointly(processor, detector, image, objects, threshold, extra) if objects else ("", {})
+    prompt, detections = detect_jointly(models, image, objects, threshold, extra) if objects else ("", {})
     for obj in objects:
         downloaded, kept_scores, kept_boxes = [], [], []
         for k, (box, box_score) in enumerate(detections[obj["id"]], start=1):
@@ -212,6 +243,8 @@ def mask_step(models, image, rgb, objects, out_rel, index, source, threshold, ex
             "kind": "layout-mask", "provider": f"local/{DETECTOR.split('/')[-1]}+{SEGMENTER.split('/')[-1]}",
             "endpoint": "local/grounded-sam2", "index": index, "status": "completed",
             "object_id": obj["id"], "object_name": obj["name"], "prompt": prompt, "detection": "joint (all names compete)",
+            "assignment": {"mode": ASSIGNMENT, "merge_clusters": MERGE_CLUSTERS, "verifier": VERIFIER if VERIFY_WEIGHT else None,
+                           "verify_weight": VERIFY_WEIGHT},
             "mask_threshold": threshold,
             "input_files": [source], "output_files": [d["path"] for d in downloaded], "downloaded_files": downloaded,
             "result": {"scores": kept_scores, "boxes_px": kept_boxes},
