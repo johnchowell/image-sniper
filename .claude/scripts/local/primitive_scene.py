@@ -379,6 +379,7 @@ def build_parser():
                         help="the object's generated asset (object_mesh.py), registered to the view: used as the mesh, or as the hidden-part "
                              "hypothesis of the completion (in place of the prior, with it, where both agree, or as evidence on the prior's log-odds)")
     parser.add_argument("--generated-weight", type=float, default=1.0, help="fuse: log-odds the generated asset adds where it is full and subtracts where it is empty")
+    parser.add_argument("--roughness", type=float, default=-1.0, help="constant roughness of every material; -1 estimates it from the light stage's non-diffuse light")
     parser.add_argument("--free-weight", type=float, default=0.15, help="registration: cost (m) of the asset's surface fraction in seen-through space or outside the prior's cube")
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
     parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
@@ -392,6 +393,9 @@ def main():
     view, instances, object_px, room_px = scene_inputs(layout)
     W, H = view.W, view.H
     maps = Maps(args.world, layout, view)
+    if args.roughness >= 0:
+        maps.photo_rough = np.full_like(maps.photo_rough, args.roughness)
+        maps.plate_rough = np.full_like(maps.plate_rough, args.roughness)
     structure_px = ~object_px
     maps.object_px = object_px
 
