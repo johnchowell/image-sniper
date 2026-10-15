@@ -256,7 +256,8 @@ def main():
     small = load_rgb(layout["source_image"], fit_size)
     pl = (srgb_to_linear(small) @ LUMA).reshape(-1)
     clipped = small.max(-1).reshape(-1) >= 0.97
-    mid = ~clipped & (pl > 0.002) & ~emitter_mask(layout, fit_size).reshape(-1)
+    glass = emitter_mask(layout, fit_size).reshape(-1)
+    mid = ~clipped & (pl > 0.002) & ~glass
     fixed = {}
     if args.fill > 0 and "fill" in basis:
         fixed["fill"] = args.fill / UNIT_W
@@ -273,7 +274,11 @@ def main():
     g, log_a = 1.0, 0.0
     weights = {n: 0.0 for n in names}
     weights["window"] = 1.0
+    # The window's strength is what the camera sees through it: set from the glass pixels through the response,
+    # not from the room (other lights can explain the room equally well and leave the glass black).
+    fixed["window"] = 1.0
     free = [k for k, n in enumerate(names) if n not in fixed]
+    seen_glass = glass & ~clipped & (pl > 0.002) & (B[:, 0] > 1e-6)
     for _ in range(6):
         target = np.power(pl[mid] / np.exp(log_a), 1 / g)
         known = sum(B[mid, names.index(n)] * v for n, v in fixed.items()) if fixed else 0.0
@@ -285,6 +290,10 @@ def main():
         R = B @ np.array([weights[n] for n in names])
         ok = mid & (R > 1e-6)
         g, log_a = np.polyfit(np.log(R[ok]), np.log(pl[ok]), 1)
+        if seen_glass.sum() > 20:
+            others = R - weights["window"] * B[:, 0]
+            want = np.power(pl[seen_glass] / np.exp(log_a), 1 / g) - others[seen_glass]
+            weights["window"] = fixed["window"] = max(0.0, float(np.median(want / B[seen_glass, 0])))
         # Clipped window pixels must render at least white after the response.
         win = clipped & (weights["window"] * B[:, 0] > 0.5 * R)
         if win.sum() > 20 and weights["window"] > 0:
