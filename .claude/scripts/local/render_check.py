@@ -5,7 +5,7 @@ plus PSNR. Run with the bpy runtime: .venv-render/bin/python .claude/scripts/loc
 
 Lights come from the layout: each light-source emitter becomes an area light shining into the room, emissive
 textures glow, the world gives the ambient color of the shading's spherical-harmonic band 0, and a sun follows
-the dominant light when its confidence is not low.
+the dominant light when its confidence is not low. The strengths are fitted to the photo, each light alone.
 Writes next to the scene: N-<scene>-check.png and N-<scene>-check.json.
 """
 import argparse
@@ -98,7 +98,6 @@ def main():
     parser.add_argument("--scene", help="scene GLB (default: latest N-primitive-scene.glb)")
     parser.add_argument("--samples", type=int, default=48)
     parser.add_argument("--scale", type=float, default=0.5, help="render size relative to the photo")
-    parser.add_argument("--ambient", type=float, default=1.0, help="scale of the world ambient (the shading's SH band 0 already contains bounced light the path tracer adds again)")
     parser.add_argument("--fill", type=float, default=-1.0, help="power (W) of an unseen light along the estimated dominant light direction (light from outside the frame); -1 fits it to the photo, 0 leaves it out")
     parser.add_argument("--window-strength", type=float, default=12.0, help="emission multiplier for window textures")
     parser.add_argument("--light-power", type=float, default=0.0, help="extra area lights per layout emitter, W per m^2 (0: windows light the room through their emission)")
@@ -150,14 +149,17 @@ def main():
     world = bpy.data.worlds.new("world")
     world.use_nodes = True
     sh = lighting.get("irradiance_sh", {}).get("coefficients_rgb")
-    ambient = [max(0.0, c) * 0.886 * args.ambient for c in sh[0]] if sh else [0.3 * args.ambient] * 3  # Y00 term -> mean irradiance / pi scale
+    ambient = [max(0.0, c) * 0.886 for c in sh[0]] if sh else [0.3] * 3  # Y00 term -> mean irradiance / pi scale
     world.node_tree.nodes["Background"].inputs["Color"].default_value = (*ambient, 1)
-    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 1.0
+    background = world.node_tree.nodes["Background"].inputs["Strength"]
+    background.default_value = 0.0
     scene.world = world
     dominant = lighting.get("dominant_light")
-    # Light basis for the fit: the window emission, plus area lights the camera cannot see where light from outside
-    # the frame can come from (the dominant direction, four ceiling quadrants, the four sides of the room).
-    basis = {"window": None}  # name -> light object (None: the emissive textures)
+    # Light basis for the fit: the window emission, the world ambient, plus area lights the camera cannot see where
+    # light from outside the frame can come from (the dominant direction, four ceiling quadrants, the four sides of
+    # the room). Each basis term is rendered alone, so the ambient and the sun are terms too, not a part of every
+    # render (that counted them once per light in the fit and once in the final render).
+    basis = {"window": None, "ambient": background}  # name -> light object (None: the emissive textures)
 
     def area(name, center, facing, size_x, size_y):
         bpy.ops.object.light_add(type="AREA")
@@ -199,9 +201,11 @@ def main():
     if dominant and dominant.get("confidence") in ("medium", "high"):
         bpy.ops.object.light_add(type="SUN")
         sun = bpy.context.active_object
-        sun.data.energy = 2.0
+        sun.name = "sun"
+        sun.data.energy = 0.0
         d = to_blender(dominant["direction"])
         sun.matrix_world = Matrix.Translation(d * 5) @ (-d).to_track_quat("-Z", "Y").to_matrix().to_4x4()
+        basis["sun"] = sun
 
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
@@ -226,15 +230,21 @@ def main():
     cam.matrix_world = source
 
     UNIT_W = 100.0
+    SUN_W = 2.0  # W/m^2 per unit weight
+
+    def unit(name):
+        return args.window_strength if name == "window" else 1.0 if name == "ambient" else SUN_W if name == "sun" else UNIT_W
 
     def set_lights(weights):
         for name, light in basis.items():
             w = weights.get(name, 0.0)
             if light is None:
                 for socket in emissive_nodes:
-                    socket.default_value = w * args.window_strength
+                    socket.default_value = w * unit(name)
+            elif name == "ambient":
+                light.default_value = w * unit(name)
             else:
-                light.data.energy = w * UNIT_W
+                light.data.energy = w * unit(name)
 
     tmp = os.path.abspath(os.path.join(scene_dir, ".render-check.exr"))
     photo = load_rgb(layout["source_image"], size)
@@ -359,15 +369,19 @@ def main():
     stem = os.path.splitext(glb)[0] + (f"-{args.tag}" if args.tag else "")
     write_png(stem + "-check.png", sheet)
     write_png(stem + "-render.png", (render_srgb * 255).round().astype(np.uint8))
-    json.dump({"scene": glb, "psnr_db": round(psnr, 2), "mean_abs_err": round(float(diff.mean()), 4), "exposure": exposure, "light_weights_w": {n: round(v * (args.window_strength if n == "window" else UNIT_W), 2) for n, v in weights.items()},
-               "samples": args.samples, "size": size, "ambient": args.ambient, "fill": args.fill, "window_strength": args.window_strength, "light_power": args.light_power},
+    json.dump({"scene": glb, "psnr_db": round(psnr, 2), "mean_abs_err": round(float(diff.mean()), 4), "exposure": exposure, "light_weights_w": {n: round(v * unit(n), 2) for n, v in weights.items()},
+               "samples": args.samples, "size": size, "fill": args.fill, "window_strength": args.window_strength, "light_power": args.light_power},
               open(stem + "-check.json", "w"), indent=2)
     # The fitted light rig in the layout frame (for viewers): area lights with power, the window emission strength.
     to_layout = lambda v: [round(v.x, 4), round(v.z, 4), round(-v.y, 4)]
     rig = {"frame": "layout (+Y up)", "window_emission_strength": round(weights.get("window", 0.0) * args.window_strength, 4),
-           "exposure_note": "photo_linear = exposure * render_linear", "exposure": round(exposure, 6), "area_lights": []}
+           "exposure_note": "photo_linear = exposure * render_linear", "exposure": round(exposure, 6),
+           "ambient_rgb": [round(c * weights.get("ambient", 0.0) * unit("ambient"), 5) for c in ambient], "area_lights": []}
+    if weights.get("sun", 0.0) > 0:
+        rig["sun"] = {"direction": to_layout((basis["sun"].matrix_world.to_3x3() @ Vector((0, 0, 1))).normalized()),
+                      "irradiance_w_m2": round(weights["sun"] * unit("sun"), 3)}
     for name, light in basis.items():
-        if light is None or weights.get(name, 0.0) <= 0:
+        if name in ("window", "ambient", "sun") or weights.get(name, 0.0) <= 0:
             continue
         facing = light.matrix_world.to_3x3() @ Vector((0, 0, -1))
         rig["area_lights"].append({"name": name, "center": to_layout(light.matrix_world.translation), "normal": to_layout(facing.normalized()),
@@ -376,7 +390,7 @@ def main():
                                    "power_w": round(weights[name] * UNIT_W, 2)})
     json.dump(rig, open(stem + "-lights.json", "w"), indent=2)
     print(json.dumps({"sheet": stem + "-check.png", "psnr_db": round(psnr, 2), "mean_abs_err": round(float(diff.mean()), 4),
-                      "light_weights_w": {n: round(v * (args.window_strength if n == "window" else UNIT_W), 1) for n, v in weights.items()}}))
+                      "light_weights_w": {n: round(v * unit(n), 1) for n, v in weights.items()}}))
 
 
 if __name__ == "__main__":
