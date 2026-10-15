@@ -57,6 +57,8 @@ export const DEFAULT_PARAMS = {
   light_wall_behind_min_m: 0.15,
   light_wall_behind_max_m: 1.2,
   light_extent_margin_m: 0.3,
+  opening_min_fraction: 0.002,
+  opening_window_min_luma_ratio: 1.15,
   // Metric scale anchors: real-world sizes combined with the depth model's own scale (chosen on train, checked on val).
   scale_anchors: 1,
   scale_depth_model_sigma: 0.15,

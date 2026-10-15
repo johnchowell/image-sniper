@@ -324,10 +324,11 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
       const o = extentOf(g);
       return Math.max(o[0] - box[1], box[0] - o[1], o[2] - box[3], box[2] - o[3]) <= P.gap;
     })());
-    const merged = { surface: part.surface, points: [...part.points], regions: [...part.regions], luminance: [...part.luminance], opening: new Map(part.opening) };
+    const merged = { surface: part.surface, points: [...part.points], regions: [...part.regions], luminance: [...part.luminance], opening: new Map(part.opening), source: part.source };
     for (const g of near) {
       merged.points.push(...g.points);
       for (const [cell, p] of g.opening || []) merged.opening.set(cell, p);
+      if (g.source !== merged.source) merged.source = "light_region";
       merged.regions.push(...g.regions);
       merged.luminance.push(...g.luminance);
       groups.splice(groups.indexOf(g), 1);
@@ -371,6 +372,57 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     groups = mergeNear(groups);
   }
 
+  // Openings on walls: connected cells seen through one wall, lifted onto it. Brightness relative to the room tells a
+  // window (daylight) from a doorway into another room.
+  const openings = [];
+  const added = [];
+  if (seenThrough) {
+    const lumaOf = (cell) => grid.hasColor ? (0.2126 * grid.colors[cell * 3] + 0.7152 * grid.colors[cell * 3 + 1] + 0.0722 * grid.colors[cell * 3 + 2]) : 0;
+    const roomLuma = percentile(sortedValues(Array.from({ length: cellCount }, (_, cell) => cell).filter((cell) => valid[cell] && seenThrough[cell] < 0).map(lumaOf)), 0.5);
+    const done = new Uint8Array(cellCount);
+    for (let start = 0; start < cellCount; start += 1) {
+      if (done[start] || seenThrough[start] < 0) continue;
+      const k = seenThrough[start];
+      const component = [];
+      const stack = [start];
+      done[start] = 1;
+      while (stack.length) {
+        const cell = stack.pop();
+        component.push(cell);
+        const gx = cell % gw, gy = Math.floor(cell / gw);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const x = gx + dx, y = gy + dy;
+          if (x < 0 || y < 0 || x >= gw || y >= gh) continue;
+          const other = y * gw + x;
+          if (done[other] || seenThrough[other] !== k) continue;
+          done[other] = 1;
+          stack.push(other);
+        }
+      }
+      if (component.length < params.opening_min_fraction * cellCount) continue;
+      const wall = structure[k];
+      const lifted = component.map((cell) => hitPlane(wall, rayOf(cell))?.p).filter(Boolean);
+      if (lifted.length < 0.5 * component.length) continue;
+      const [u0, u1, v0, v1] = rectOf(lifted, wall.center, wall.u_axis, wall.v_axis);
+      const center = add(wall.center, add(scale(wall.u_axis, (u0 + u1) / 2), scale(wall.v_axis, (v0 + v1) / 2)));
+      const gaps = sortedValues(component.map((cell) => dot(sub(wall.center, pointOf(cell)), dot(sub(cameraPosition, wall.center), wall.normal) > 0 ? wall.normal : scale(wall.normal, -1))));
+      const covered = groups.find((group) => component.some((cell) => group.opening?.has(cell)));
+      const lumaRatio = component.reduce((sum, cell) => sum + lumaOf(cell), 0) / component.length / Math.max(roomLuma, 1);
+      // An opening brighter than the room lets daylight in: a window even when the light stage missed its region
+      // (a tone curve that rolls off highlights leaves it unsaturated).
+      if (!covered && lumaRatio >= params.opening_window_min_luma_ratio) {
+        const regionCells = new Map();
+        for (const cell of component) if (emitterOf[cell]) regionCells.set(emitterOf[cell], (regionCells.get(emitterOf[cell]) || 0) + 1);
+        const regions = [...regionCells.keys()];
+        added.push({ surface: wall, points: lifted, regions, luminance: regions.map((id) => kinds[id]?.relative_luminance).filter(Number.isFinite), opening: new Map(), source: "opening" });
+      }
+      openings.push({ wall: wall.id, cells: component.length, image_fraction: round(component.length / cellCount, 4), center: roundVec(center), size: roundVec([u1 - u0, v1 - v0]),
+        normal: wall.normal, u_axis: wall.u_axis, v_axis: wall.v_axis, gap_median_m: round(percentile(gaps, 0.5), 2), luma_ratio: round(lumaRatio, 2),
+        bright_fraction: round(component.filter((cell) => emitterOf[cell]).length / component.length, 3), covered: Boolean(covered), window: !covered && lumaRatio >= params.opening_window_min_luma_ratio });
+    }
+    if (added.length) groups = mergeNear([...groups, ...added]);
+  }
+
   const roomCenter = add(structure.find((plane) => plane.class === "floor")?.center || [0, 0, -3], [0, 1, 0]);
   const emitters = [];
   for (const group of groups) {
@@ -407,7 +459,8 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
       corners: [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => roundVec(add(center, add(scale(u, (a * size[0]) / 2), scale(v, (b * size[1]) / 2))))),
       color_linear_rgb: light.json.light_color.linear_rgb,
       saturated: true,
-      relative_luminance_min: round(Math.min(...group.luminance), 2),
+      relative_luminance_min: group.luminance.length ? round(Math.min(...group.luminance), 2) : null,
+      source: group.source || "light_region",
       image_regions: [...new Set(group.regions)],
       angle_to_dominant_light_deg: round(degrees(Math.acos(Math.max(-1, Math.min(1, dot(toward, dominant))))), 1)
     });
@@ -450,6 +503,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     highlights_on_objects: highlights,
     sunlit_patches: sunlitPatches,
     furniture_patches: furniturePatches,
+    openings,
     unplaced_light_regions: unplaced
   };
   return { lighting, emitters, emitterOf };
