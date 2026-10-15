@@ -20,12 +20,13 @@ RESERVED = {"world", "sfx", "light", "layout", "scene"}
 DETECTOR = "IDEA-Research/grounding-dino-base"
 SEGMENTER = "facebook/sam2.1-hiera-large"
 VERIFIER = "google/siglip2-base-patch16-224"
-# Chosen on the benchmark training renders by box F1 (bench/detection_study.py, benchmark/results/detection-train.json).
-BOX_THRESHOLD = 0.25
+# Chosen on the benchmark training renders by box F1 and confirmed on val (bench/detection_study.py,
+# benchmark/results/detection-{train,val}.json): F1 0.756 -> 0.839 on train, 0.786 -> 0.867 on val.
+BOX_THRESHOLD = 0.15
 EXTRA_PER_OBJECT = 0
-ASSIGNMENT = "greedy"
-MERGE_CLUSTERS = False
-VERIFY_WEIGHT = 0.0  # weight of the crop classifier's log p(name | crop); 0 does not load it
+ASSIGNMENT = "global"
+MERGE_CLUSTERS = True
+VERIFY_WEIGHT = 1.0  # weight of the crop classifier's log p(name | crop); 0 does not load it
 
 
 def confirmed_objects(world):

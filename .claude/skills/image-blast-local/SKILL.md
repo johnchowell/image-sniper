@@ -38,7 +38,7 @@ Add `--skip <step>` to reuse the latest output of a step (for example `--skip li
 | step | model | output |
 |---|---|---|
 | light | Marigold-IID-Lighting v1.1 | `output/light/N-light*` (see `image-blast-light`) |
-| layout | MoGe-2, Grounding DINO (name -> box), SAM 2.1 (box -> mask), then `build-layout.mjs` | `output/layout/N-layout*` (see `image-blast-layout`) |
+| layout | MoGe-2, Grounding DINO (name -> box, all names compete), SigLIP 2 (crop -> name check), SAM 2.1 (box -> mask), then `build-layout.mjs` | `output/layout/N-layout*` (see `image-blast-layout`) |
 | plate | big-lama | `source/N-<slug>-plate.png`; the removal mask is hidden metadata `source/.N-<slug>-plate-mask.png` |
 | environment | MoGe-2 on the plate, fov locked to the layout camera, scale fit to the original depth on unchanged pixels | `output/scene/N-scene-environment.glb` (textured, layout frame) |
 | objects | TripoSR (geometry from the photo crop, vertex colors from the albedo crop, 30k faces) | `output/<object>/N-<object>.glb` (canonical: meters, +Y up, front +Z, base at y=0) and `N-<object>.png` (input crop); placement in `.N-<object>__model-request.json` |
