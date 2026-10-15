@@ -76,14 +76,17 @@ def assign_boxes(class_scores, boxes, counts, threshold, extra, mode="global", m
     from scipy.optimize import linear_sum_assignment
 
     score = class_scores.max(1)
-    clusters = nms_clusters(boxes, score, iou=0.6)
+    # A box below the threshold is never kept, cannot raise a kept box's score to the threshold, and cannot suppress
+    # a kept box (NMS visits boxes by descending score), so it leaves NMS first; the result is the same.
+    live = np.flatnonzero(score >= threshold)
+    clusters = {live[i]: list(live[members]) for i, members in nms_clusters(boxes[live], score[live], iou=0.6).items()}
     if merge:
         class_scores = class_scores.copy()
         for i, members in clusters.items():
             class_scores[i] = class_scores[members].max(0)
         score = class_scores.max(1)
     best = class_scores.argmax(1)
-    keep = [i for i in clusters if score[i] >= threshold]
+    keep = list(clusters)
     kept = {k: [] for k in range(class_scores.shape[1])}
     if mode == "greedy":
         for i in keep:
