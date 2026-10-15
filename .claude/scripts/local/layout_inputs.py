@@ -224,6 +224,11 @@ def load_mask_models():
     return processor, detector, predictor, verifier
 
 
+def assignment_settings():
+    return {"mode": ASSIGNMENT, "merge_clusters": MERGE_CLUSTERS, "verifier": VERIFIER if VERIFY_WEIGHT else None,
+            "verify_weight": VERIFY_WEIGHT}
+
+
 def mask_step(models, image, rgb, objects, out_rel, index, source, threshold, extra):
     """Text -> boxes (Grounding DINO, all names compete) -> masks (SAM 2.1); one request file per object."""
     predictor = models[2]
@@ -244,8 +249,7 @@ def mask_step(models, image, rgb, objects, out_rel, index, source, threshold, ex
             "kind": "layout-mask", "provider": f"local/{DETECTOR.split('/')[-1]}+{SEGMENTER.split('/')[-1]}",
             "endpoint": "local/grounded-sam2", "index": index, "status": "completed",
             "object_id": obj["id"], "object_name": obj["name"], "prompt": prompt, "detection": "joint (all names compete)",
-            "assignment": {"mode": ASSIGNMENT, "merge_clusters": MERGE_CLUSTERS, "verifier": VERIFIER if VERIFY_WEIGHT else None,
-                           "verify_weight": VERIFY_WEIGHT},
+            "assignment": assignment_settings(),
             "mask_threshold": threshold,
             "input_files": [source], "output_files": [d["path"] for d in downloaded], "downloaded_files": downloaded,
             "result": {"scores": kept_scores, "boxes_px": kept_boxes},

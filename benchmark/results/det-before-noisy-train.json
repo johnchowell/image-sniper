@@ -1,0 +1,326 @@
+{
+  "name": "det-before-noisy",
+  "split": "train",
+  "names": "noisy",
+  "summary": {
+    "views": 60,
+    "scored": 0,
+    "camera": {
+      "height_err_m": null,
+      "pitch_err_deg": null,
+      "roll_err_deg": null,
+      "fov_err_deg": null
+    },
+    "depth": {
+      "absrel_metric": null,
+      "absrel_scaled": null,
+      "delta1_metric": null,
+      "scale_err_median": null,
+      "log_scale_bias": null
+    },
+    "structure": {
+      "floor_found_aligned": null,
+      "wall_found_aligned": null,
+      "ceiling_found_aligned": null,
+      "wall_found": null,
+      "class_correct": null,
+      "floor_precision": null,
+      "wall_precision": null,
+      "ceiling_precision": null,
+      "wall_predicted_per_view": null,
+      "normal_err_deg_median": null,
+      "offset_err_m_median": null,
+      "offset_err_aligned_m_median": null
+    },
+    "objects": {
+      "recall": null,
+      "recall_of_listed": null,
+      "listed_fraction": null,
+      "precision": 0.0,
+      "recall_by_size": {
+        "under_0.2pct": null,
+        "0.2_to_1pct": null,
+        "1_to_5pct": null,
+        "over_5pct": null
+      },
+      "unnamed_small_objects": 0,
+      "mask_iou_mean": null,
+      "center_err_aligned_m_median": null,
+      "center_err_aligned_m_median_truncated": null,
+      "center_err_aligned_m_median_whole": null,
+      "center_err_m_median": null,
+      "height_rel_err_aligned_median": null,
+      "height_rel_err_aligned_median_whole": null,
+      "truncation_flag_accuracy": null,
+      "support_accuracy": null
+    },
+    "light": {
+      "albedo_si_rmse_mean": null,
+      "decomposition_r2_mean": null,
+      "views_with_windows": 0,
+      "windows": 0,
+      "light_source_iou_stage_mean": null,
+      "light_source_iou_final_mean": null,
+      "false_light_fraction_final_mean": null,
+      "window_located": null,
+      "window_located_clipped": null,
+      "window_located_rolloff": null,
+      "window_rect_iou_aligned_mean": null,
+      "window_rect_iou_mean": null,
+      "window_normal_err_deg_median": null,
+      "window_width_rel_err_aligned_median": null,
+      "window_center_err_aligned_m_median": null,
+      "light_sources_per_view": null
+    }
+  },
+  "ci95": {
+    "objects": {
+      "precision": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "views": [
+    {
+      "view": "bench-train-room-1001-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1002-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1003-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1004-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1005-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1006-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1007-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1008-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1009-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1010-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1011-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1012-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1013-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1014-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1015-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1016-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1017-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1018-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1019-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1020-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1021-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1022-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1023-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1024-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1025-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1026-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1027-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1028-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1029-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1030-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1031-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1032-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1033-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1034-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1035-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1036-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1037-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1038-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1039-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1040-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1041-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1042-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1043-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1044-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1045-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1046-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1047-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1048-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1049-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1050-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1051-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1052-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1053-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1054-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1055-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1056-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1057-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1058-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1059-view-0-noisy",
+      "status": "no_layout"
+    },
+    {
+      "view": "bench-train-room-1060-view-0-noisy",
+      "status": "no_layout"
+    }
+  ]
+}

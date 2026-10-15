@@ -107,8 +107,15 @@ def depth_stage(worlds, timings):
         log(f"depth {world} {timings['depth_inference'][-1]}s")
 
 
+def masks_current(world):
+    """True when index-0 masks exist and were made with the current detection settings."""
+    requests = glob.glob(os.path.join(REPO, "worlds", world, "output", "layout", ".0-layout__mask-*-request.json"))
+    want = {"mask_threshold": layout_inputs.BOX_THRESHOLD, "assignment": layout_inputs.assignment_settings()}
+    return bool(requests) and all({k: json.load(open(r)).get(k) for k in want} == want for r in requests)
+
+
 def mask_stage(worlds, timings):
-    todo = [w for w, _ in worlds if not glob.glob(os.path.join(REPO, "worlds", w, "output", "layout", ".0-layout__mask-*-request.json"))]
+    todo = [w for w, _ in worlds if not masks_current(w)]
     models = None
     for world in todo:
         objects = layout_inputs.confirmed_objects(world)
@@ -116,6 +123,9 @@ def mask_stage(worlds, timings):
             started = time.time()
             models = layout_inputs.load_mask_models()
             timings["mask_model_load"] = round(time.time() - started, 1)
+        layout = os.path.join(REPO, "worlds", world, "output", "layout")
+        for stale in glob.glob(os.path.join(layout, "0-layout-mask-*.png")) + glob.glob(os.path.join(layout, ".0-layout__mask-*-request.json")):
+            os.remove(stale)
         source = f"worlds/{world}/source/0-render.png"
         image = Image.open(os.path.join(REPO, source)).convert("RGB")
         started = time.time()
