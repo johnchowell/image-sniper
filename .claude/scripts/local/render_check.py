@@ -241,9 +241,11 @@ def main():
     photo_lin = srgb_to_linear(photo)
     pl_full = photo_lin @ LUMA
     # Inverse lighting. Rendering is linear in the light powers: render each basis light alone (small, few
-    # samples), then fit non-negative powers w and the camera response, photo = a * (sum w_k B_k)^g, on mid-tone
-    # luminance, alternating a least-squares solve for w (photo mapped back through the response) and a log-space
-    # line fit for a and g. The window must stay clipped where the photo is clipped.
+    # samples), then fit non-negative powers w with photo_linear = sum w_k B_k on mid-tone luminance. The camera
+    # response is the sRGB curve every other stage assumes (the albedo is the linearized photo over the shading).
+    # A free response exponent is not identifiable here: a log-log fit of photo on render has its slope pulled
+    # toward 0 by the render's own errors (1015: 0.30 for a linear camera), which flattens the textures in the
+    # sheet and raises the PSNR of a wrong render. The window must stay clipped where the photo is clipped.
     fit_size = (max(32, int(W0 * args.fit_scale)), max(32, int(H0 * args.fit_scale)))
     scene.cycles.samples = args.fit_samples
     scene.render.resolution_x, scene.render.resolution_y = fit_size
@@ -271,7 +273,6 @@ def main():
                 w[k] = max(0.0, w[k] - (Gm[k] @ w - h[k]) / diag[k])
         return w
 
-    g, log_a = 1.0, 0.0
     weights = {n: 0.0 for n in names}
     weights["window"] = 1.0
     # The window's strength is what the camera sees through it: set from the glass pixels through the response,
@@ -280,7 +281,7 @@ def main():
     free = [k for k, n in enumerate(names) if n not in fixed]
     seen_glass = glass & ~clipped & (pl > 0.002) & (B[:, 0] > 1e-6)
     for _ in range(6):
-        target = np.power(pl[mid] / np.exp(log_a), 1 / g)
+        target = pl[mid]
         known = sum(B[mid, names.index(n)] * v for n, v in fixed.items()) if fixed else 0.0
         w = nnls(B[mid][:, free], target - known)
         for k, v in zip(free, w):
@@ -288,16 +289,14 @@ def main():
         for n, v in fixed.items():
             weights[n] = v
         R = B @ np.array([weights[n] for n in names])
-        ok = mid & (R > 1e-6)
-        g, log_a = np.polyfit(np.log(R[ok]), np.log(pl[ok]), 1)
         if seen_glass.sum() > 20:
             others = R - weights["window"] * B[:, 0]
-            want = np.power(pl[seen_glass] / np.exp(log_a), 1 / g) - others[seen_glass]
+            want = pl[seen_glass] - others[seen_glass]
             weights["window"] = fixed["window"] = max(0.0, float(np.median(want / B[seen_glass, 0])))
         # Clipped window pixels must render at least white after the response.
         win = clipped & (weights["window"] * B[:, 0] > 0.5 * R)
         if win.sum() > 20 and weights["window"] > 0:
-            need = np.exp(-log_a / g)  # render luminance that maps to 1
+            need = 1.0  # render luminance that maps to white
             have = np.median(R[win])
             if have < need:
                 weights["window"] *= need / have
@@ -309,12 +308,10 @@ def main():
     render = render_linear(tmp, size)
     rl = render @ LUMA
     ok = (photo.max(-1) < 0.97) & (pl_full > 0.002) & (rl > 1e-5) & ~emitter_mask(layout, size)
-    g, log_a = np.polyfit(np.log(rl[ok]), np.log(pl_full[ok]), 1)
-    exposure = float(np.median(photo_lin @ LUMA) / max(np.median(render @ LUMA), 1e-6))
-    tone = lambda img: img * (np.exp(log_a) * np.power(np.maximum(img @ LUMA, 1e-6), g) / np.maximum(img @ LUMA, 1e-6))[..., None]  # on luminance: keeps color
-    toned = tone(render)
-    render_srgb = linear_to_srgb(toned)
-    psnr_exposure = 10 * math.log10(1 / max(float(np.mean((linear_to_srgb(render * exposure) - photo) ** 2)), 1e-10))
+    # Exposure only: the fit-size render has fewer samples, so rescale by the median log ratio on mid-tones.
+    exposure = float(np.exp(np.median(np.log(pl_full[ok]) - np.log(rl[ok])))) if ok.sum() > 100 else 1.0
+    tone = lambda img: img * exposure
+    render_srgb = linear_to_srgb(tone(render))
     diff = np.abs(render_srgb - photo).mean(-1)
     mse = float(np.mean((render_srgb - photo) ** 2))
     psnr = 10 * math.log10(1 / max(mse, 1e-10))
@@ -362,13 +359,13 @@ def main():
     stem = os.path.splitext(glb)[0] + (f"-{args.tag}" if args.tag else "")
     write_png(stem + "-check.png", sheet)
     write_png(stem + "-render.png", (render_srgb * 255).round().astype(np.uint8))
-    json.dump({"scene": glb, "psnr_db": round(psnr, 2), "psnr_exposure_only_db": round(psnr_exposure, 2), "tone_gamma": round(float(g), 3), "mean_abs_err": round(float(diff.mean()), 4), "exposure": exposure, "light_weights_w": {n: round(v * (args.window_strength if n == "window" else UNIT_W), 2) for n, v in weights.items()},
+    json.dump({"scene": glb, "psnr_db": round(psnr, 2), "mean_abs_err": round(float(diff.mean()), 4), "exposure": exposure, "light_weights_w": {n: round(v * (args.window_strength if n == "window" else UNIT_W), 2) for n, v in weights.items()},
                "samples": args.samples, "size": size, "ambient": args.ambient, "fill": args.fill, "window_strength": args.window_strength, "light_power": args.light_power},
               open(stem + "-check.json", "w"), indent=2)
     # The fitted light rig in the layout frame (for viewers): area lights with power, the window emission strength.
     to_layout = lambda v: [round(v.x, 4), round(v.z, 4), round(-v.y, 4)]
     rig = {"frame": "layout (+Y up)", "window_emission_strength": round(weights.get("window", 0.0) * args.window_strength, 4),
-           "exposure_note": "photo_linear = a * render_linear^g", "tone": {"a": round(float(np.exp(log_a)), 6), "g": round(float(g), 4)}, "area_lights": []}
+           "exposure_note": "photo_linear = exposure * render_linear", "exposure": round(exposure, 6), "area_lights": []}
     for name, light in basis.items():
         if light is None or weights.get(name, 0.0) <= 0:
             continue
@@ -378,7 +375,7 @@ def main():
                                    "size": [round(light.data.size, 3), round(light.data.size_y if light.data.shape == "RECTANGLE" else light.data.size, 3)],
                                    "power_w": round(weights[name] * UNIT_W, 2)})
     json.dump(rig, open(stem + "-lights.json", "w"), indent=2)
-    print(json.dumps({"sheet": stem + "-check.png", "psnr_db": round(psnr, 2), "psnr_exposure_only_db": round(psnr_exposure, 2), "tone_gamma": round(float(g), 3), "mean_abs_err": round(float(diff.mean()), 4),
+    print(json.dumps({"sheet": stem + "-check.png", "psnr_db": round(psnr, 2), "mean_abs_err": round(float(diff.mean()), 4),
                       "light_weights_w": {n: round(v * (args.window_strength if n == "window" else UNIT_W), 1) for n, v in weights.items()}}))
 
 
