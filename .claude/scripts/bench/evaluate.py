@@ -127,8 +127,11 @@ def pred_cam(layout):
     return R.T, -R.T @ t  # layout -> camera
 
 
-def angle(a, b):
-    return float(np.degrees(np.arccos(np.clip(abs(np.dot(a, b)) / (np.linalg.norm(a) * np.linalg.norm(b)), -1, 1))))
+def angle(a, b, oriented=False):
+    """Angle between two normals (deg). Unoriented normals fold the sign; oriented ones (plane_in_cam: the camera on
+    the positive side) do not, so a floor below the camera and a ceiling above it are 180 deg apart."""
+    c = np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+    return float(np.degrees(np.arccos(np.clip(c if oriented else abs(c), -1, 1))))
 
 
 def si_rmse(pred, gt, mask):
@@ -242,7 +245,7 @@ def score_view(view_dir, names="oracle", layout_index=None):
         best = None
         for pred in layout["structure"]:
             n_p, d_p = plane_in_cam(pred["center"], pred["normal"], R_pc, t_pc)
-            err = (angle(n_p, n_gt), abs(d_p - d_gt), abs(scale * d_p - d_gt))
+            err = (angle(n_p, n_gt, oriented=True), abs(d_p - d_gt), abs(scale * d_p - d_gt))
             if best is None or err[0] + 20 * err[1] < best[2] + 20 * best[3]:
                 best = (pred["id"], pred["class"], *err)
         found = best is not None and best[2] < 10 and best[3] < PLANE_TOL_M
@@ -254,6 +257,17 @@ def score_view(view_dir, names="oracle", layout_index=None):
                           "normal_err_deg": best[2] if best else None,
                           "offset_err_m": best[3] if best else None, "offset_err_aligned_m": best[4] if best else None})
     out["structure"] = structure
+    # Precision: a predicted floor, wall or ceiling is correct when a true plane of the same class aligns with it.
+    gt_planes = [(plane["class"], *plane_in_cam(plane["point"], plane["normal"], R_gt, t_gt)) for plane in gt["structure"]]
+    predictions = []
+    for pred in layout["structure"]:
+        if pred["class"] not in ("floor", "wall", "ceiling"):
+            continue
+        n_p, d_p = plane_in_cam(pred["center"], pred["normal"], R_pc, t_pc)
+        correct = any(c == pred["class"] and angle(n_p, n_gt, oriented=True) < 10 and abs(scale * d_p - d_gt) < PLANE_TOL_M
+                      for c, n_gt, d_gt in gt_planes)
+        predictions.append({"id": pred["id"], "class": pred["class"], "correct": bool(correct)})
+    out["structure_predictions"] = predictions
 
     # Objects: every true object visible on TRUTH_PX pixels, matched by id to the predicted instances.
     instances = {}
@@ -429,6 +443,9 @@ def summarize(results):
             "ceiling_found_aligned": mean([p["found_aligned"] for p in planes if p["class"] == "ceiling"]),
             "wall_found": mean([p["found"] for p in planes if p["class"] == "wall"]),
             "class_correct": mean([p["class_correct"] for p in planes if p["found_aligned"]]),
+            **{f"{c}_precision": mean([p["correct"] for r in scored for p in r.get("structure_predictions", []) if p["class"] == c])
+               for c in ("floor", "wall", "ceiling")},
+            "wall_predicted_per_view": mean([sum(p["class"] == "wall" for p in r.get("structure_predictions", [])) for r in scored]),
             "normal_err_deg_median": median_abs([p["normal_err_deg"] for p in planes if p["found_aligned"]]),
             "offset_err_m_median": median_abs([p["offset_err_m"] for p in planes if p["found"]]),
             "offset_err_aligned_m_median": median_abs([p["offset_err_aligned_m"] for p in planes if p["found_aligned"]]),

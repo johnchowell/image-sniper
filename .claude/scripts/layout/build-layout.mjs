@@ -37,6 +37,10 @@ export const DEFAULT_PARAMS = {
   region_min_fraction: 0.25,
   region_dominant_fraction: 0.5,
   wall_min_height_m: 1.5,
+  snap_max_rms_m: 0.05,
+  wall_behind_tolerance_m: 0.1,
+  wall_behind_max_fraction: 0.01,
+  wall_tall_behind_max_fraction: 0.08,
   support_snap_min_m: 0.08,
   support_snap_fraction: 0.1,
   hidden_base: 1,
@@ -563,6 +567,10 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     .filter((plane) => plane.inliers.length >= 0.25 * maxAbove)
     .sort((a, b) => heightOf(b) - heightOf(a))[0];
 
+  // Every observed point in the layout frame and its image position; a wall test counts the points behind a plane.
+  const scenePoints = [];
+  for (let cell = 0; cell < cellCount; cell += 1) if (valid[cell]) scenePoints.push([toLayout(cellPoint(cell)), Math.floor(cell / gw) / gh, (cell % gw) / gw]);
+
   const counters = {};
   const structure = [];
   const labels = new Uint16Array(cellCount);
@@ -583,6 +591,16 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
 
     const layoutPoints = Array.from(plane.inliers, (cell) => toLayout(cellPoint(cell)));
     const centroid = scale(layoutPoints.reduce((sum, p) => add(sum, p), [0, 0, 0]), 1 / layoutPoints.length);
+    const rmsAbout = (n) => Math.sqrt(layoutPoints.reduce((sum, p) => sum + dot(n, sub(p, centroid)) ** 2, 0) / layoutPoints.length);
+    // A gravity snap must still fit the points: a wide plane 10 deg off level is a slope, not a shelf. Floor and
+    // ceiling are kept (the camera frame rests on them).
+    if ((kind === "horizontal_surface" || kind === "vertical_surface") && rmsAbout(normal) > params.snap_max_rms_m) {
+      const fitted = mulMat3Vec(R, plane.normal);
+      if (rmsAbout(fitted) < rmsAbout(normal) / 2) {
+        kind = "inclined_surface";
+        normal = fitted;
+      }
+    }
     const offset = kind === "floor" ? 0 : -dot(normal, centroid);
     const anchor = kind === "floor" ? [centroid[0], 0, centroid[2]] : sub(centroid, scale(normal, dot(normal, centroid) + offset));
     const { u, v } = planeBasis(normal);
@@ -594,8 +612,26 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     const size = [u1 - u0, v1 - v0];
     const residuals = layoutPoints.map((p) => (dot(normal, p) + offset) ** 2);
     const rms = Math.sqrt(residuals.reduce((sum, value) => sum + value, 0) / residuals.length);
+    // Where the visible part lies in the image (fractions of the frame): a plane cut by the frame continues past it.
+    const rows = sortedValues(Array.from(plane.inliers, (cell) => Math.floor(cell / gw) / gh));
+    const cols = sortedValues(Array.from(plane.inliers, (cell) => (cell % gw) / gw));
+    const imageExtent = { top: round(percentile(rows, 0.01), 3), bottom: round(percentile(rows, 0.99), 3), left: round(percentile(cols, 0.01), 3), right: round(percentile(cols, 0.99), 3) };
 
-    if (kind === "vertical_surface" && size[1] >= params.wall_min_height_m) kind = "wall";
+    // A wall bounds the room: no observed surface lies behind it. Points seen through openings (windows, doors) lie
+    // inside the plane's own image region, so only points outside it count. A furniture face or a plane bent by
+    // depth error has the room behind it. Tall planes keep a looser limit, for depth bleed at their edges.
+    let behindFraction;
+    if (kind === "vertical_surface") {
+      const side = Math.sign(dot(normal, cameraPosition) + offset) || 1;
+      let behind = 0;
+      for (const [p, row, col] of scenePoints) {
+        if (row >= imageExtent.top && row <= imageExtent.bottom && col >= imageExtent.left && col <= imageExtent.right) continue;
+        if (side * (dot(normal, p) + offset) < -params.wall_behind_tolerance_m) behind += 1;
+      }
+      behindFraction = behind / Math.max(scenePoints.length, 1);
+      const limit = size[1] >= params.wall_min_height_m ? params.wall_tall_behind_max_fraction : params.wall_behind_max_fraction;
+      if (behindFraction <= limit) kind = "wall";
+    }
     counters[kind] = (counters[kind] || 0) + 1;
     const id = kind === "floor" || kind === "ceiling" ? kind : `${kind.replace("_surface", "")}-${counters[kind]}`;
     const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) =>
@@ -619,6 +655,8 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
       distance_from_camera_m: round(Math.abs(dot(normal, cameraPosition) + offset)),
       image_coverage: round(plane.inliers.length / cellCount, 4),
       fit_rms_m: round(rms, 4),
+      behind_fraction: behindFraction === undefined ? undefined : round(behindFraction, 4),
+      image_extent: imageExtent,
       extent_basis: "visible_points"
     });
   }
