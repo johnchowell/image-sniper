@@ -23,6 +23,8 @@ Use generic project tools for local indexed asset path computation, explicit dow
 node .claude/scripts/project/project-state.mjs --world "<slug>" --stage-input
 ```
 
+   Staging turns a JPEG's EXIF orientation into upright pixels without loss (a DCT-domain rotate, like `jpegtran -trim`; it drops less than one MCU at an edge) and records it in `staged_files[].orientation`. A status `unsupported` (progressive JPEG) means the file stays sideways for the depth and fal stages; tell the user.
+
 3. The helper creates and validates:
 
 ```text

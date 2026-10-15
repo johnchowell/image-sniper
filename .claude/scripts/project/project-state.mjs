@@ -10,6 +10,7 @@ import {
   slugify,
   writeJson
 } from "../asset-pipeline/fal-queue.mjs";
+import { normalizeJpegOrientation } from "./jpeg-orient.mjs";
 import {
   artifactPath,
   isHiddenRequestMetadata,
@@ -113,7 +114,9 @@ async function stageInputFiles(worldDir, inputDir = "input") {
       : path.basename(artifactPath(sourceDir, 0, slugify(path.basename(entry.name, extension)), extension));
     const to = await nextAvailablePath(path.join(sourceDir, stagedName));
     await rename(from, to);
-    staged.push({ from, to });
+    // bake the EXIF orientation into the pixels: PIL and the providers read the stored grid, the browser applies the tag
+    const orientation = [".jpg", ".jpeg"].includes(extension) ? await normalizeJpegOrientation(to) : null;
+    staged.push(orientation && orientation.status !== "upright" ? { from, to, orientation } : { from, to });
   }
 
   return staged;

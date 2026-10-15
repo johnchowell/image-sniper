@@ -69,9 +69,11 @@ def exif_fov_x(path):
         unit_mm = {2: 25.4, 3: 10.0, 4: 1.0, 5: 0.001}.get(int(sub.get(0xA210) or 2))
         if not (f > 0 and resolution > 0 and unit_mm):
             return None
-        sensor_mm = float(sub.get(0xA002) or W) / resolution * unit_mm
-        half = sensor_mm / (2 * f)
-        basis = f"FocalLength {f:g} mm, sensor width {sensor_mm:.2f} mm"
+        # focal length in stored pixels; the long-side ratio corrects a resize and is the same for a rotated grid
+        sampled = max(float(sub.get(0xA002) or 0), float(sub.get(0xA003) or 0)) or max(W, H)
+        f_px = f * resolution / unit_mm * max(W, H) / sampled
+        half = W / (2 * f_px)
+        basis = f"FocalLength {f:g} mm, {f_px:.0f} px"
     fov = math.degrees(2 * math.atan(half))
     return (round(fov, 2), basis) if 15 <= fov <= 130 else None
 

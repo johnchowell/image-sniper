@@ -38,9 +38,11 @@ export async function exifFovX(file) {
     const resolution = tags[0xa20e] || 0;
     const unitMm = { 2: 25.4, 3: 10, 4: 1, 5: 0.001 }[tags[0xa210] || 2];
     if (!(f > 0 && resolution > 0 && unitMm)) return null;
-    const sensorMm = ((tags[0xa002] || W) / resolution) * unitMm;
-    half = sensorMm / (2 * f);
-    basis = `FocalLength ${f} mm, sensor width ${sensorMm.toFixed(2)} mm`;
+    // focal length in stored pixels; the long-side ratio corrects a resize and is the same for a rotated grid
+    const sampled = Math.max(tags[0xa002] || 0, tags[0xa003] || 0) || Math.max(W, H);
+    const fPx = ((f * resolution) / unitMm) * Math.max(W, H) / sampled;
+    half = W / (2 * fPx);
+    basis = `FocalLength ${f} mm, ${fPx.toFixed(0)} px`;
   }
   const fov = (2 * Math.atan(half) * 180) / Math.PI;
   return fov >= 15 && fov <= 130 ? { fov_x_deg: Math.round(fov * 100) / 100, basis } : null;
