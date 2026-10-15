@@ -124,6 +124,7 @@ def mask_stage(worlds, timings):
             models = layout_inputs.load_mask_models()
             timings["mask_model_load"] = round(time.time() - started, 1)
         layout = os.path.join(REPO, "worlds", world, "output", "layout")
+        os.makedirs(layout, exist_ok=True)
         for stale in glob.glob(os.path.join(layout, "0-layout-mask-*.png")) + glob.glob(os.path.join(layout, ".0-layout__mask-*-request.json")):
             os.remove(stale)
         source = f"worlds/{world}/source/0-render.png"

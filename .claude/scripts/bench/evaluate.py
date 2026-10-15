@@ -584,6 +584,8 @@ def main():
     elif args.command == "score":
         results = [score_view(v, args.names, args.layout_index) for v in views(args.split)]
         summary = summarize(results)
+        if not summary["scored"]:
+            raise SystemExit(f"No view of {args.split} ({args.names} names) has a layout; nothing written.")
         report = {"name": args.name, "split": args.split, "names": args.names, "summary": summary,
                   "ci95": bootstrap(results, args.draws), "views": results}
         json.dump(report, open(os.path.join(RESULTS, f"{args.name}-{args.split}.json"), "w"), indent=2, default=float)
