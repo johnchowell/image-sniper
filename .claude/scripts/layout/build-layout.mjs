@@ -40,6 +40,7 @@ export const DEFAULT_PARAMS = {
   snap_max_rms_m: 0.05,
   wall_behind_tolerance_m: 0.1,
   wall_behind_max_fraction: 0.01,
+  object_exterior_cut: 0,
   wall_tall_behind_max_fraction: 0.08,
   exterior_min_fraction: 0.5,
   exterior_wall_min_gap_m: 0.5,
@@ -725,6 +726,27 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     });
   }
 
+  // Openings: a cell whose point lies behind a wall, inside that wall's image region, is seen through it (window,
+  // doorway). The nearest such wall owns the cell.
+  const seenThrough = new Int16Array(cellCount).fill(-1);
+  const wallOrder = rawPlanes.map((plane, k) => k).filter((k) => structure[k].class === "wall" && rawPlanes[k].wallPlane)
+    .sort((a, b) => depthOf(rawPlanes[a]) - depthOf(rawPlanes[b]));
+  for (const k of wallOrder) {
+    for (let cell = 0; cell < cellCount; cell += 1) if (valid[cell] && seenThrough[cell] < 0 && behindWall(rawPlanes[k], cell, true)) seenThrough[cell] = k;
+  }
+  // A mask cell seen through a wall lies outside the room, so it is not part of an object in the room (a detection that
+  // spills over a window).
+  if (params.object_exterior_cut) {
+    for (const object of objectMasks) {
+      for (const instance of object.instances) {
+        const inside = instance.gridMask.map((value, cell) => (value && seenThrough[cell] < 0 ? 1 : 0));
+        const cut = instance.gridMask.reduce((sum, value) => sum + value, 0) - inside.reduce((sum, value) => sum + value, 0);
+        if (cut) warnings.push(`Cut ${cut} cells of a mask of "${object.object_id}" that are seen through a wall.`);
+        instance.gridMask = inside;
+      }
+    }
+  }
+
   // Object primitives: one gravity-aligned oriented box per mask instance.
   const objects = [];
   for (const [order, object] of objectMasks.entries()) {
@@ -970,14 +992,6 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
   const lightEstimate = await loadLightEstimate(world, depthRequest.input_files?.[0]);
   const planeNormalOf = new Map();
   rawPlanes.forEach((plane, k) => { for (const cell of plane.inliers) planeNormalOf.set(cell, structure[k].normal); });
-  // Openings: a cell whose point lies behind a wall, inside that wall's image region, is seen through it (window,
-  // doorway). The nearest such wall owns the cell.
-  const seenThrough = new Int16Array(cellCount).fill(-1);
-  const wallOrder = rawPlanes.map((plane, k) => k).filter((k) => structure[k].class === "wall" && rawPlanes[k].wallPlane)
-    .sort((a, b) => depthOf(rawPlanes[a]) - depthOf(rawPlanes[b]));
-  for (const k of wallOrder) {
-    for (let cell = 0; cell < cellCount; cell += 1) if (valid[cell] && seenThrough[cell] < 0 && behindWall(rawPlanes[k], cell, true)) seenThrough[cell] = k;
-  }
   const lightResult = lightEstimate
     ? analyzeLighting({ light: lightEstimate, grid, normals, hasNormal, planeNormalOf, seenThrough, R, toLayout, labels, palette, structure, width, height, cameraPosition, intrinsics, params })
     : undefined;
