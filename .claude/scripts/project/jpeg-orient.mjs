@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 
-// Lossless EXIF orientation for baseline JPEGs: the quantized DCT coefficients are transposed and mirrored block by
+// Lossless EXIF orientation for JPEGs (baseline, sequential or progressive in; baseline out): the quantized DCT coefficients are transposed and mirrored block by
 // block (as jpegtran does), so the stored pixel grid becomes the upright image and the Orientation tag becomes 1.
 // Every consumer then sees the same image: the browser applies the tag, PIL and the model endpoints do not.
 // A mirror along an axis whose size is not a whole number of MCUs drops the partial edge MCU (as jpegtran -trim).
@@ -38,9 +38,15 @@ export async function normalizeJpegOrientation(file) {
 // Returns { data, info }: data is null when nothing changes (no tag, orientation 1) or the file is not supported.
 export function orientJpeg(buffer) {
   if (buffer.length < 4 || buffer.readUInt16BE(0) !== 0xffd8) return { data: null, info: { status: "not_jpeg" } };
-  const segments = readSegments(buffer);
-  const exif = segments.find((s) => s.marker === 0xe1 && buffer.toString("latin1", s.start, s.start + 6) === "Exif\0\0");
-  const tag = exif ? orientationTag(buffer, exif.start + 6) : null;
+  let segments;
+  let tag;
+  try {
+    segments = readSegments(buffer);
+    const exif = segments.find((s) => s.marker === 0xe1 && buffer.toString("latin1", s.start, s.start + 6) === "Exif\0\0");
+    tag = exif ? orientationTag(buffer, exif.start + 6) : null;
+  } catch (error) {
+    return { data: null, info: { status: "unsupported", orientation: null, reason: error.message } };
+  }
   if (!tag || tag.value === 1) return { data: null, info: { status: "upright", orientation: tag?.value ?? null } };
   if (!OPERATIONS[tag.value]) return { data: null, info: { status: "unsupported", orientation: tag.value, reason: "invalid orientation value" } };
   let image;
@@ -74,11 +80,12 @@ function readSegments(buffer) {
     if (marker === 0xd9) break;
     const length = buffer.readUInt16BE(at + 2);
     const segment = { marker, start: at + 4, end: at + 2 + length };
+    if (segment.end > buffer.length) throw new Error("truncated file");
     segments.push(segment);
     if (marker === 0xda) {
       // Entropy-coded data runs to the next marker that is not a restart or a stuffed 0xFF00.
       let end = segment.end;
-      while (end + 1 < buffer.length && !(buffer[end] === 0xff && buffer[end + 1] !== 0 && (buffer[end + 1] < 0xd0 || buffer[end + 1] > 0xd7))) end += 1;
+      while (end < buffer.length && !(buffer[end] === 0xff && buffer[end + 1] !== 0 && (buffer[end + 1] < 0xd0 || buffer[end + 1] > 0xd7))) end += 1;
       segment.dataEnd = end;
       at = end;
     } else {
@@ -102,7 +109,7 @@ function orientationTag(buffer, tiff) {
   return null;
 }
 
-// ---- decoding (baseline and extended sequential Huffman, one scan with every component) ----
+// ---- decoding (baseline, extended sequential and progressive Huffman; every scan in order) ----
 
 function huffmanTable(counts, symbols) {
   // maxcode[l] / valptr[l] / mincode[l] per code length (ITU T.81 F.2.2.3)
@@ -127,9 +134,9 @@ function decode(buffer, segments) {
   const quant = [];
   const dc = [];
   const ac = [];
-  let frame = null;
+  let image = null;
   let restart = 0;
-  let scan = null;
+  let scans = 0;
   for (const s of segments) {
     if (s.marker === 0xdb) {
       for (let at = s.start; at < s.end;) {
@@ -152,49 +159,56 @@ function decode(buffer, segments) {
       }
     } else if (s.marker === 0xdd) {
       restart = buffer.readUInt16BE(s.start);
-    } else if (s.marker === 0xc0 || s.marker === 0xc1) {
+    } else if (s.marker >= 0xc0 && s.marker <= 0xc2) {
+      if (image) throw new Error("more than one frame");
       if (buffer[s.start] !== 8) throw new Error("12-bit samples");
       const height = buffer.readUInt16BE(s.start + 1);
       const width = buffer.readUInt16BE(s.start + 3);
       const count = buffer[s.start + 5];
+      if (height === 0) throw new Error("height defined by DNL");
+      if (![1, 3].includes(count)) throw new Error(`${count} components`);
       const components = [];
       for (let i = 0; i < count; i += 1) {
         const at = s.start + 6 + 3 * i;
         components.push({ id: buffer[at], h: buffer[at + 1] >> 4, v: buffer[at + 1] & 15, tq: buffer[at + 2] });
       }
-      frame = { width, height, components };
-    } else if (s.marker >= 0xc2 && s.marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(s.marker)) {
-      throw new Error(s.marker === 0xc2 ? "progressive JPEG" : `JPEG process SOF${s.marker - 0xc0}`);
+      image = { width, height, components, progressive: s.marker === 0xc2 };
+      layout(image);
+      for (const comp of components) comp.blocks = new Int16Array(comp.bw * comp.bh * 64);
+    } else if (s.marker >= 0xc3 && s.marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(s.marker)) {
+      throw new Error(`JPEG process SOF${s.marker - 0xc0}`);
     } else if (s.marker === 0xda) {
-      if (scan) throw new Error("more than one scan");
-      scan = s;
+      if (!image) throw new Error("scan before frame");
+      decodeScan(buffer, s, image, dc, ac, restart);
+      scans += 1;
     }
   }
-  if (!frame || !scan) throw new Error("no frame or scan");
-  if (frame.height === 0) throw new Error("height defined by DNL");
-  if (![1, 3].includes(frame.components.length)) throw new Error(`${frame.components.length} components`);
-  const ns = buffer[scan.start];
-  if (ns !== frame.components.length) throw new Error("scan without every component");
-  for (let i = 0; i < ns; i += 1) {
-    const comp = frame.components.find((c) => c.id === buffer[scan.start + 1 + 2 * i]);
-    if (!comp) throw new Error("scan names an unknown component");
-    comp.dc = dc[buffer[scan.start + 2 + 2 * i] >> 4];
-    comp.ac = ac[buffer[scan.start + 2 + 2 * i] & 15];
-    comp.order = i;
-    if (!comp.dc || !comp.ac) throw new Error("missing Huffman table");
-  }
-  const ss = buffer[scan.start + 1 + 2 * ns];
-  const se = buffer[scan.start + 2 + 2 * ns];
-  if (ss !== 0 || se !== 63) throw new Error("spectral selection in a sequential scan");
-  frame.components.sort((a, b) => a.order - b.order);
-
-  const image = { width: frame.width, height: frame.height, components: frame.components };
-  layout(image);
+  if (!image || !scans) throw new Error("no frame or scan");
   for (const comp of image.components) {
     const q = quant[comp.tq];
     if (!q) throw new Error("missing quantization table");
     comp.quant = { precision: q.precision, natural: fromZigzag(q.zigzag) };
-    comp.blocks = new Int16Array(comp.bw * comp.bh * 64);
+  }
+  return image;
+}
+
+// One scan (T.81 F.2 sequential, G.1.2 progressive): the coefficients accumulate in comp.blocks.
+function decodeScan(buffer, scan, image, dc, ac, restart) {
+  const ns = buffer[scan.start];
+  const comps = [];
+  for (let i = 0; i < ns; i += 1) {
+    const comp = image.components.find((c) => c.id === buffer[scan.start + 1 + 2 * i]);
+    if (!comp) throw new Error("scan names an unknown component");
+    comps.push({ comp, dc: dc[buffer[scan.start + 2 + 2 * i] >> 4], ac: ac[buffer[scan.start + 2 + 2 * i] & 15], pred: 0 });
+  }
+  const ss = buffer[scan.start + 1 + 2 * ns];
+  const se = buffer[scan.start + 2 + 2 * ns];
+  const ah = buffer[scan.start + 3 + 2 * ns] >> 4;
+  const al = buffer[scan.start + 3 + 2 * ns] & 15;
+  if (!image.progressive && (ss !== 0 || se !== 63 || ah || al)) throw new Error("spectral selection in a sequential scan");
+  if (ss > se || se > 63 || (ss === 0 && se !== 0 && image.progressive) || (ss > 0 && ns !== 1)) throw new Error("bad progressive scan");
+  for (const c of comps) {
+    if ((ss === 0 && !ah && !c.dc) || (se > 0 && !c.ac)) throw new Error("missing Huffman table");
   }
 
   const reader = bitReader(buffer, scan.end, scan.dataEnd);
@@ -206,18 +220,20 @@ function decode(buffer, segments) {
     }
     throw new Error("bad Huffman code");
   };
-  const receiveExtend = (s) => {
-    if (!s) return 0;
+  const receive = (n) => {
     let v = 0;
-    for (let i = 0; i < s; i += 1) v = (v << 1) | reader.bit();
-    return v < 1 << (s - 1) ? v - (1 << s) + 1 : v;
+    for (let i = 0; i < n; i += 1) v = (v << 1) | reader.bit();
+    return v;
   };
-  const decodeBlock = (comp, offset) => {
-    const diff = receiveExtend(decodeHuffman(comp.dc));
-    comp.pred += diff;
-    comp.blocks[offset] = comp.pred;
+  const extend = (v, s) => (s && v < 1 << (s - 1) ? v - (1 << s) + 1 : v);
+  let eobrun = 0;
+
+  const sequential = (c, blocks, o) => {
+    const t = decodeHuffman(c.dc);
+    c.pred += extend(receive(t), t);
+    blocks[o] = c.pred;
     for (let k = 1; k < 64;) {
-      const rs = decodeHuffman(comp.ac);
+      const rs = decodeHuffman(c.ac);
       const r = rs >> 4;
       const s = rs & 15;
       if (!s) {
@@ -227,18 +243,84 @@ function decode(buffer, segments) {
       }
       k += r;
       if (k > 63) throw new Error("coefficient index out of range");
-      comp.blocks[offset + ZIGZAG[k]] = receiveExtend(s);
+      blocks[o + ZIGZAG[k]] = extend(receive(s), s);
       k += 1;
     }
   };
-  for (const comp of image.components) comp.pred = 0;
-  forEachBlock(image, (comp, offset) => decodeBlock(comp, offset), (unit) => {
+  const dcFirst = (c, blocks, o) => {
+    const s = decodeHuffman(c.dc);
+    c.pred += extend(receive(s), s);
+    blocks[o] = c.pred * (1 << al);
+  };
+  const dcRefine = (c, blocks, o) => {
+    if (reader.bit()) blocks[o] |= 1 << al;
+  };
+  const acFirst = (c, blocks, o) => {
+    if (eobrun) {
+      eobrun -= 1;
+      return;
+    }
+    for (let k = ss; k <= se;) {
+      const rs = decodeHuffman(c.ac);
+      const r = rs >> 4;
+      const s = rs & 15;
+      if (!s) {
+        if (r < 15) {
+          eobrun = (1 << r) - 1 + receive(r);
+          break;
+        }
+        k += 16;
+        continue;
+      }
+      k += r;
+      if (k > 63) throw new Error("coefficient index out of range");
+      blocks[o + ZIGZAG[k]] = extend(receive(s), s) * (1 << al);
+      k += 1;
+    }
+  };
+  const p1 = 1 << al;
+  const m1 = -1 << al;
+  const refineNonzero = (blocks, at) => {
+    if (reader.bit() && (blocks[at] & p1) === 0) blocks[at] += blocks[at] >= 0 ? p1 : m1;
+  };
+  const acRefine = (c, blocks, o) => {
+    let k = ss;
+    if (!eobrun) {
+      for (; k <= se; k += 1) {
+        const rs = decodeHuffman(c.ac);
+        let r = rs >> 4;
+        let value = 0;
+        if (rs & 15) {
+          value = reader.bit() ? p1 : m1;
+        } else if (r !== 15) {
+          eobrun = (1 << r) + receive(r);
+          break;
+        }
+        // Skip r zero-history coefficients (refining the nonzero ones on the way); the new one lands after them.
+        for (; k <= se; k += 1) {
+          const at = o + ZIGZAG[k];
+          if (blocks[at]) refineNonzero(blocks, at);
+          else if (r-- === 0) break;
+        }
+        if (value && k <= se) blocks[o + ZIGZAG[k]] = value;
+      }
+    }
+    if (eobrun) {
+      for (; k <= se; k += 1) {
+        const at = o + ZIGZAG[k];
+        if (blocks[at]) refineNonzero(blocks, at);
+      }
+      eobrun -= 1;
+    }
+  };
+  const step = !image.progressive ? sequential : ss === 0 ? (ah ? dcRefine : dcFirst) : ah ? acRefine : acFirst;
+  forEachBlock(image, comps, (c, o) => step(c, c.comp.blocks, o), (unit) => {
     if (restart && unit > 0 && unit % restart === 0) {
       reader.restart();
-      for (const comp of image.components) comp.pred = 0;
+      for (const c of comps) c.pred = 0;
+      eobrun = 0;
     }
   });
-  return image;
 }
 
 function bitReader(buffer, start, end) {
@@ -248,10 +330,10 @@ function bitReader(buffer, start, end) {
   return {
     bit() {
       if (!left) {
-        if (at >= end) byte = 0xff;
-        else if (buffer[at] !== 0xff) byte = buffer[at++];
-        else if (buffer[at + 1] === 0) { byte = 0xff; at += 2; } // stuffed byte
-        else byte = 0; // a marker: feed zeros and stay on it
+        // A whole scan never reads past its data: running into a marker or the file end means truncated or corrupt data.
+        if (at >= end || (buffer[at] === 0xff && buffer[at + 1] !== 0)) throw new Error("truncated or corrupt scan data");
+        byte = buffer[at];
+        at += byte === 0xff ? 2 : 1; // 0xFF is stuffed as 0xFF00
         left = 8;
       }
       left -= 1;
@@ -279,17 +361,18 @@ function layout(image) {
   }
 }
 
-// Visits the blocks in scan order: interleaved MCUs, or for one component the blocks that hold samples.
-function forEachBlock(image, visit, beforeUnit) {
+// Visits the blocks of one scan in order: interleaved MCUs, or for one component the blocks that hold samples.
+function forEachBlock(image, comps, visit, beforeUnit) {
   let unit = 0;
-  if (image.components.length === 1) {
-    const comp = image.components[0];
+  if (comps.length === 1) {
+    const c = comps[0];
+    const comp = c.comp;
     const cw = Math.ceil(Math.ceil((image.width * comp.h) / image.hmax) / 8);
     const ch = Math.ceil(Math.ceil((image.height * comp.v) / image.vmax) / 8);
     for (let by = 0; by < ch; by += 1) {
       for (let bx = 0; bx < cw; bx += 1) {
         beforeUnit(unit);
-        visit(comp, (by * comp.bw + bx) * 64);
+        visit(c, (by * comp.bw + bx) * 64);
         unit += 1;
       }
     }
@@ -298,9 +381,10 @@ function forEachBlock(image, visit, beforeUnit) {
   for (let my = 0; my < image.mcuy; my += 1) {
     for (let mx = 0; mx < image.mcux; mx += 1) {
       beforeUnit(unit);
-      for (const comp of image.components) {
+      for (const c of comps) {
+        const comp = c.comp;
         for (let y = 0; y < comp.v; y += 1) {
-          for (let x = 0; x < comp.h; x += 1) visit(comp, ((my * comp.v + y) * comp.bw + mx * comp.h + x) * 64);
+          for (let x = 0; x < comp.h; x += 1) visit(c, ((my * comp.v + y) * comp.bw + mx * comp.h + x) * 64);
         }
       }
       unit += 1;
@@ -445,11 +529,12 @@ function encode(image, appSegments) {
   const comps = image.components;
   const tableOf = (comp) => (comp === comps[0] ? 0 : 1);
   const visitAll = (emitSymbol) => {
-    for (const comp of comps) comp.pred = 0;
-    forEachBlock(image, (comp, offset) => {
+    const all = comps.map((comp) => ({ comp, pred: 0 }));
+    forEachBlock(image, all, (c, offset) => {
+      const comp = c.comp;
       const t = tableOf(comp);
-      const diff = comp.blocks[offset] - comp.pred;
-      comp.pred = comp.blocks[offset];
+      const diff = comp.blocks[offset] - c.pred;
+      c.pred = comp.blocks[offset];
       const s = bitLength(diff);
       emitSymbol("dc", t, s, diff, s);
       let run = 0;
