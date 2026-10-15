@@ -25,6 +25,7 @@ import {
   requestPath
 } from "../asset-pipeline/request-metadata.mjs";
 import { buildLayout, layoutDir } from "./build-layout.mjs";
+import { exifFovX } from "./exif.mjs";
 
 const DEPTH_ENDPOINT = "fal-ai/moge-2";
 const MASK_ENDPOINT = "fal-ai/sam-3/image";
@@ -97,7 +98,7 @@ async function downloadNamed(metadataPath, targets) {
   return downloaded;
 }
 
-async function runDepth({ dir, index, image, imageUrl, fovX, pollIntervalMs }) {
+async function runDepth({ dir, index, image, imageUrl, fovX, fovBasis, pollIntervalMs }) {
   const metadataPath = requestPath(dir, index, "layout", "depth");
   const input = {
     image_url: imageUrl,
@@ -112,7 +113,7 @@ async function runDepth({ dir, index, image, imageUrl, fovX, pollIntervalMs }) {
     endpoint: DEPTH_ENDPOINT,
     input,
     metadataPath,
-    metadata: { schema_version: 1, kind: "layout-depth", provider: DEPTH_ENDPOINT, index, input_files: [image] },
+    metadata: { schema_version: 1, kind: "layout-depth", provider: DEPTH_ENDPOINT, index, input_files: [image], ...(fovX ? { fov_x_basis: fovBasis } : {}) },
     pollIntervalMs
   });
   if (!result?.point_cloud?.url || !result?.mask?.url || !result?.intrinsics) {
@@ -189,9 +190,12 @@ export async function generateLayout({ world, image, fovX, maskThreshold = 0.4, 
   if (!selectedImage) throw new Error(`No source image found in worlds/${world}/source.`);
   const imageUrl = await toModelInputUrl(selectedImage);
   const objects = await confirmedObjects(world);
+  // A known focal (flag, else the photo's EXIF) leaves the depth model only the depth shift to solve.
+  const exif = fovX ? null : await exifFovX(selectedImage);
+  const fov = fovX ? { value: fovX, basis: "--fov-x" } : exif ? { value: exif.fov_x_deg, basis: exif.basis } : {};
 
   await Promise.all([
-    runDepth({ dir, index, image: selectedImage, imageUrl, fovX, pollIntervalMs }),
+    runDepth({ dir, index, image: selectedImage, imageUrl, fovX: fov.value, fovBasis: fov.basis, pollIntervalMs }),
     ...objects.map((object) => runMask({ dir, index, image: selectedImage, imageUrl, object, maskThreshold, pollIntervalMs }))
   ]);
 

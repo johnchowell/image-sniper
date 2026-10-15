@@ -2,6 +2,7 @@
 import contextlib
 import fcntl
 import json
+import math
 import os
 import re
 import time
@@ -47,6 +48,32 @@ def latest(directory, slug, extension):
             if best is None or int(m.group(2)) > best[0]:
                 best = (int(m.group(2)), os.path.join(directory, name))
     return best
+
+
+def exif_fov_x(path):
+    """Horizontal field of view (deg) of the stored pixel grid from the photo's EXIF focal length, with its basis;
+    None when the file has no usable focal length. The depth model then solves only depth, not depth and focal."""
+    try:
+        image = Image.open(path)
+        sub = image.getexif().get_ifd(0x8769)
+    except Exception:
+        return None
+    W, H = image.size
+    f35 = float(sub.get(0xA405) or 0)
+    if f35 > 0:  # 35 mm equivalent: matched on the diagonal of a 36 x 24 mm frame
+        half = 43.2666 / (2 * f35) * W / math.hypot(W, H)
+        basis = f"FocalLengthIn35mmFilm {f35:g} mm"
+    else:  # true focal length and the sensor width from the focal-plane resolution
+        f = float(sub.get(0x920A) or 0)
+        resolution = float(sub.get(0xA20E) or 0)
+        unit_mm = {2: 25.4, 3: 10.0, 4: 1.0, 5: 0.001}.get(int(sub.get(0xA210) or 2))
+        if not (f > 0 and resolution > 0 and unit_mm):
+            return None
+        sensor_mm = float(sub.get(0xA002) or W) / resolution * unit_mm
+        half = sensor_mm / (2 * f)
+        basis = f"FocalLength {f:g} mm, sensor width {sensor_mm:.2f} mm"
+    fov = math.degrees(2 * math.atan(half))
+    return (round(fov, 2), basis) if 15 <= fov <= 130 else None
 
 
 def write_request(path, payload):

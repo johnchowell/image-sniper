@@ -14,7 +14,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from common import next_index, world_path, write_request
+from common import exif_fov_x, next_index, world_path, write_request
 
 RESERVED = {"world", "sfx", "light", "layout", "scene"}
 DETECTOR = "IDEA-Research/grounding-dino-base"
@@ -129,11 +129,12 @@ def load_depth_model():
     return MoGeModel.from_pretrained("Ruicheng/moge-2-vitl-normal").eval()
 
 
-def depth_step(moge, rgb, out_rel, index, source):
+def depth_step(moge, rgb, out_rel, index, source, fov_x=None, fov_basis=None):
     """MoGe-2 depth with the same checkpoint and defaults as the fal request; writes the point cloud, mask,
-    preview and request metadata of this index."""
+    preview and request metadata of this index. A known fov_x (deg) fixes the focal, so only the depth shift is solved."""
     with torch.no_grad():
-        result = moge.infer(torch.tensor(rgb / 255.0, dtype=torch.float32).permute(2, 0, 1), resolution_level=9, apply_mask=True, use_fp16=False)
+        result = moge.infer(torch.tensor(rgb / 255.0, dtype=torch.float32).permute(2, 0, 1), resolution_level=9, apply_mask=True, use_fp16=False,
+                            **({"fov_x": float(fov_x)} if fov_x else {}))
     points = result["points"].numpy()
     mask = result["mask"].numpy().astype(bool) & np.isfinite(points).all(-1)
     K = result["intrinsics"].numpy().tolist()
@@ -155,7 +156,8 @@ def depth_step(moge, rgb, out_rel, index, source):
     Image.fromarray((np.clip((inv - lo) / (hi - lo), 0, 1) * 255 * mask).astype(np.uint8)).save(files["depth_map"])
     write_request(os.path.join(out_rel, f".{index}-layout__depth-request.json"), {
         "kind": "layout-depth", "provider": "local/moge-2-vitl-normal", "endpoint": "local/moge-2-vitl-normal", "index": index,
-        "status": "completed", "input": {"model": "vitl-normal", "resolution_level": 9, "apply_mask": True},
+        "status": "completed", "input": {"model": "vitl-normal", "resolution_level": 9, "apply_mask": True,
+                                          **({"fov_x": float(fov_x), "fov_x_basis": fov_basis} if fov_x else {})},
         "input_files": [source], "output_files": list(files.values()),
         "downloaded_files": [{"label": k, "path": p} for k, p in files.items()],
         "result": {"intrinsics": K, "fov_x": float(np.degrees(2 * np.arctan(0.5 / K[0][0])))},
@@ -204,6 +206,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--world", required=True)
     parser.add_argument("--image")
+    parser.add_argument("--fov-x", type=float, help="horizontal field of view (deg); default: from the photo's EXIF focal length, else estimated")
     parser.add_argument("--box-threshold", type=float, default=BOX_THRESHOLD)
     parser.add_argument("--extra-per-object", type=int, default=EXTRA_PER_OBJECT, help="boxes kept beyond count_estimate")
     args = parser.parse_args()
@@ -218,7 +221,8 @@ def main():
 
     started = time.time()
     moge = load_depth_model()
-    depth_step(moge, rgb, out_rel, index, source)
+    fov = (args.fov_x, "--fov-x") if args.fov_x else exif_fov_x(source)
+    depth_step(moge, rgb, out_rel, index, source, *(fov or ()))
     del moge
     timings["depth"] = round(time.time() - started, 1)
 

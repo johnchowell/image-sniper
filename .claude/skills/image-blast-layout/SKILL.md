@@ -17,7 +17,7 @@ Create one depth-based primitive layout for project `$0`.
 - Confirmed objects are `worlds/$0/output/<object>/object.json`. Each one gets one segmentation request with `object.name` as the text prompt. Make sure the object files exist before you run the layout; objects added later need `--regenerate`.
 - Without `--image`, the helper uses the lowest-index source image (the original photo). The objects must be visible in that image, so do not pass a clean plate unless the user asks for a structure-only layout.
 - The helper sends the image to `fal-ai/moge-2` for metric depth, camera intrinsics, and a point cloud. At the same time, it sends one `fal-ai/sam-3/image` request per confirmed object for instance masks. Then it fits primitives locally. It resumes unfinished requests and skips when the latest `N-layout.json` exists.
-- Pass `--fov-x <deg>` only when the user knows the lens field of view. Lower `--mask-threshold` (default `0.4`) only when the result says a confirmed object was `not_found`.
+- The helper reads the lens field of view from the photo's EXIF focal length (JPEG) and records it as `fov_x_basis`; without EXIF, MoGe estimates it. Pass `--fov-x <deg>` only when the user knows the lens field of view and the photo has no EXIF. Lower `--mask-threshold` (default `0.4`) only when the result says a confirmed object was `not_found`.
 
 ```bash
 node .claude/scripts/project/project-state.mjs --world "$0"
