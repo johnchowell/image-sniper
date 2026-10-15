@@ -91,6 +91,36 @@ def fill(texture, known, fallback):
     return out
 
 
+_LAMA = []
+
+
+def synthesize(texture, known, fallback, long_side, texel_m, margin_m):
+    """Fills unknown texels of a rectified room texture with LaMa (its Fourier convolutions continue periodic
+    patterns: planks, bricks, tiles), at most long_side texels on the long side; known texels stay as they are.
+    Known texels within margin_m of a hole are filled too and are not context: there an occluder's edge and its
+    contact shadow tint the surface, and LaMa would continue that tint across the hole as a dark patch.
+    Without enough known texels to continue, fill() (inpainting near, the fallback far)."""
+    if known.all() or known.mean() < 0.02:
+        return fill(texture, known, fallback)
+    from simple_lama_inpainting import SimpleLama
+    if not _LAMA:
+        _LAMA.append(SimpleLama())
+    h, w = known.shape
+    r = int(round(margin_m / texel_m))
+    if r > 0:
+        hole = cv2.dilate((~known).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1)))
+        known = known & (hole == 0)
+    scale = min(1.0, long_side / max(h, w))
+    size = (max(8, int(round(w * scale))), max(8, int(round(h * scale))))
+    small = cv2.resize(np.where(known[..., None], texture, 0).astype(np.float32), size, interpolation=cv2.INTER_AREA)
+    small_known = cv2.resize(known.astype(np.float32), size, interpolation=cv2.INTER_AREA) > 0.99
+    small = fill(small, small_known, fallback)  # a neutral start under the hole (LaMa sees the masked pixels too)
+    out = _LAMA[0](image_of(small), Image.fromarray(((~small_known) * 255).astype(np.uint8)))
+    out = np.asarray(out.crop((0, 0, size[0], size[1]))).astype(np.float32) / 255
+    out = cv2.resize(out, (w, h), interpolation=cv2.INTER_CUBIC)
+    return np.where(known[..., None], texture, np.clip(out, 0, 1)).astype(np.float32)
+
+
 def height_to_normal(height, texel_m):
     """Tangent-space normal map (OpenGL convention, +Y up in texture) from a height field in meters."""
     gy, gx = np.gradient(height, texel_m)
@@ -264,7 +294,10 @@ def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, s
     if fallback is None:
         wall = seen & ~lit  # the surface's own color: glass texels are not wall
         fallback = np.median(color[wall], 0) if wall.any() else np.array([0.6, 0.6, 0.6])
-    color = fill(np.where(seen[..., None], color, 0), seen, fallback)
+    if structure and not cutout and args.texture_fill == "lama":
+        color = synthesize(np.where(seen[..., None], color, 0), seen, fallback, args.lama_size, texel, args.lama_margin_m)
+    else:
+        color = fill(np.where(seen[..., None], color, 0), seen, fallback)
     rough = np.where(seen, sample(rough_src, uu, vv), 0.8).astype(np.float32)
     # Windows are glass: no diffuse color of their own; the photo's light comes from the emission.
     glow = np.where(glass, 1.0, np.clip(emit.max(-1) * 4, 0, 1))[..., None]
@@ -379,6 +412,10 @@ def build_parser():
                         help="the object's generated asset (object_mesh.py), registered to the view: used as the mesh, or as the hidden-part "
                              "hypothesis of the completion (in place of the prior, with it, where both agree, or as evidence on the prior's log-odds)")
     parser.add_argument("--generated-weight", type=float, default=1.0, help="fuse: log-odds the generated asset adds where it is full and subtracts where it is empty")
+    parser.add_argument("--texture-fill", choices=["telea", "lama"], default="telea",
+                        help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far) or lama (texture continued by LaMa)")
+    parser.add_argument("--lama-margin-m", type=float, default=0.05, help="lama: band of seen texels at a hole that is filled too")
+    parser.add_argument("--lama-size", type=int, default=1024, help="lama: long side (texels) of the texture LaMa fills")
     parser.add_argument("--roughness", type=float, default=-1.0, help="constant roughness of every material; -1 estimates it from the light stage's non-diffuse light")
     parser.add_argument("--free-weight", type=float, default=0.15, help="registration: cost (m) of the asset's surface fraction in seen-through space or outside the prior's cube")
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
@@ -503,7 +540,7 @@ def main():
     write_request(os.path.join(scene_dir, f".{n}-primitive-scene-request.json"), {
         "kind": "primitive-scene", "provider": "local/primitives", "endpoint": "local/primitives", "index": n, "status": "completed",
         "input_files": [layout_path, layout["source_image"], maps.plate_path], "output_files": [out],
-        "input": {k: getattr(args, k) for k in ("texel_m", "texel_min_m", "max_texture", "grid_m", "relief_m", "relief_sigma_m", "no_relief", "depth_noise", "voxel_m", "voxels", "uv_grid_m", "surface", "smooth_iterations", "clutter_min_px", "clutter_depth_m")},
+        "input": {k: getattr(args, k) for k in ("texel_m", "texel_min_m", "max_texture", "grid_m", "relief_m", "relief_sigma_m", "no_relief", "depth_noise", "voxel_m", "voxels", "uv_grid_m", "surface", "smooth_iterations", "clutter_min_px", "clutter_depth_m", "texture_fill", "lama_size", "lama_margin_m")},
         "maps": {"structure_albedo": maps.plate_light["files"]["albedo"] if maps.plate_light else None,
                  "object_albedo": maps.photo_light["files"]["albedo"] if maps.photo_light else None},
         "result": report})
