@@ -4,12 +4,13 @@
   generate  simulated views: a shape (benchmark/shapes/modelnet40-64.npz) at a random size and yaw on a floor or a
             table top, a wall behind it, other boxes in front and beside it, a random camera (some views cut the
             object at the image border), a depth map with noise, edge smearing, a coarse depth grid and a
-            heavy-tailed depth offset of the object, a mask with ragged edges, and a box estimate with errors in
-            center, size and yaw. The evidence of the cube around the estimated box (shape_prior.evidence, the
+            heavy-tailed depth offset of the object, a mask with ragged edges, and a box estimate fit to the
+            visible points as the layout fits it (along what the view does not show, a lower bound) with a yaw
+            error, or somewhere else (a failed fit). The evidence of the cube around the estimated box (shape_prior.evidence, the
             same code the pipeline runs) is the input; the true occupancy of the cube is the target. ModelNet's train shapes make the training set, its test shapes
             the validation set; no benchmark asset is a ModelNet shape.
   train     fits the 3D U-Net (binary cross entropy) and keeps the weights with the lowest validation loss in
-            .claude/models/shape-prior.pt.
+            --out (default .claude/models/shape-prior.pt).
 """
 import argparse
 import json
@@ -117,20 +118,22 @@ def sample(job):
     fx = rng.uniform(380, 650)
     target = pos + rng.normal(0, 0.15, 3) * size_true
     R = look_at(cam, target, rng.normal(0, 0.02))
-    if rng.random() < 0.25:  # the object at the image border: part of it is cut off
+    if rng.random() < 0.4:  # the object at the image border: part of it is cut off (46% of the train objects)
         side = rng.choice(4)
         shift = rng.uniform(0.3, 0.55)
         cx, cy = W / 2 + (shift * W if side == 0 else -shift * W if side == 1 else 0), H / 2 + (shift * H if side == 2 else -shift * H if side == 3 else 0)
     else:
         cx, cy = W / 2 + rng.normal(0, 30), H / 2 + rng.normal(0, 30)
-    # Estimated box: the true box with errors (the layout's fit), then the cube around it.
+    # Estimated box: the true box with errors; it places the render window, and the fit to the visible points below
+    # replaces it.
     est_yaw = yaw + rng.normal(0, math.radians(5)) + rng.integers(4) * math.pi / 2
     axes = rot_y(est_yaw)
     k90 = int(round((est_yaw - yaw) / (math.pi / 2))) % 2
     size_est_true = size_true[[2, 1, 0]] if k90 else size_true
     size_est = size_est_true * np.exp(rng.normal(0, 0.15, 3))
     center_est = pos + rng.normal(0, 0.06, 3) * size_true
-    if rng.random() < 0.15:  # the layout box is somewhere else (a failed fit)
+    failed_fit = rng.random() < 0.15
+    if failed_fit:  # the layout box is somewhere else (a failed fit)
         a = rng.uniform(-math.pi, math.pi)
         center_est = center_est + np.array([math.cos(a), 0, math.sin(a)]) * rng.uniform(0.3, 1.2)
     supported = rng.random() < 0.9
@@ -241,6 +244,16 @@ def sample(job):
     ex_full[y0:y1, x0:x1] = (ident != 1) & (mask == 0)
     view.depth = depth
     core = cv2.erode(m_full.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+    if not failed_fit:
+        # The layout fits the box to the object's visible points: along the directions the view does not show (the
+        # back, the parts cut by the image border) its extent is only what is seen.
+        local = ps.observed_local(np.zeros(3), axes, core, view)
+        if local is not None:
+            olo, ohi = np.percentile(local, 2, 0), np.percentile(local, 98, 0)
+            if supported:
+                olo[1] = base
+            size_est = np.maximum(ohi - olo, 0.03) * np.exp(rng.normal(0, 0.05, 3))
+            center_est = axes @ ((olo + ohi) / 2)
     center_est, size_est = ps.evidence_box(center_est, size_est, axes, core, view, supported)
     lo, L = sp.cube_frame(center_est, size_est, axes, supported)
     P, local = sp.grid_points(center_est, axes, lo, L, sp.GRID)
@@ -321,8 +334,9 @@ def train(args):
     total = int(args.minutes * 60)
     sched_t0 = time.time()
     best, step, log = float("inf"), 0, []
-    out_path = os.path.abspath(sp.WEIGHTS)
-    best_path = os.path.join(SHAPES, "shape-prior-best.pt")  # checkpoints stay out of the repository until the end
+    out_path = os.path.abspath(args.out)
+    name = os.path.splitext(os.path.basename(out_path))[0]
+    best_path = os.path.join(SHAPES, f"{name}-best.pt")  # checkpoints stay out of the repository until the end
     val_idx = np.arange(min(len(V["target"]), 512))
 
     def validate():
@@ -366,7 +380,7 @@ def train(args):
         torch.save(model.state_dict(), best_path)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     shutil.copyfile(best_path, out_path)
-    json.dump({"args": vars(args), "samples": int(len(D["target"])), "log": log}, open(os.path.join(REPO, "benchmark", "results", "shape-prior-train-log.json"), "w"), indent=1)
+    json.dump({"args": vars(args), "samples": int(len(D["target"])), "log": log}, open(os.path.join(REPO, "benchmark", "results", f"{name}-train-log.json"), "w"), indent=1)
     print(json.dumps({"weights": os.path.relpath(out_path, REPO), "best_val_loss": round(min(best, vl), 4), "steps": step}))
 
 
@@ -385,6 +399,7 @@ def main():
     t.add_argument("--minutes", type=float, default=90)
     t.add_argument("--batch", type=int, default=8)
     t.add_argument("--lr", type=float, default=2e-3)
+    t.add_argument("--out", default=sp.WEIGHTS, help="weights file")
     args = parser.parse_args()
     generate(args) if args.command == "generate" else train(args)
 

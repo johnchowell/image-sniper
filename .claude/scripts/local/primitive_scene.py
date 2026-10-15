@@ -820,15 +820,12 @@ def normal_yaw(core, view, yaw0, step=2, min_pixels=150, min_concentration=0.35)
     return yaw4 + 90 * k, concentration
 
 
-def evidence_box(center, size, axes, core, view, supported):
-    """The object's box from what the view shows, the layout box filling in what it cannot show. Along each
-    horizontal axis the side toward the camera is the observed surface; the far side is the layout's when the
-    layout box holds the observed object (it lies beyond what is seen), else the observed extent deepened by half
-    the object's width (the layout box is somewhere else, so its extent says nothing). The bottom stays on the
-    support; the top is the higher of both."""
+def observed_local(center, axes, core, view):
+    """The object's observed points in its box frame (columns of axes, origin at center), without the pixels at
+    depth edges and the stray points; None when fewer than 50 remain."""
     vs, us = np.nonzero(core)
     if len(us) < 50:
-        return center, size
+        return None
     # Pixels at depth edges (mask bleed onto the background, depth smeared across the edge) are not the object.
     y0, y1, x0, x1 = vs.min(), vs.max() + 1, us.min(), us.max() + 1
     z = np.nan_to_num(view.depth[y0:y1, x0:x1].astype(np.float32), nan=0.0)
@@ -837,12 +834,12 @@ def evidence_box(center, size, axes, core, view, supported):
     keep = ~edge[vs - y0, us - x0]
     vs, us = vs[keep], us[keep]
     if len(us) < 50:
-        return center, size
+        return None
     pick = np.random.default_rng(0).choice(len(us), min(len(us), 20000), replace=False)
     obs, _ = view.observed(us[pick].astype(np.float64), vs[pick].astype(np.float64))
     local = (obs[np.isfinite(obs).all(1)] - center) @ axes
     if len(local) < 50:
-        return center, size
+        return None
     # Stray points (mask bleed onto other surfaces) are separated from the object by an empty gap along some axis;
     # the object's own parts (legs under a top, a bed behind its headboard) fill their range without gaps.
     zc = view.depth[vs, us]
@@ -853,6 +850,18 @@ def evidence_box(center, size, axes, core, view, supported):
         cuts = np.nonzero(np.diff(local[order, k]) > gap)[0] + 1
         segments = np.split(order, cuts)
         local = local[max(segments, key=len)]
+    return local
+
+
+def evidence_box(center, size, axes, core, view, supported):
+    """The object's box from what the view shows, the layout box filling in what it cannot show. Along each
+    horizontal axis the side toward the camera is the observed surface; the far side is the layout's when the
+    layout box holds the observed object (it lies beyond what is seen), else the observed extent deepened by half
+    the object's width (the layout box is somewhere else, so its extent says nothing). The bottom stays on the
+    support; the top is the higher of both."""
+    local = observed_local(center, axes, core, view)
+    if local is None:
+        return center, size
     olo, ohi = np.percentile(local, 2, 0), np.percentile(local, 98, 0)
     lo, hi = -size / 2, size / 2
     med = np.median(local, 0)
