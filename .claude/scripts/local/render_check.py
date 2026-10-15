@@ -66,6 +66,25 @@ def render_linear(path, size):
     return np.flipud(data.reshape(size[1], size[0], 4))[..., :3]
 
 
+def emitter_mask(layout, size):
+    """Pixels (at size) inside the layout's light-source rectangles as the source camera sees them. There the
+    scene shows the photo itself (window glass), which says nothing about how the room is lit."""
+    W, H = size
+    M = np.array(layout["camera"]["matrix_world_from_camera_opencv"])
+    K = layout["camera"]["intrinsics_px"]
+    sx, sy = W / layout["camera"]["image_size"][0], H / layout["camera"]["image_size"][1]
+    ys, xs = np.mgrid[0:H, 0:W] + 0.5
+    mask = np.zeros((H, W), bool)
+    for e in layout.get("lighting", {}).get("emitters", []):
+        cam = (np.array(e["corners"]) - M[:3, 3]) @ M[:3, :3]
+        if (cam[:, 2] <= 0.05).any():
+            continue
+        q = np.stack([(K["fx"] * cam[:, 0] / cam[:, 2] + K["cx"]) * sx, (K["fy"] * cam[:, 1] / cam[:, 2] + K["cy"]) * sy], -1)
+        cross = [(q[(k + 1) % 4, 0] - q[k, 0]) * (ys - q[k, 1]) - (q[(k + 1) % 4, 1] - q[k, 1]) * (xs - q[k, 0]) for k in range(4)]
+        mask |= np.all([c >= 0 for c in cross], 0) | np.all([c <= 0 for c in cross], 0)
+    return mask
+
+
 def look_at(eye, target):
     forward = (target - eye).normalized()
     return Matrix.Translation(eye) @ forward.to_track_quat("-Z", "Y").to_matrix().to_4x4()
@@ -237,7 +256,7 @@ def main():
     small = load_rgb(layout["source_image"], fit_size)
     pl = (srgb_to_linear(small) @ LUMA).reshape(-1)
     clipped = small.max(-1).reshape(-1) >= 0.97
-    mid = ~clipped & (pl > 0.002)
+    mid = ~clipped & (pl > 0.002) & ~emitter_mask(layout, fit_size).reshape(-1)
     fixed = {}
     if args.fill > 0 and "fill" in basis:
         fixed["fill"] = args.fill / UNIT_W
@@ -280,7 +299,7 @@ def main():
     scene.render.resolution_x, scene.render.resolution_y = size
     render = render_linear(tmp, size)
     rl = render @ LUMA
-    ok = (photo.max(-1) < 0.97) & (pl_full > 0.002) & (rl > 1e-5)
+    ok = (photo.max(-1) < 0.97) & (pl_full > 0.002) & (rl > 1e-5) & ~emitter_mask(layout, size)
     g, log_a = np.polyfit(np.log(rl[ok]), np.log(pl_full[ok]), 1)
     exposure = float(np.median(photo_lin @ LUMA) / max(np.median(render @ LUMA), 1e-6))
     tone = lambda img: img * (np.exp(log_a) * np.power(np.maximum(img @ LUMA, 1e-6), g) / np.maximum(img @ LUMA, 1e-6))[..., None]  # on luminance: keeps color
@@ -297,8 +316,34 @@ def main():
     pivot = eye + Vector((forward.x, forward.y, 0)).normalized() * 3.0
     pivot.z = 1.0
     orbits = []
+    poly = [Vector((x, -z, 0.0)) for x, z in room["polygon_xz"]] if room else []
+
+    def inside_room(p, margin=0.3):
+        """In the room polygon (Blender x, y) and at least margin from its walls."""
+        if not poly:
+            return True
+        hits, near = 0, False
+        for k in range(len(poly)):
+            a, b = poly[k], poly[(k + 1) % len(poly)]
+            if (a.y > p.y) != (b.y > p.y) and p.x < a.x + (p.y - a.y) / (b.y - a.y) * (b.x - a.x):
+                hits += 1
+            ab = b - a
+            t = max(0.0, min(1.0, (p - a).dot(ab) / max(ab.dot(ab), 1e-9)))
+            near |= (Vector((p.x, p.y, 0)) - (a + ab * t)).length < margin
+        return hits % 2 == 1 and not near
+
+    for _ in range(20):  # a small room: the pivot stays inside too
+        if inside_room(pivot, 0.5):
+            break
+        pivot = eye + (pivot - eye) * 0.85
+        pivot.z = 1.0
     for angle in (-35, 35):
         rel = Matrix.Rotation(math.radians(angle), 4, "Z") @ (eye - pivot)
+        # An orbit eye outside the room shell sees the back of a wall: pull it toward the pivot until inside.
+        for _ in range(20):
+            if inside_room(pivot + rel):
+                break
+            rel = rel * 0.85
         cam.matrix_world = look_at(pivot + rel + Vector((0, 0, 0.7)), pivot)
         orbits.append(linear_to_srgb(tone(render_linear(tmp, size))))
 

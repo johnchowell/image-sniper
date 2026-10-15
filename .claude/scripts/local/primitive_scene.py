@@ -144,6 +144,8 @@ class Maps:
         final = [r for e in layout.get("lighting", {}).get("emitters", []) for r in e.get("image_regions", [])]
         self.plate_emit = self.emission(self.photo_light, self.photo, final)  # the layout's emitters are regions of the photo's estimate
         self.photo_emit = np.zeros_like(self.photo)
+        self.emitters = layout.get("lighting", {}).get("emitters", [])
+        self.object_px = np.zeros((H, W), bool)  # set by main once the object masks exist
 
     def detail_albedo(self, image, light):
         W, H = self.view.W, self.view.H
@@ -239,17 +241,31 @@ def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, s
     emit_src = maps.plate_emit if structure else maps.photo_emit
     color = sample(albedo_src, uu, vv)
     emit = np.where(seen[..., None] & emissive, sample(emit_src, uu, vv), 0).astype(np.float32)
-    if emissive and seen.any():
-        # Glass behind things in front of it (hanging plants) glows like the glass around it.
+    # Glass: texels inside a light source's rectangle on this surface. The depth there lies behind the surface (the
+    # view through a window), so they are never "seen" as surface; they glow with the photo's color.
+    glass = np.zeros(seen.shape, bool)
+    for e in maps.emitters if emissive else []:
+        en = np.array(e["normal"])
+        if abs(en @ normal) < 0.9:
+            continue
+        d = P - np.array(e["center"])
+        glass |= (np.abs(d @ np.array(e["u_axis"])) <= e["size"][0] / 2) & (np.abs(d @ np.array(e["v_axis"])) <= e["size"][1] / 2) & (np.abs(d @ en) < 0.3)
+    glass &= inside
+    if glass.any():
+        open_glass = glass & ~maps.object_px[np.clip(np.round(vv).astype(int), 0, view.H - 1), np.clip(np.round(uu).astype(int), 0, view.W - 1)]
+        emit = np.where(open_glass[..., None], sample(maps.photo, uu, vv), emit).astype(np.float32)
+        # Glass behind things in front of it (a chair, hanging plants) glows like the glass around it.
+        emit = (fill(emit, ~glass | open_glass, np.zeros(3, np.float32)) * glass[..., None]).astype(np.float32)
+    elif emissive and seen.any():
         emit = fill(emit, seen, np.zeros(3, np.float32)).astype(np.float32)
-    lit = emit.max(-1) > 0.02
+    lit = (emit.max(-1) > 0.02) | glass
     if fallback is None:
         wall = seen & ~lit  # the surface's own color: glass texels are not wall
         fallback = np.median(color[wall], 0) if wall.any() else np.array([0.6, 0.6, 0.6])
     color = fill(np.where(seen[..., None], color, 0), seen, fallback)
     rough = np.where(seen, sample(rough_src, uu, vv), 0.8).astype(np.float32)
     # Windows are glass: no diffuse color of their own; the photo's light comes from the emission.
-    glow = np.clip(emit.max(-1) * 4, 0, 1)[..., None]
+    glow = np.where(glass, 1.0, np.clip(emit.max(-1) * 4, 0, 1))[..., None]
     color = color * (1 - glow) + 0.04 * glow
     h = relief(np.where(seen, height, 0), np.where(seen, obs_z, 0), args)
     h = cv2.GaussianBlur(h, (0, 0), args.relief_sigma_m / texel)
@@ -375,6 +391,7 @@ def main():
     W, H = view.W, view.H
     maps = Maps(args.world, layout, view)
     structure_px = ~object_px
+    maps.object_px = object_px
 
     scene = trimesh.Scene()
     report = {"world": args.world, "layout_index": layout_index, "surfaces": [], "objects": []}
