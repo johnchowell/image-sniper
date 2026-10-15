@@ -1,0 +1,4199 @@
+{
+  "name": "cut-on-noisy",
+  "split": "val",
+  "names": "noisy",
+  "summary": {
+    "views": 20,
+    "scored": 20,
+    "camera": {
+      "height_err_m": 0.0953,
+      "pitch_err_deg": 0.4054,
+      "roll_err_deg": 0.1862,
+      "fov_err_deg": 3.1786
+    },
+    "depth": {
+      "absrel_metric": 0.0897,
+      "absrel_scaled": 0.0183,
+      "delta1_metric": 0.9826,
+      "scale_err_median": 0.0859,
+      "log_scale_bias": 0.0414
+    },
+    "structure": {
+      "floor_found_aligned": 1.0,
+      "wall_found_aligned": 0.881,
+      "ceiling_found_aligned": 0.7778,
+      "wall_found": 0.5714,
+      "class_correct": 1.0,
+      "floor_precision": 1.0,
+      "wall_precision": 0.8627,
+      "ceiling_precision": 0.8,
+      "wall_predicted_per_view": 2.55,
+      "normal_err_deg_median": 0.7213,
+      "offset_err_m_median": 0.1139,
+      "offset_err_aligned_m_median": 0.0528
+    },
+    "objects": {
+      "recall": 0.6364,
+      "recall_of_listed": 0.7313,
+      "listed_fraction": 0.8701,
+      "precision": 0.875,
+      "recall_by_size": {
+        "under_0.2pct": 0.2857,
+        "0.2_to_1pct": 0.25,
+        "1_to_5pct": 0.7333,
+        "over_5pct": 0.7857
+      },
+      "unnamed_small_objects": 6,
+      "mask_iou_mean": 0.5933,
+      "center_err_aligned_m_median": 0.1493,
+      "center_err_aligned_m_median_truncated": 0.2205,
+      "center_err_aligned_m_median_whole": 0.114,
+      "center_err_m_median": 0.3545,
+      "height_rel_err_aligned_median": 0.0624,
+      "height_rel_err_aligned_median_whole": 0.0505,
+      "truncation_flag_accuracy": 0.898,
+      "support_accuracy": 0.9592
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3038,
+      "decomposition_r2_mean": 0.9296,
+      "views_with_windows": 20,
+      "windows": 23,
+      "light_source_iou_stage_mean": 0.5599,
+      "light_source_iou_final_mean": 0.6573,
+      "false_light_fraction_final_mean": 0.0369,
+      "window_located": 0.8261,
+      "window_located_clipped": 0.9167,
+      "window_located_rolloff": 0.7273,
+      "window_rect_iou_aligned_mean": 0.5591,
+      "window_rect_iou_mean": 0.3216,
+      "window_normal_err_deg_median": 1.0689,
+      "window_width_rel_err_aligned_median": 0.1491,
+      "window_center_err_aligned_m_median": 0.1569,
+      "light_sources_per_view": 2.65
+    }
+  },
+  "ci95": {
+    "camera": {
+      "height_err_m": [
+        0.0599,
+        0.1622
+      ],
+      "pitch_err_deg": [
+        0.1903,
+        0.5591
+      ],
+      "roll_err_deg": [
+        0.1037,
+        0.2702
+      ],
+      "fov_err_deg": [
+        2.0994,
+        3.9257
+      ]
+    },
+    "depth": {
+      "absrel_metric": [
+        0.0727,
+        0.1068
+      ],
+      "absrel_scaled": [
+        0.0125,
+        0.0261
+      ],
+      "delta1_metric": [
+        0.9645,
+        0.996
+      ],
+      "scale_err_median": [
+        0.0645,
+        0.1197
+      ],
+      "log_scale_bias": [
+        0.0019,
+        0.0787
+      ]
+    },
+    "structure": {
+      "floor_found_aligned": [
+        1.0,
+        1.0
+      ],
+      "wall_found_aligned": [
+        0.7561,
+        0.9767
+      ],
+      "ceiling_found_aligned": [
+        0.4542,
+        1.0
+      ],
+      "wall_found": [
+        0.4,
+        0.7442
+      ],
+      "class_correct": [
+        1.0,
+        1.0
+      ],
+      "floor_precision": [
+        1.0,
+        1.0
+      ],
+      "wall_precision": [
+        0.7635,
+        0.9592
+      ],
+      "ceiling_precision": [
+        0.5,
+        1.0
+      ],
+      "wall_predicted_per_view": [
+        2.2,
+        2.9
+      ],
+      "normal_err_deg_median": [
+        0.5604,
+        0.9556
+      ],
+      "offset_err_m_median": [
+        0.0747,
+        0.1461
+      ],
+      "offset_err_aligned_m_median": [
+        0.0344,
+        0.0645
+      ]
+    },
+    "objects": {
+      "recall": [
+        0.5224,
+        0.75
+      ],
+      "recall_of_listed": [
+        0.6338,
+        0.8308
+      ],
+      "listed_fraction": [
+        0.7945,
+        0.9405
+      ],
+      "precision": [
+        0.7748,
+        0.963
+      ],
+      "recall_by_size": {
+        "under_0.2pct": [
+          0.0,
+          0.6667
+        ],
+        "0.2_to_1pct": [
+          0.0,
+          0.5558
+        ],
+        "1_to_5pct": [
+          0.5556,
+          0.8858
+        ],
+        "over_5pct": [
+          0.6069,
+          0.9231
+        ]
+      },
+      "mask_iou_mean": [
+        0.4935,
+        0.6964
+      ],
+      "center_err_aligned_m_median": [
+        0.113,
+        0.2252
+      ],
+      "center_err_aligned_m_median_truncated": [
+        0.138,
+        0.3486
+      ],
+      "center_err_aligned_m_median_whole": [
+        0.0699,
+        0.1513
+      ],
+      "center_err_m_median": [
+        0.2608,
+        0.5368
+      ],
+      "height_rel_err_aligned_median": [
+        0.0418,
+        0.074
+      ],
+      "height_rel_err_aligned_median_whole": [
+        0.0288,
+        0.0754
+      ],
+      "truncation_flag_accuracy": [
+        0.8333,
+        0.96
+      ],
+      "support_accuracy": [
+        0.907,
+        1.0
+      ]
+    },
+    "light": {
+      "albedo_si_rmse_mean": [
+        0.2564,
+        0.3532
+      ],
+      "decomposition_r2_mean": [
+        0.9119,
+        0.9453
+      ],
+      "light_source_iou_stage_mean": [
+        0.4277,
+        0.6971
+      ],
+      "light_source_iou_final_mean": [
+        0.5412,
+        0.7661
+      ],
+      "false_light_fraction_final_mean": [
+        0.02,
+        0.0533
+      ],
+      "window_located": [
+        0.6818,
+        0.9546
+      ],
+      "window_located_clipped": [
+        0.7273,
+        1.0
+      ],
+      "window_located_rolloff": [
+        0.5,
+        1.0
+      ],
+      "window_rect_iou_aligned_mean": [
+        0.433,
+        0.7
+      ],
+      "window_rect_iou_mean": [
+        0.1903,
+        0.4807
+      ],
+      "window_normal_err_deg_median": [
+        0.7262,
+        1.3025
+      ],
+      "window_width_rel_err_aligned_median": [
+        0.0461,
+        0.3246
+      ],
+      "window_center_err_aligned_m_median": [
+        0.0926,
+        0.3214
+      ],
+      "light_sources_per_view": [
+        1.9,
+        3.4
+      ]
+    }
+  },
+  "views": [
+    {
+      "view": "bench-val-room-1061-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.039715478897094814,
+        "pitch_err_deg": 0.08705724495271117,
+        "roll_err_deg": -0.31662418433642614,
+        "fov_err_deg": 2.9919601061846635
+      },
+      "depth": {
+        "absrel_metric": 0.059792101341107184,
+        "absrel_scaled": 0.010309060740299249,
+        "delta1_metric": 0.9993671428746412,
+        "scale_gt_over_pred": 1.058452058761701,
+        "log_scale_err": 0.05680751889178962,
+        "scale_applied": 1.2117
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.17651692708333333,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.32166475068715483,
+          "offset_err_m": 0.03929961531154835,
+          "offset_err_aligned_m": 0.049980962868559686
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.146708984375,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-3",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.2109379194612263,
+          "offset_err_m": 0.14620586666749347,
+          "offset_err_aligned_m": 0.0980402023995186
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.27884765625,
+          "found": 1.0,
+          "found_aligned": 0.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": false,
+          "normal_err_deg": 2.5341580895031037,
+          "offset_err_m": 0.048254995353774977,
+          "offset_err_aligned_m": 0.2604129210141264
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": false
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "antique_ceramic_vase_01-2",
+          "name": "antique ceramic vase",
+          "class": "furniture",
+          "pixel_fraction": 0.01125,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9802008608321378,
+          "listed": true,
+          "center_err_m": 0.2567330732213239,
+          "center_err_aligned_m": 0.11296158977031492,
+          "height_rel_err_aligned": 0.04508020047315798,
+          "height_err_m": -0.005553053722193002,
+          "height_rel_err": -0.012633409494414868,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "painted_wooden_shelves-3",
+          "name": "painted wooden shelves",
+          "class": "furniture",
+          "pixel_fraction": 0.039970703125,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "wooden_bookshelf_worn-5",
+          "name": "wooden bookshelf worn",
+          "class": "furniture",
+          "pixel_fraction": 0.10981119791666667,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "painted_wooden_nightstand-7",
+          "name": "painted wooden nightstand",
+          "class": "furniture",
+          "pixel_fraction": 0.010498046875,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9658093797276853,
+          "listed": true,
+          "center_err_m": 0.365789144569825,
+          "center_err_aligned_m": 0.15231139192645082,
+          "height_rel_err_aligned": 0.05583659184891516,
+          "height_err_m": -0.0015209708555737889,
+          "height_rel_err": -0.0024710301152853333,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 2,
+      "light": {
+        "albedo_si_rmse": 0.4200334581460891,
+        "decomposition_r2": 0.9297,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.1614897466827503,
+        "light_source_iou_final": 0.16956446644981146,
+        "false_light_fraction_stage": 0.03474283854166667,
+        "false_light_fraction_final": 0.023434244791666666,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "opening",
+            "visible_fraction": 0.20273111979166666,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.8308869784021807,
+            "rect_iou_aligned": 0.9094845360824743,
+            "normal_err_deg": 1.4748310565133966,
+            "width_rel_err_aligned": 0.0002520862457878237,
+            "height_rel_err_aligned": 0.013438724866158658,
+            "center_err_m": 0.2112302910879171,
+            "center_err_aligned_m": 0.09352301789449734
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 1,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1062-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.05560889339447028,
+        "pitch_err_deg": -0.22693470968818552,
+        "roll_err_deg": 0.043252714434536335,
+        "fov_err_deg": 0.2200376622590028
+      },
+      "depth": {
+        "absrel_metric": 0.05369639283767269,
+        "absrel_scaled": 0.012683239593331005,
+        "delta1_metric": 0.9970077920655136,
+        "scale_gt_over_pred": 1.0515896211589904,
+        "log_scale_err": 0.05030294425374567,
+        "scale_applied": 1.0293
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.19819661458333335,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.22739023940517733,
+          "offset_err_m": 0.05562149036390429,
+          "offset_err_aligned_m": 0.01784147218243093
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.19864583333333333,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-3",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 2.1847315692915994,
+          "offset_err_m": 0.09013938774530228,
+          "offset_err_aligned_m": 0.14264646537541648
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.16966145833333332,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.3877228223986602,
+          "offset_err_m": 0.0747342515443623,
+          "offset_err_aligned_m": 0.022777589080896776
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.036500651041666665,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-4",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.437832353569275,
+          "offset_err_m": 0.20590827839076398,
+          "offset_err_aligned_m": 0.11780235680625872
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-4",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "scandinavian_masonry_heater-1",
+          "name": "scandinavian masonry heater",
+          "class": "furniture",
+          "pixel_fraction": 0.239765625,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "Television_01-2",
+          "name": "television",
+          "class": "furniture",
+          "pixel_fraction": 0.0158203125,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9657295300636158,
+          "listed": true,
+          "center_err_m": 0.27038582107266823,
+          "center_err_aligned_m": 0.092214666904309,
+          "height_rel_err_aligned": -0.017117607579120363,
+          "height_err_m": -0.029848928923136564,
+          "height_rel_err": -0.06533654132339786,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "painted_wooden_shelves-3",
+          "name": "painted wooden shelves",
+          "class": "furniture",
+          "pixel_fraction": 0.054606119791666664,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.978251876366645,
+          "listed": true,
+          "center_err_m": 0.1210668169948933,
+          "center_err_aligned_m": 0.07710076564302797,
+          "height_rel_err_aligned": -0.17934531269559098,
+          "height_err_m": -0.24707209385512396,
+          "height_rel_err": -0.21960556590512995,
+          "gt_support": "floor",
+          "pred_support": "none_detected",
+          "pred_truncated": false,
+          "support_correct": false
+        },
+        {
+          "gt": "chinese_stool-4",
+          "name": "chinese stool",
+          "class": "furniture",
+          "pixel_fraction": 0.04146484375,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9548543310161681,
+          "listed": true,
+          "center_err_m": 0.3277928100527622,
+          "center_err_aligned_m": 0.2396196064984444,
+          "height_rel_err_aligned": 0.1757365642686941,
+          "height_err_m": 0.07444150122759907,
+          "height_rel_err": 0.11805645530513834,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.52775627412684,
+        "decomposition_r2": 0.9639,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.47348627303497554,
+        "light_source_iou_final": 0.49884435052499504,
+        "false_light_fraction_stage": 0.0546875,
+        "false_light_fraction_final": 0.049407552083333334,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "opening",
+            "visible_fraction": 0.0491796875,
+            "clipped": false,
+            "located": true,
+            "emitter": "window-2",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.4569055036344756,
+            "normal_err_deg": 0.49079759606841,
+            "width_rel_err_aligned": -0.48541307575604764,
+            "height_rel_err_aligned": -0.10854439819720517,
+            "center_err_m": 0.5138250335840954,
+            "center_err_aligned_m": 0.45929199232176515
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 6,
+        "tone": "rolloff"
+      }
+    },
+    {
+      "view": "bench-val-room-1063-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": 0.04093841838836676,
+        "pitch_err_deg": -0.4962359384049111,
+        "roll_err_deg": -0.2634535947342491,
+        "fov_err_deg": -3.1173600694325927
+      },
+      "depth": {
+        "absrel_metric": 0.0792121932401464,
+        "absrel_scaled": 0.005629212508448861,
+        "delta1_metric": 0.9996476197056589,
+        "scale_gt_over_pred": 0.9263100845945728,
+        "log_scale_err": -0.07654623581761259,
+        "scale_applied": 0.9883
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.126083984375,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.5612918483556154,
+          "offset_err_m": 0.04126336369574912,
+          "offset_err_aligned_m": 0.0466726436504632
+        },
+        {
+          "gt": "ceiling",
+          "class": "ceiling",
+          "visible_fraction": 0.13557942708333334,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "ceiling",
+          "match_class": "ceiling",
+          "class_correct": true,
+          "normal_err_deg": 0.5612918483556154,
+          "offset_err_m": 0.024683719093862466,
+          "offset_err_aligned_m": 0.0970279156785423
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.022356770833333334,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.11548637972874533,
+          "offset_err_m": 0.3187790964199948,
+          "offset_err_aligned_m": 0.16938713090877666
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.62677734375,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.9043789381596268,
+          "offset_err_m": 0.14844129129633732,
+          "offset_err_aligned_m": 0.06223964199765497
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "WoodenTable_01-2",
+          "name": "wooden table",
+          "class": "furniture",
+          "pixel_fraction": 0.017405598958333334,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9818623784592371,
+          "listed": true,
+          "center_err_m": 0.7958285457001121,
+          "center_err_aligned_m": 0.7660884057185974,
+          "height_rel_err_aligned": 0.03289154563514769,
+          "height_err_m": 0.06315072906974162,
+          "height_rel_err": 0.11506024042394347,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "door-7",
+          "name": "door",
+          "class": "door",
+          "pixel_fraction": 0.016819661458333333,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9847608024691358,
+          "listed": true,
+          "center_err_m": 0.6675953995535772,
+          "center_err_aligned_m": 0.444329474284742,
+          "height_rel_err_aligned": -0.07944436108863492,
+          "height_err_m": -0.013014700476558616,
+          "height_rel_err": -0.006212223939812035,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.16389824445457307,
+        "decomposition_r2": 0.9606,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.9819072537994767,
+        "light_source_iou_final": 0.9819072537994767,
+        "false_light_fraction_stage": 0.0007259114583333333,
+        "false_light_fraction_final": 0.0007259114583333333,
+        "windows": [
+          {
+            "gt": "window-2",
+            "kind": "opening",
+            "visible_fraction": 0.05774739583333333,
+            "clipped": false,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.7192982456140351,
+            "rect_iou_aligned": 0.6395772594752187,
+            "normal_err_deg": 1.9043789381596268,
+            "width_rel_err_aligned": -0.20642662448417934,
+            "height_rel_err_aligned": -0.2050260703635064,
+            "center_err_m": 0.2007995416249709,
+            "center_err_aligned_m": 0.04153524818272685
+          }
+        ],
+        "dominant_confidence": "medium",
+        "light_sources": 1,
+        "tone": "rolloff"
+      }
+    },
+    {
+      "view": "bench-val-room-1064-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.07426672935485845,
+        "pitch_err_deg": -0.20072796869151066,
+        "roll_err_deg": -0.12216716130080396,
+        "fov_err_deg": -2.407271057694203
+      },
+      "depth": {
+        "absrel_metric": 0.03985096746247695,
+        "absrel_scaled": 0.011760629425964295,
+        "delta1_metric": 0.9935817716597338,
+        "scale_gt_over_pred": 1.035933724692374,
+        "log_scale_err": 0.03530316948631796,
+        "scale_applied": 0.8835
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.10372721354166667,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.23805685885646516,
+          "offset_err_m": 0.07392542572289873,
+          "offset_err_aligned_m": 0.017676887410676745
+        },
+        {
+          "gt": "ceiling",
+          "class": "ceiling",
+          "visible_fraction": 0.06805013020833334,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "ceiling",
+          "match_class": "ceiling",
+          "class_correct": true,
+          "normal_err_deg": 0.23805685885646516,
+          "offset_err_m": 0.11580523644021401,
+          "offset_err_aligned_m": 0.07851833467560154
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.4267350260416667,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.7262300947335627,
+          "offset_err_m": 0.13818608002980826,
+          "offset_err_aligned_m": 0.02274084183780367
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.121572265625,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.9195222718863091,
+          "offset_err_m": 0.22065478025888519,
+          "offset_err_aligned_m": 0.11810591066622722
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "vintage_oil_lamp-1",
+          "name": "vintage oil lamp",
+          "class": "furniture",
+          "pixel_fraction": 0.0007063802083333334,
+          "size_bucket": "under_0.2pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "modern_coffee_table_02-3",
+          "name": "modern coffee table",
+          "class": "furniture",
+          "pixel_fraction": 0.09451822916666666,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9219658720521505,
+          "listed": true,
+          "center_err_m": 0.21011953698441538,
+          "center_err_aligned_m": 0.1219300433402018,
+          "height_rel_err_aligned": 0.2007583706978229,
+          "height_err_m": 0.058750328302383414,
+          "height_rel_err": 0.1591073271163118,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "CashRegister_01-4",
+          "name": "cash register",
+          "class": "furniture",
+          "pixel_fraction": 0.018668619791666667,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9633649932157394,
+          "listed": true,
+          "center_err_m": 0.2607825446319055,
+          "center_err_aligned_m": 0.15548753411216976,
+          "height_rel_err_aligned": 0.010332386077270076,
+          "height_err_m": -0.015355749666690843,
+          "height_rel_err": -0.024713297776560388,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "metal_detector-5",
+          "name": "metal detector",
+          "class": "furniture",
+          "pixel_fraction": 0.017900390625,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "door-6",
+          "name": "door",
+          "class": "door",
+          "pixel_fraction": 0.060341796875,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9637909825105632,
+          "listed": true,
+          "center_err_m": 0.2508708476577257,
+          "center_err_aligned_m": 0.2380428902018535,
+          "height_rel_err_aligned": -0.052335042772508174,
+          "height_err_m": -0.18628686603147848,
+          "height_rel_err": -0.08520696388284313,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.28393294130285424,
+        "decomposition_r2": 0.9265,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.3575375932482395,
+        "light_source_iou_final": 0.6301839869205793,
+        "false_light_fraction_stage": 0.16006184895833334,
+        "false_light_fraction_final": 0.052262369791666666,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "panel",
+            "visible_fraction": 0.0891015625,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-2",
+            "rect_iou": 0.6421457277651581,
+            "rect_iou_aligned": 0.708719203215097,
+            "normal_err_deg": 0.7262300947335627,
+            "width_rel_err_aligned": -0.20109861592373784,
+            "height_rel_err_aligned": -0.13494193729276088,
+            "center_err_m": 0.13494163097538026,
+            "center_err_aligned_m": 0.10640372490323871
+          }
+        ],
+        "dominant_confidence": "medium",
+        "light_sources": 4,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1065-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.15405316066741936,
+        "pitch_err_deg": 0.6172859756844877,
+        "roll_err_deg": -0.15537084974287652,
+        "fov_err_deg": 1.221899646392984
+      },
+      "depth": {
+        "absrel_metric": 0.09113310997985204,
+        "absrel_scaled": 0.009764288418410018,
+        "delta1_metric": 0.9954319092372786,
+        "scale_gt_over_pred": 1.093977015398326,
+        "log_scale_err": 0.08981969408833869,
+        "scale_applied": 0.9385
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.07442057291666666,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.6345201937077344,
+          "offset_err_m": 0.15410700587110515,
+          "offset_err_aligned_m": 0.02931059401377345
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.16927408854166667,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.6272549218003904,
+          "offset_err_m": 0.317810142163216,
+          "offset_err_aligned_m": 0.019294589726770894
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.379326171875,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.9556048093787178,
+          "offset_err_m": 0.17258726185620032,
+          "offset_err_aligned_m": 0.025749412086584655
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "Rockingchair_01-6",
+          "name": "rockingchair",
+          "class": "furniture",
+          "pixel_fraction": 0.045390625,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9546087440824282,
+          "listed": true,
+          "center_err_m": 0.3716673778911512,
+          "center_err_aligned_m": 0.20203473995826168,
+          "height_rel_err_aligned": -0.006003682859536338,
+          "height_err_m": -0.0909284568428993,
+          "height_rel_err": -0.09139195508733654,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.15808247341538922,
+        "decomposition_r2": 0.922,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.887371107126934,
+        "light_source_iou_final": 0.887371107126934,
+        "false_light_fraction_stage": 0.03864908854166667,
+        "false_light_fraction_final": 0.03864908854166667,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "panel",
+            "visible_fraction": 0.30450520833333333,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.6959180770871853,
+            "rect_iou_aligned": 0.8244915374768881,
+            "normal_err_deg": 0.9556048093787178,
+            "width_rel_err_aligned": -0.03541774861360494,
+            "height_rel_err_aligned": -0.13527427851772766,
+            "center_err_m": 0.2046558490643842,
+            "center_err_aligned_m": 0.1046242605214464
+          }
+        ],
+        "dominant_confidence": "medium",
+        "light_sources": 3,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1066-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": 0.24004596138000478,
+        "pitch_err_deg": 0.04364876087144154,
+        "roll_err_deg": 0.020669544716365618,
+        "fov_err_deg": 2.148643086567006
+      },
+      "depth": {
+        "absrel_metric": 0.1410530363437231,
+        "absrel_scaled": 0.013124559081990391,
+        "delta1_metric": 0.9983924379178112,
+        "scale_gt_over_pred": 0.8796886573456617,
+        "log_scale_err": -0.12818723258216883,
+        "scale_applied": 1.098
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.416552734375,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.04640986220485055,
+          "offset_err_m": 0.23984218501118204,
+          "offset_err_aligned_m": 0.013200162341588939
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.200712890625,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.2071122586805767,
+          "offset_err_m": 0.9031684589599625,
+          "offset_err_aligned_m": 0.19346965770040203
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.09321614583333333,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.1417136213759662,
+          "offset_err_m": 0.773734727444209,
+          "offset_err_aligned_m": 0.1666399636880369
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": false
+        }
+      ],
+      "objects": [
+        {
+          "gt": "brass_vase_01-1",
+          "name": "brass vase",
+          "class": "furniture",
+          "pixel_fraction": 0.017887369791666666,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.959906926794344,
+          "listed": true,
+          "center_err_m": 0.3486010817936058,
+          "center_err_aligned_m": 0.06710757841800354,
+          "height_rel_err_aligned": 0.04042482531747127,
+          "height_err_m": 0.1265280473567545,
+          "height_rel_err": 0.18271938216960604,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "coffee_table_round_01-2",
+          "name": "coffee table round",
+          "class": "furniture",
+          "pixel_fraction": 0.03277669270833333,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9701463603760783,
+          "listed": true,
+          "center_err_m": 0.6482481979597114,
+          "center_err_aligned_m": 0.10593642828994668,
+          "height_rel_err_aligned": 0.03374866103423897,
+          "height_err_m": 0.08599055600166317,
+          "height_rel_err": 0.17513014678787817,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "WoodenTable_03-3",
+          "name": "wooden table",
+          "class": "furniture",
+          "pixel_fraction": 0.14480794270833333,
+          "size_bucket": "over_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9929130503038867,
+          "listed": true,
+          "center_err_m": 0.3798188297016907,
+          "center_err_aligned_m": 0.06993643989585821,
+          "height_rel_err_aligned": 0.03114804692119671,
+          "height_err_m": 0.14291835832595823,
+          "height_rel_err": 0.1721738575469902,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "WoodenTable_01-4",
+          "name": "wooden table",
+          "class": "furniture",
+          "pixel_fraction": 0.029212239583333334,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9511015583019882,
+          "listed": true,
+          "center_err_m": 0.862904410563067,
+          "center_err_aligned_m": 0.1409054563052189,
+          "height_rel_err_aligned": 0.041811764285531385,
+          "height_err_m": 0.10115072906974165,
+          "height_rel_err": 0.18429600698621454,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "vintage_oil_lamp-6",
+          "name": "vintage oil lamp",
+          "class": "furniture",
+          "pixel_fraction": 0.005240885416666666,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.3126147378265779,
+        "decomposition_r2": 0.9642,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.49185543020412975,
+        "light_source_iou_final": 0.937194813941741,
+        "false_light_fraction_stage": 0.05615559895833333,
+        "false_light_fraction_final": 0.003642578125,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "opening",
+            "visible_fraction": 0.05435546875,
+            "clipped": false,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.45257142857142857,
+            "normal_err_deg": 1.2071122586805767,
+            "width_rel_err_aligned": -0.04611972580950085,
+            "height_rel_err_aligned": -0.5299884605618349,
+            "center_err_m": 0.944227307344143,
+            "center_err_aligned_m": 0.32143489049783164
+          }
+        ],
+        "dominant_confidence": "medium",
+        "light_sources": 1,
+        "tone": "rolloff"
+      }
+    },
+    {
+      "view": "bench-val-room-1067-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": 0.03257293319702148,
+        "pitch_err_deg": -0.7655699585924993,
+        "roll_err_deg": -0.14190048145114598,
+        "fov_err_deg": 3.2397875671836047
+      },
+      "depth": {
+        "absrel_metric": 0.1289202189905171,
+        "absrel_scaled": 0.08008883509077347,
+        "delta1_metric": 0.8439037651216529,
+        "scale_gt_over_pred": 1.0972880779352403,
+        "log_scale_err": 0.09284175204648895,
+        "scale_applied": 1.0681
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.037978515625,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.7773552234626491,
+          "offset_err_m": 0.03300252719712837,
+          "offset_err_aligned_m": 0.1785872822539314
+        },
+        {
+          "gt": "ceiling",
+          "class": "ceiling",
+          "visible_fraction": 0.09240234375,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "ceiling",
+          "match_class": "ceiling",
+          "class_correct": true,
+          "normal_err_deg": 0.7773552234626491,
+          "offset_err_m": 0.038791053065981185,
+          "offset_err_aligned_m": 0.06049805743635428
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.07858072916666667,
+          "found": 1.0,
+          "found_aligned": 0.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": false,
+          "normal_err_deg": 1.0688865195027322,
+          "offset_err_m": 0.1936951519664616,
+          "offset_err_aligned_m": 0.3960391106858374
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.271259765625,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.7164400734046334,
+          "offset_err_m": 0.15763719838728507,
+          "offset_err_aligned_m": 0.0667879269572973
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": false
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": false
+        },
+        {
+          "id": "wall-4",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "planter_box_03-1",
+          "name": "planter box",
+          "class": "furniture",
+          "pixel_fraction": 0.12475911458333333,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9857537963784376,
+          "listed": true,
+          "center_err_m": 0.8395874354118469,
+          "center_err_aligned_m": 0.6682296281005147,
+          "height_rel_err_aligned": 0.32813573122568485,
+          "height_err_m": 0.1798967647193057,
+          "height_rel_err": 0.21038017083428906,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "wooden_bookshelf_worn-4",
+          "name": "wooden bookshelf worn",
+          "class": "furniture",
+          "pixel_fraction": 0.208408203125,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9574901619200199,
+          "listed": true,
+          "center_err_m": 0.6237324026987016,
+          "center_err_aligned_m": 0.3485760149970812,
+          "height_rel_err_aligned": 0.05397918443157839,
+          "height_err_m": -0.08144205141067506,
+          "height_rel_err": -0.039469027664235636,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "russian_food_cans_01-5",
+          "name": "russian food cans",
+          "class": "furniture",
+          "pixel_fraction": 0.000224609375,
+          "size_bucket": "under_0.2pct",
+          "truncated": false,
+          "named": false,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "bar_chair_round_01-6",
+          "name": "bar chair round",
+          "class": "furniture",
+          "pixel_fraction": 0.0030859375,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.21913313472882315,
+        "decomposition_r2": 0.9294,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.8521220503068545,
+        "light_source_iou_final": 0.8521220503068545,
+        "false_light_fraction_stage": 0.026497395833333333,
+        "false_light_fraction_final": 0.026497395833333333,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "panel",
+            "visible_fraction": 0.12822591145833334,
+            "clipped": false,
+            "located": true,
+            "emitter": "window-2",
+            "rect_iou": 0.4838595560272398,
+            "rect_iou_aligned": 0.4014022140221402,
+            "normal_err_deg": 0.7164400734046334,
+            "width_rel_err_aligned": 0.5702195208834727,
+            "height_rel_err_aligned": 0.4277944947877121,
+            "center_err_m": 0.4654119280363348,
+            "center_err_aligned_m": 0.7674635251314039
+          },
+          {
+            "gt": "window-2",
+            "kind": "panel",
+            "visible_fraction": 0.03357421875,
+            "clipped": false,
+            "located": false,
+            "emitter": "window-3",
+            "rect_iou": 0.18383311603650587,
+            "rect_iou_aligned": 0.0,
+            "normal_err_deg": 1.0688865195027322,
+            "width_rel_err_aligned": -0.7819227314203686,
+            "height_rel_err_aligned": 0.011126921436015848,
+            "center_err_m": 0.20284765697955087,
+            "center_err_aligned_m": 0.4312366816728245
+          }
+        ],
+        "dominant_confidence": "medium",
+        "light_sources": 4,
+        "tone": "rolloff"
+      }
+    },
+    {
+      "view": "bench-val-room-1068-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": 0.11648209476470939,
+        "pitch_err_deg": 0.36778503985678324,
+        "roll_err_deg": -0.3194499695136266,
+        "fov_err_deg": 3.513576304523454
+      },
+      "depth": {
+        "absrel_metric": 0.06577665392711161,
+        "absrel_scaled": 0.013013038082658357,
+        "delta1_metric": 0.9989559661042229,
+        "scale_gt_over_pred": 0.9384259984299943,
+        "log_scale_err": -0.06355127696484822,
+        "scale_applied": 1.2886
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.18994791666666666,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.48345593140527193,
+          "offset_err_m": 0.11631945903078633,
+          "offset_err_aligned_m": 0.037576327120784514
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.208701171875,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.9283931172398783,
+          "offset_err_m": 0.2946713959737508,
+          "offset_err_aligned_m": 0.03437527782066141
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.221689453125,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.0811556981277617,
+          "offset_err_m": 0.35105875231853556,
+          "offset_err_aligned_m": 0.0998546793387014
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "modern_coffee_table_02-2",
+          "name": "modern coffee table",
+          "class": "furniture",
+          "pixel_fraction": 0.08111002604166667,
+          "size_bucket": "over_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.8844864037325946,
+          "listed": true,
+          "center_err_m": 0.2211555886704935,
+          "center_err_aligned_m": 0.3944967846650508,
+          "height_rel_err_aligned": 0.08265357012572801,
+          "height_err_m": 0.05675032830238341,
+          "height_rel_err": 0.15369093773726358,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "planter_box_03-3",
+          "name": "planter box",
+          "class": "furniture",
+          "pixel_fraction": 0.10416341145833333,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9861596009975062,
+          "listed": true,
+          "center_err_m": 0.16354035366606906,
+          "center_err_aligned_m": 0.06518508134928139,
+          "height_rel_err_aligned": 0.04366711256094502,
+          "height_err_m": 0.09589676471930575,
+          "height_rel_err": 0.11214641783904244,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "russian_food_cans_01-4",
+          "name": "russian food cans",
+          "class": "furniture",
+          "pixel_fraction": 0.00046223958333333333,
+          "size_bucket": "under_0.2pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "antique_ceramic_vase_01-5",
+          "name": "antique ceramic vase",
+          "class": "furniture",
+          "pixel_fraction": 0.00611328125,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.16219827252452854,
+        "decomposition_r2": 0.8973,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.9659799904012996,
+        "light_source_iou_final": 0.9659799904012996,
+        "false_light_fraction_stage": 0.005712890625,
+        "false_light_fraction_final": 0.005712890625,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "panel",
+            "visible_fraction": 0.170634765625,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.7510256410256411,
+            "normal_err_deg": 1.0811556981277617,
+            "width_rel_err_aligned": -0.149137211994056,
+            "height_rel_err_aligned": -0.030829710615772603,
+            "center_err_m": 0.4155199110551747,
+            "center_err_aligned_m": 0.1708928247865444
+          }
+        ],
+        "dominant_confidence": "medium",
+        "light_sources": 2,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1069-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.11126123714447012,
+        "pitch_err_deg": -0.17987715670197668,
+        "roll_err_deg": -0.05227672254988358,
+        "fov_err_deg": 3.4415844056055107
+      },
+      "depth": {
+        "absrel_metric": 0.1254984891220367,
+        "absrel_scaled": 0.01445744999811352,
+        "delta1_metric": 0.9848270665662028,
+        "scale_gt_over_pred": 1.1386383300566791,
+        "log_scale_err": 0.12983310116695257,
+        "scale_applied": 1
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.198583984375,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.18575256720418848,
+          "offset_err_m": 0.11144928877531646,
+          "offset_err_aligned_m": 0.06002022629302717
+        },
+        {
+          "gt": "ceiling",
+          "class": "ceiling",
+          "visible_fraction": 0.24164388020833333,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "ceiling",
+          "match_class": "ceiling",
+          "class_correct": true,
+          "normal_err_deg": 0.18575256720418848,
+          "offset_err_m": 0.1342379458297278,
+          "offset_err_aligned_m": 0.07859834826997103
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.19398763020833334,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.34806921153657316,
+          "offset_err_m": 0.614804122544097,
+          "offset_err_aligned_m": 0.059037146153002595
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.10385416666666666,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.08589207232923757,
+          "offset_err_m": 0.3907210106979102,
+          "offset_err_aligned_m": 0.22062111638824877
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.022932942708333334,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-3",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.4620025304714659,
+          "offset_err_m": 0.10637658599294353,
+          "offset_err_aligned_m": 0.02875420025452935
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "brass_vase_01-1",
+          "name": "brass vase",
+          "class": "furniture",
+          "pixel_fraction": 0.00876953125,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": true,
+          "named": true,
+          "found": 0.0,
+          "mask_iou": 0.00018836530311116693,
+          "listed": true,
+          "center_err_m": 1.3625221530061389,
+          "center_err_aligned_m": 1.7726653463296655,
+          "height_rel_err_aligned": 2.120899759475128,
+          "height_err_m": 1.2055280473567545,
+          "height_rel_err": 1.7409052348692458,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "ceramic_vase_04-2",
+          "name": "ceramic vase",
+          "class": "furniture",
+          "pixel_fraction": 0.000478515625,
+          "size_bucket": "under_0.2pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "wooden_bookshelf_worn-3",
+          "name": "wooden bookshelf worn",
+          "class": "furniture",
+          "pixel_fraction": 0.08361653645833333,
+          "size_bucket": "over_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9352014665718882,
+          "listed": true,
+          "center_err_m": 0.5368123776540896,
+          "center_err_aligned_m": 0.06181799806149237,
+          "height_rel_err_aligned": 0.023065058929990622,
+          "height_err_m": -0.20944205141067496,
+          "height_rel_err": -0.10150130034787729,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "cassette_player-4",
+          "name": "cassette player",
+          "class": "furniture",
+          "pixel_fraction": 0.00021158854166666667,
+          "size_bucket": "under_0.2pct",
+          "truncated": false,
+          "named": false,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "scandinavian_masonry_heater-5",
+          "name": "scandinavian masonry heater",
+          "class": "furniture",
+          "pixel_fraction": 0.09555338541666666,
+          "size_bucket": "over_5pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "door-7",
+          "name": "door",
+          "class": "door",
+          "pixel_fraction": 0.03638671875,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        }
+      ],
+      "object_false_positives": 1,
+      "light": {
+        "albedo_si_rmse": 0.25130391045075195,
+        "decomposition_r2": 0.9387,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.26972477064220185,
+        "light_source_iou_final": 0.48021778584392016,
+        "false_light_fraction_stage": 0.024274088541666666,
+        "false_light_fraction_final": 0.0032779947916666665,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "opening",
+            "visible_fraction": 0.02362630208333333,
+            "clipped": false,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.9296987087517934,
+            "normal_err_deg": 0.34806921153657316,
+            "width_rel_err_aligned": -0.022955623561478854,
+            "height_rel_err_aligned": -0.029608267188645655,
+            "center_err_m": 0.6664636139491092,
+            "center_err_aligned_m": 0.0786047765477215
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 1,
+        "tone": "rolloff"
+      }
+    },
+    {
+      "view": "bench-val-room-1070-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.18194193649292,
+        "pitch_err_deg": 0.44293557380796855,
+        "roll_err_deg": -0.011564176794432779,
+        "fov_err_deg": 0.7160655324130687
+      },
+      "depth": {
+        "absrel_metric": 0.10558193457755506,
+        "absrel_scaled": 0.01365554729734654,
+        "delta1_metric": 0.991311061958838,
+        "scale_gt_over_pred": 1.1190047758047403,
+        "log_scale_err": 0.11243969724270059,
+        "scale_applied": 1.0536
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.34608072916666666,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.4460352354068949,
+          "offset_err_m": 0.18167512122598195,
+          "offset_err_aligned_m": 0.014798663764416409
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.194423828125,
+          "found": 1.0,
+          "found_aligned": 0.0,
+          "match": "wall-3",
+          "match_class": "wall",
+          "class_correct": false,
+          "normal_err_deg": 1.4666431872891548,
+          "offset_err_m": 0.13228186617105742,
+          "offset_err_aligned_m": 0.2801134337690909
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.03847330729166667,
+          "found": 1.0,
+          "found_aligned": 0.0,
+          "match": "wall-4",
+          "match_class": "wall",
+          "class_correct": false,
+          "normal_err_deg": 0.45571969629906495,
+          "offset_err_m": 0.12085944987383357,
+          "offset_err_aligned_m": 0.2686886243802866
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": false
+        },
+        {
+          "id": "wall-4",
+          "class": "wall",
+          "correct": false
+        }
+      ],
+      "objects": [
+        {
+          "gt": "antique_ceramic_vase_01-1",
+          "name": "antique ceramic vase",
+          "class": "furniture",
+          "pixel_fraction": 0.012454427083333334,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "painted_wooden_shelves-2",
+          "name": "painted wooden shelves",
+          "class": "furniture",
+          "pixel_fraction": 0.05869140625,
+          "size_bucket": "over_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9870194432169687,
+          "listed": true,
+          "center_err_m": 0.28936022888284857,
+          "center_err_aligned_m": 0.04683105689549142,
+          "height_rel_err_aligned": -0.06308004210101523,
+          "height_err_m": -0.18307209385512402,
+          "height_rel_err": -0.1627203224175768,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "modern_coffee_table_02-3",
+          "name": "modern coffee table",
+          "class": "furniture",
+          "pixel_fraction": 0.15278645833333335,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9331870079136546,
+          "listed": true,
+          "center_err_m": 0.35244406766693626,
+          "center_err_aligned_m": 0.08224467081602613,
+          "height_rel_err_aligned": 0.06369945977666001,
+          "height_err_m": -0.0182496716976166,
+          "height_rel_err": -0.04942366397704341,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "painted_wooden_nightstand-4",
+          "name": "painted wooden nightstand",
+          "class": "furniture",
+          "pixel_fraction": 0.057939453125,
+          "size_bucket": "over_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9849299719887955,
+          "listed": true,
+          "center_err_m": 0.32030471043081865,
+          "center_err_aligned_m": 0.11511027615220268,
+          "height_rel_err_aligned": -0.23644842646918068,
+          "height_err_m": -0.1955209708555738,
+          "height_rel_err": -0.3176511932384688,
+          "gt_support": "floor",
+          "pred_support": "none_detected",
+          "pred_truncated": false,
+          "support_correct": false
+        },
+        {
+          "gt": "WoodenTable_03-5",
+          "name": "wooden table",
+          "class": "furniture",
+          "pixel_fraction": 0.08079752604166666,
+          "size_bucket": "over_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9865158589599098,
+          "listed": true,
+          "center_err_m": 0.36244308654413204,
+          "center_err_aligned_m": 0.049567590306616,
+          "height_rel_err_aligned": 0.00970137755060847,
+          "height_err_m": -0.08108164167404175,
+          "height_rel_err": -0.09767911685231688,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "Television_01-6",
+          "name": "television",
+          "class": "furniture",
+          "pixel_fraction": 0.018395182291666666,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.40036127238220637,
+        "decomposition_r2": 0.9542,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.23181782975757106,
+        "light_source_iou_final": 0.2758016955399926,
+        "false_light_fraction_stage": 0.007470703125,
+        "false_light_fraction_final": 0.0007682291666666666,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "opening",
+            "visible_fraction": 0.027770182291666667,
+            "clipped": false,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.32189133894066835,
+            "normal_err_deg": 0.5301851959282676,
+            "width_rel_err_aligned": -0.10499592403998836,
+            "height_rel_err_aligned": -0.6531800723522998,
+            "center_err_m": 0.4585377832601485,
+            "center_err_aligned_m": 0.29094646840771965
+          },
+          {
+            "gt": "window-2",
+            "kind": "opening",
+            "visible_fraction": 0.006787109375,
+            "clipped": false,
+            "located": false,
+            "emitter": "window-2",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.03939393939393939,
+            "normal_err_deg": 1.4006743285832084,
+            "width_rel_err_aligned": -0.7688285957125226,
+            "height_rel_err_aligned": -0.84092652058339,
+            "center_err_m": 0.6523562115985466,
+            "center_err_aligned_m": 0.8530234822965449
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 2,
+        "tone": "rolloff"
+      }
+    },
+    {
+      "view": "bench-val-room-1071-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": 0.00507070064544668,
+        "pitch_err_deg": -0.06856124430744437,
+        "roll_err_deg": -0.14971231640242255,
+        "fov_err_deg": 0.23579656824209394
+      },
+      "depth": {
+        "absrel_metric": 0.012666045353241003,
+        "absrel_scaled": 0.009787816135982376,
+        "delta1_metric": 0.9983377146832918,
+        "scale_gt_over_pred": 0.9921931872402664,
+        "log_scale_err": -0.007837445455768052,
+        "scale_applied": 1.1151
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.17349609375,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.16330630575916083,
+          "offset_err_m": 0.00507798804970605,
+          "offset_err_aligned_m": 0.006749389267241446
+        },
+        {
+          "gt": "ceiling",
+          "class": "ceiling",
+          "visible_fraction": 0.19607747395833333,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "ceiling",
+          "match_class": "ceiling",
+          "class_correct": true,
+          "normal_err_deg": 0.16330630575916083,
+          "offset_err_m": 0.00563455301424054,
+          "offset_err_aligned_m": 0.016884128014785338
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.14475911458333332,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-3",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.3785507012710873,
+          "offset_err_m": 0.0634248884554589,
+          "offset_err_aligned_m": 0.01683021387461725
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.13070963541666666,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.5995894369355982,
+          "offset_err_m": 0.018877406185834777,
+          "offset_err_aligned_m": 0.030936357225847866
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.22096028645833332,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.4045507678436573,
+          "offset_err_m": 9.340104589439235e-05,
+          "offset_err_aligned_m": 0.017900423445466274
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "coffee_table_round_01-1",
+          "name": "coffee table round",
+          "class": "furniture",
+          "pixel_fraction": 0.020250651041666668,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.907315607631065,
+          "listed": true,
+          "center_err_m": 0.025663011411962713,
+          "center_err_aligned_m": 0.0540503199553778,
+          "height_rel_err_aligned": -0.005805175258778502,
+          "height_err_m": 0.000990556001663201,
+          "height_rel_err": 0.0020173868624542308,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "bar_chair_round_01-2",
+          "name": "bar chair round",
+          "class": "furniture",
+          "pixel_fraction": 0.008356119791666667,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "metal_detector-3",
+          "name": "metal detector",
+          "class": "furniture",
+          "pixel_fraction": 0.013310546875,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9043300838812061,
+          "listed": true,
+          "center_err_m": 0.20662146671454917,
+          "center_err_aligned_m": 0.19221369251638817,
+          "height_rel_err_aligned": -0.12889601087698752,
+          "height_err_m": -0.13692149460315706,
+          "height_rel_err": -0.12204195682300262,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "russian_food_cans_01-4",
+          "name": "russian food cans",
+          "class": "furniture",
+          "pixel_fraction": 0.00015625,
+          "size_bucket": "under_0.2pct",
+          "truncated": false,
+          "named": false,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "brass_diya_lantern-5",
+          "name": "brass diya lantern",
+          "class": "furniture",
+          "pixel_fraction": 0.000888671875,
+          "size_bucket": "under_0.2pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "wooden_display_shelves_01-6",
+          "name": "wooden display shelves",
+          "class": "furniture",
+          "pixel_fraction": 0.016966145833333335,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "door-7",
+          "name": "door",
+          "class": "door",
+          "pixel_fraction": 0.025179036458333335,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9416302391360247,
+          "listed": true,
+          "center_err_m": 0.020835298005274693,
+          "center_err_aligned_m": 0.029515081897602605,
+          "height_rel_err_aligned": -0.028798340642155258,
+          "height_err_m": -0.04411412191815112,
+          "height_rel_err": -0.02115669423291296,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 1,
+      "light": {
+        "albedo_si_rmse": 0.19856576819224495,
+        "decomposition_r2": 0.8736,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.547969038488851,
+        "light_source_iou_final": 0.5542865352153145,
+        "false_light_fraction_stage": 0.04144205729166667,
+        "false_light_fraction_final": 0.04039713541666667,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "opening",
+            "visible_fraction": 0.024977213541666668,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-2",
+            "rect_iou": 0.889501633986928,
+            "rect_iou_aligned": 0.8680555555555556,
+            "normal_err_deg": 0.3785507012710873,
+            "width_rel_err_aligned": -0.0741628037144384,
+            "height_rel_err_aligned": -0.059909371014758156,
+            "center_err_m": 0.07064300984343135,
+            "center_err_aligned_m": 0.023535062811303787
+          },
+          {
+            "gt": "window-2",
+            "kind": "opening",
+            "visible_fraction": 0.025260416666666667,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.3906522497384025,
+            "rect_iou_aligned": 0.38367631670735963,
+            "normal_err_deg": 0.4045507678436573,
+            "width_rel_err_aligned": -0.5648886960821108,
+            "height_rel_err_aligned": -0.09248565489331706,
+            "center_err_m": 0.17612340998123305,
+            "center_err_aligned_m": 0.1569272758724121
+          }
+        ],
+        "dominant_confidence": "medium",
+        "light_sources": 6,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1072-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.06766777420043946,
+        "pitch_err_deg": 0.5008202306985573,
+        "roll_err_deg": 0.25753248281023994,
+        "fov_err_deg": 0.6258076368988625
+      },
+      "depth": {
+        "absrel_metric": 0.034895331427299905,
+        "absrel_scaled": 0.020407545435642625,
+        "delta1_metric": 0.9964607295316869,
+        "scale_gt_over_pred": 0.9690929821972124,
+        "log_scale_err": -0.031394714835067485,
+        "scale_applied": 1.154
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.126904296875,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.5604108378838323,
+          "offset_err_m": 0.06779614681593626,
+          "offset_err_aligned_m": 0.10243895702356376
+        },
+        {
+          "gt": "ceiling",
+          "class": "ceiling",
+          "visible_fraction": 0.18994140625,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "ceiling",
+          "match_class": "ceiling",
+          "class_correct": true,
+          "normal_err_deg": 0.5604108378838323,
+          "offset_err_m": 0.10198632888568815,
+          "offset_err_aligned_m": 0.052963915404725226
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.39326822916666665,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.1390308386110093,
+          "offset_err_m": 0.17347487143652884,
+          "offset_err_aligned_m": 0.009402511300312
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.06013671875,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.8110260553900257,
+          "offset_err_m": 0.10210758360881922,
+          "offset_err_aligned_m": 0.038796235132500634
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "russian_food_cans_01-1",
+          "name": "russian food cans",
+          "class": "furniture",
+          "pixel_fraction": 0.000791015625,
+          "size_bucket": "under_0.2pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.7084548104956269,
+          "listed": true,
+          "center_err_m": 0.04726736577967213,
+          "center_err_aligned_m": 0.147198477507408,
+          "height_rel_err_aligned": -0.6347352362369476,
+          "height_err_m": -0.05289999175071716,
+          "height_rel_err": -0.6230859468872717,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "modern_coffee_table_02-2",
+          "name": "modern coffee table",
+          "class": "furniture",
+          "pixel_fraction": 0.10134114583333333,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.990449725309825,
+          "listed": true,
+          "center_err_m": 0.12971486794886564,
+          "center_err_aligned_m": 0.22516036211598117,
+          "height_rel_err_aligned": -0.06568068137720574,
+          "height_err_m": -0.013249671697616594,
+          "height_rel_err": -0.03588269052942293,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "chinese_stool-3",
+          "name": "chinese stool",
+          "class": "furniture",
+          "pixel_fraction": 0.012864583333333334,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.8299975886182783,
+          "listed": true,
+          "center_err_m": 0.08017755536590424,
+          "center_err_aligned_m": 0.22052561740307258,
+          "height_rel_err_aligned": -0.09324057861484333,
+          "height_err_m": -0.04055849877240092,
+          "height_rel_err": -0.06432154804250834,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "wooden_table_02-4",
+          "name": "wooden table",
+          "class": "furniture",
+          "pixel_fraction": 0.02203125,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9764041690793284,
+          "listed": true,
+          "center_err_m": 0.0934219167915426,
+          "center_err_aligned_m": 0.22414528915291615,
+          "height_rel_err_aligned": -0.060654439720148806,
+          "height_err_m": -0.024542887049028628,
+          "height_rel_err": -0.030696148319963274,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "brass_vase_01-5",
+          "name": "brass vase",
+          "class": "furniture",
+          "pixel_fraction": 0.008463541666666666,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9643527204502814,
+          "listed": true,
+          "center_err_m": 0.17432764495453,
+          "center_err_aligned_m": 0.23181359848802197,
+          "height_rel_err_aligned": -0.06235581730969944,
+          "height_err_m": -0.02247195264324542,
+          "height_rel_err": -0.03245178748029776,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "Rockingchair_01-6",
+          "name": "rockingchair",
+          "class": "furniture",
+          "pixel_fraction": 0.010657552083333334,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.7208470847084708,
+          "listed": true,
+          "center_err_m": 0.3545369810081956,
+          "center_err_aligned_m": 0.44126490791932166,
+          "height_rel_err_aligned": -0.07759090834239636,
+          "height_err_m": -0.04792845684289937,
+          "height_rel_err": -0.048172767110296194,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.21065273559141134,
+        "decomposition_r2": 0.8964,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.3351121892055791,
+        "light_source_iou_final": 0.38753111960447423,
+        "false_light_fraction_stage": 0.14273111979166667,
+        "false_light_fraction_final": 0.11368815104166667,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "panel",
+            "visible_fraction": 0.071982421875,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.9037678207739308,
+            "rect_iou_aligned": 0.88128634964078,
+            "normal_err_deg": 1.1390308386110093,
+            "width_rel_err_aligned": -0.06840002778722565,
+            "height_rel_err_aligned": -0.06911338671255052,
+            "center_err_m": 0.20575713697380343,
+            "center_err_aligned_m": 0.03768260950541703
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 2,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1073-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.19273579597473134,
+        "pitch_err_deg": -0.13113874209690835,
+        "roll_err_deg": -0.4806322650342514,
+        "fov_err_deg": -2.0501139942311113
+      },
+      "depth": {
+        "absrel_metric": 0.11014403643622903,
+        "absrel_scaled": 0.014090565691899837,
+        "delta1_metric": 0.9949750076739137,
+        "scale_gt_over_pred": 1.1223094290283526,
+        "log_scale_err": 0.11538855252696943,
+        "scale_applied": 1.0926
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.20644856770833334,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.47898805808977835,
+          "offset_err_m": 0.19240266830927633,
+          "offset_err_aligned_m": 0.024798004847213617
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.30413736979166667,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.8924941059003892,
+          "offset_err_m": 0.34229782605715364,
+          "offset_err_aligned_m": 0.0014727087579009535
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.10199869791666667,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.4993374277595268,
+          "offset_err_m": 0.4118688210274861,
+          "offset_err_aligned_m": 0.12000298513950547
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "chinese_stool-1",
+          "name": "chinese stool",
+          "class": "furniture",
+          "pixel_fraction": 0.054697265625,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9692036438436673,
+          "listed": true,
+          "center_err_m": 0.3012159254126004,
+          "center_err_aligned_m": 0.06233795213600576,
+          "height_rel_err_aligned": -0.013954415185623332,
+          "height_err_m": -0.07655849877240084,
+          "height_rel_err": -0.12141379256872804,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "BarberShopChair_01-2",
+          "name": "barber shop chair",
+          "class": "furniture",
+          "pixel_fraction": 0.14695638020833332,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.7813759859772129,
+          "listed": true,
+          "center_err_m": 0.29714227312513886,
+          "center_err_aligned_m": 0.2735702263021922,
+          "height_rel_err_aligned": -0.11210487954809399,
+          "height_err_m": -0.3110052630568676,
+          "height_rel_err": -0.20886780642963368,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "painted_wooden_shelves-4",
+          "name": "painted wooden shelves",
+          "class": "furniture",
+          "pixel_fraction": 0.026949869791666668,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9780854906682721,
+          "listed": true,
+          "center_err_m": 0.41724559138177697,
+          "center_err_aligned_m": 0.14516406653051186,
+          "height_rel_err_aligned": -0.19697671349035992,
+          "height_err_m": -0.3200720938551239,
+          "height_rel_err": -0.2844902967581202,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "cassette_player-5",
+          "name": "cassette player",
+          "class": "furniture",
+          "pixel_fraction": 0.0013151041666666667,
+          "size_bucket": "under_0.2pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.57958023247787,
+        "decomposition_r2": 0.8073,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.4806333144714798,
+        "light_source_iou_final": 0.5302787332753914,
+        "false_light_fraction_stage": 0.15237630208333333,
+        "false_light_fraction_final": 0.12490885416666667,
+        "windows": [
+          {
+            "gt": "window-2",
+            "kind": "opening",
+            "visible_fraction": 0.14101236979166668,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.4688454772706231,
+            "normal_err_deg": 0.8924941059003892,
+            "width_rel_err_aligned": 0.06718390467023679,
+            "height_rel_err_aligned": 0.6114925383081827,
+            "center_err_m": 0.5829346299514468,
+            "center_err_aligned_m": 0.5269703325579035
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 3,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1074-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.07943656539916999,
+        "pitch_err_deg": 0.8259107429167019,
+        "roll_err_deg": -0.09348859881132165,
+        "fov_err_deg": 4.320550787877288
+      },
+      "depth": {
+        "absrel_metric": 0.08777548420955264,
+        "absrel_scaled": 0.009217242643970695,
+        "delta1_metric": 0.9998491488821138,
+        "scale_gt_over_pred": 1.0908312611439717,
+        "log_scale_err": 0.08694003049316971,
+        "scale_applied": 1.0293
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.08225911458333333,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.8297388387735191,
+          "offset_err_m": 0.07976000541246764,
+          "offset_err_aligned_m": 0.049554326965116635
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.36628580729166665,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.0945924112991239,
+          "offset_err_m": 0.288220502485669,
+          "offset_err_aligned_m": 0.07456447562181179
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.28862955729166667,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.619505072259493,
+          "offset_err_m": 0.10803883852868679,
+          "offset_err_aligned_m": 0.04977051506462149
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "coffee_table_round_01-1",
+          "name": "coffee table round",
+          "class": "furniture",
+          "pixel_fraction": 9.114583333333334e-05,
+          "size_bucket": "under_0.2pct",
+          "truncated": true,
+          "named": false,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "Television_01-3",
+          "name": "television",
+          "class": "furniture",
+          "pixel_fraction": 0.03892578125,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9845588849010934,
+          "listed": true,
+          "center_err_m": 0.36137064244486883,
+          "center_err_aligned_m": 0.13774243775044234,
+          "height_rel_err_aligned": 0.09596743511096834,
+          "height_err_m": 0.0021510710768634644,
+          "height_rel_err": 0.004708495392413135,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.18317804762455914,
+        "decomposition_r2": 0.9878,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.8794587945879458,
+        "light_source_iou_final": 0.8794587945879458,
+        "false_light_fraction_stage": 0.002607421875,
+        "false_light_fraction_final": 0.002607421875,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "opening",
+            "visible_fraction": 0.18,
+            "clipped": false,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.5157692307692308,
+            "rect_iou_aligned": 0.6111538461538462,
+            "normal_err_deg": 0.619505072259493,
+            "width_rel_err_aligned": -0.3246158003118346,
+            "height_rel_err_aligned": -0.0933842332642429,
+            "center_err_m": 0.23555653838745727,
+            "center_err_aligned_m": 0.05138595373051568
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 1,
+        "tone": "rolloff"
+      }
+    },
+    {
+      "view": "bench-val-room-1075-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.1857122745513915,
+        "pitch_err_deg": 0.45808257220109283,
+        "roll_err_deg": -0.498727033452917,
+        "fov_err_deg": 4.213356690528627
+      },
+      "depth": {
+        "absrel_metric": 0.11522416273227568,
+        "absrel_scaled": 0.03511955308989845,
+        "delta1_metric": 0.9627737767707828,
+        "scale_gt_over_pred": 1.1356424873814572,
+        "log_scale_err": 0.12719855895470725,
+        "scale_applied": 1.0416
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.38890625,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.6520929142902794,
+          "offset_err_m": 0.1852751520088729,
+          "offset_err_aligned_m": 7.17803505061454e-05
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.20092122395833334,
+          "found": 0.0,
+          "found_aligned": 0.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": false,
+          "normal_err_deg": 1.5207006668958363,
+          "offset_err_m": 0.4071209475683979,
+          "offset_err_aligned_m": 0.3751855593338487
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.05755208333333333,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.0035837088017832,
+          "offset_err_m": 0.0036584591707033987,
+          "offset_err_aligned_m": 0.19950841657987728
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": false
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "coffee_table_round_01-1",
+          "name": "coffee table round",
+          "class": "furniture",
+          "pixel_fraction": 0.024443359375,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9475032010243278,
+          "listed": true,
+          "center_err_m": 0.47036557629573605,
+          "center_err_aligned_m": 0.08100291712608315,
+          "height_rel_err_aligned": 0.09630180355682552,
+          "height_err_m": -0.017009443998336815,
+          "height_rel_err": -0.03464178582763559,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "wooden_display_shelves_01-2",
+          "name": "wooden display shelves",
+          "class": "furniture",
+          "pixel_fraction": 0.09685546875,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.33384863556929695,
+          "listed": true,
+          "center_err_m": 0.4485209219555532,
+          "center_err_aligned_m": 0.08142863615865267,
+          "height_rel_err_aligned": 0.055234620050980815,
+          "height_err_m": -0.11018381500244145,
+          "height_rel_err": -0.07080385616416952,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "brass_diya_lantern-3",
+          "name": "brass diya lantern",
+          "class": "furniture",
+          "pixel_fraction": 0.00030924479166666665,
+          "size_bucket": "under_0.2pct",
+          "truncated": false,
+          "named": false,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "wooden_table_02-4",
+          "name": "wooden table",
+          "class": "furniture",
+          "pixel_fraction": 0.13875,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "WoodenTable_01-5",
+          "name": "wooden table",
+          "class": "furniture",
+          "pixel_fraction": 0.033798828125,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "ceramic_vase_04-6",
+          "name": "ceramic vase",
+          "class": "furniture",
+          "pixel_fraction": 0.0027083333333333334,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9151982378854625,
+          "listed": true,
+          "center_err_m": 0.33211943054810517,
+          "center_err_aligned_m": 0.27546277869652713,
+          "height_rel_err_aligned": 0.0029824218731652253,
+          "height_err_m": -0.0399442092999816,
+          "height_rel_err": -0.1168149897369347,
+          "gt_support": "coffee_table_round_01-1",
+          "pred_support": "coffee-table-round-01-1-1",
+          "pred_truncated": false,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 2,
+      "light": {
+        "albedo_si_rmse": 0.34848504980931766,
+        "decomposition_r2": 0.9396,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.2049300672281895,
+        "light_source_iou_final": 0.25497548312662244,
+        "false_light_fraction_stage": 0.13397135416666667,
+        "false_light_fraction_final": 0.1008984375,
+        "windows": [
+          {
+            "gt": "window-2",
+            "kind": "opening",
+            "visible_fraction": 0.034020182291666666,
+            "clipped": true,
+            "located": false,
+            "emitter": "window-1",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.0,
+            "normal_err_deg": 1.5207006668958363,
+            "width_rel_err_aligned": 0.693605015937329,
+            "height_rel_err_aligned": 0.5900413398744784,
+            "center_err_m": 0.6780947601836029,
+            "center_err_aligned_m": 0.7124607257354649
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 3,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1076-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": 0.15878830814361566,
+        "pitch_err_deg": 1.0096634999482728,
+        "roll_err_deg": 0.27699084997714407,
+        "fov_err_deg": 5.307164177108113
+      },
+      "depth": {
+        "absrel_metric": 0.07073082953293826,
+        "absrel_scaled": 0.027949143988358585,
+        "delta1_metric": 0.9978096548604173,
+        "scale_gt_over_pred": 0.9189743049539639,
+        "log_scale_err": -0.08449711680627242,
+        "scale_applied": 1.1744
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.13416015625,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 1.0494566694679408,
+          "offset_err_m": 0.15865023376504483,
+          "offset_err_aligned_m": 0.05259875969356531
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.4597623697916667,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.019755553199347,
+          "offset_err_m": 0.32456664144266645,
+          "offset_err_aligned_m": 0.026006436165991964
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "metal_detector-2",
+          "name": "metal detector",
+          "class": "furniture",
+          "pixel_fraction": 0.017467447916666667,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "planter_pot_clay-3",
+          "name": "planter pot clay",
+          "class": "furniture",
+          "pixel_fraction": 0.005387369791666667,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "scandinavian_masonry_heater-5",
+          "name": "scandinavian masonry heater",
+          "class": "furniture",
+          "pixel_fraction": 0.22185546875,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        }
+      ],
+      "object_false_positives": 1,
+      "light": {
+        "albedo_si_rmse": 0.30203631905149086,
+        "decomposition_r2": 0.9465,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.656395467297776,
+        "light_source_iou_final": 0.656395467297776,
+        "false_light_fraction_stage": 0.07115234375,
+        "false_light_fraction_final": 0.07115234375,
+        "windows": [
+          {
+            "gt": "window-2",
+            "kind": "opening",
+            "visible_fraction": 0.136328125,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.8930793890250801,
+            "normal_err_deg": 1.019755553199347,
+            "width_rel_err_aligned": 0.03842735406284049,
+            "height_rel_err_aligned": 0.029047399434934364,
+            "center_err_m": 0.3422314039123913,
+            "center_err_aligned_m": 0.05546773496794748
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 6,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1077-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": 0.0014518451690674894,
+        "pitch_err_deg": 0.22061175270381242,
+        "roll_err_deg": -0.045044637020217215,
+        "fov_err_deg": 7.759199998537746
+      },
+      "depth": {
+        "absrel_metric": 0.06982388257318527,
+        "absrel_scaled": 0.01567914037269908,
+        "delta1_metric": 0.9962889684667746,
+        "scale_gt_over_pred": 1.068924398643048,
+        "log_scale_err": 0.06665290797330907,
+        "scale_applied": 1
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.14339518229166667,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.22181627811844318,
+          "offset_err_m": 0.0014005800759049336,
+          "offset_err_aligned_m": 0.08720792662050858
+        },
+        {
+          "gt": "ceiling",
+          "class": "ceiling",
+          "visible_fraction": 0.11264322916666666,
+          "found": 1.0,
+          "found_aligned": 0.0,
+          "match": "ceiling",
+          "match_class": "ceiling",
+          "class_correct": false,
+          "normal_err_deg": 0.22181627811844318,
+          "offset_err_m": 0.1590757989361109,
+          "offset_err_aligned_m": 0.2663947257296979
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.5199739583333334,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.8943619397574412,
+          "offset_err_m": 0.19127792314255831,
+          "offset_err_aligned_m": 0.10581255446257654
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": false
+        }
+      ],
+      "objects": [
+        {
+          "gt": "scandinavian_masonry_heater-1",
+          "name": "scandinavian masonry heater",
+          "class": "furniture",
+          "pixel_fraction": 0.14935872395833333,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.992294967786871,
+          "listed": true,
+          "center_err_m": 0.8563517800158739,
+          "center_err_aligned_m": 0.6311140141016545,
+          "height_rel_err_aligned": -0.030919147213416622,
+          "height_err_m": -0.2204823132336604,
+          "height_rel_err": -0.09340561968948555,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "ceramic_vase_04-3",
+          "name": "ceramic vase",
+          "class": "furniture",
+          "pixel_fraction": 0.0025358072916666667,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9307048984468339,
+          "listed": true,
+          "center_err_m": 1.2194738101495637,
+          "center_err_aligned_m": 1.1034248891890046,
+          "height_rel_err_aligned": 0.9912746682552409,
+          "height_err_m": 0.2950557907000184,
+          "height_rel_err": 0.862876991846267,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "brass_diya_lantern-4",
+          "name": "brass diya lantern",
+          "class": "furniture",
+          "pixel_fraction": 0.00017578125,
+          "size_bucket": "under_0.2pct",
+          "truncated": true,
+          "named": false,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.31374277364330977,
+        "decomposition_r2": 0.9563,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.9868179834133566,
+        "light_source_iou_final": 0.9868179834133566,
+        "false_light_fraction_stage": 0.000869140625,
+        "false_light_fraction_final": 0.000869140625,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "panel",
+            "visible_fraction": 0.07370768229166667,
+            "clipped": false,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.7223894420004631,
+            "rect_iou_aligned": 0.8039082026812088,
+            "normal_err_deg": 1.8943619397574412,
+            "width_rel_err_aligned": 0.03383586146584519,
+            "height_rel_err_aligned": 0.06161355985378744,
+            "center_err_m": 0.2858857979119409,
+            "center_err_aligned_m": 0.12185144166635802
+          }
+        ],
+        "dominant_confidence": "medium",
+        "light_sources": 1,
+        "tone": "rolloff"
+      }
+    },
+    {
+      "view": "bench-val-room-1078-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.06413652992248542,
+        "pitch_err_deg": -0.7753804720446578,
+        "roll_err_deg": 0.21701646737295288,
+        "fov_err_deg": 3.941567661183221
+      },
+      "depth": {
+        "absrel_metric": 0.1624710720146196,
+        "absrel_scaled": 0.007392664442524615,
+        "delta1_metric": 0.9971142930017854,
+        "scale_gt_over_pred": 1.1933481760872333,
+        "log_scale_err": 0.17676294972907455,
+        "scale_applied": 1.0847
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.024231770833333333,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.8027271526980295,
+          "offset_err_m": 0.06379394745183098,
+          "offset_err_aligned_m": 0.18743152144289743
+        },
+        {
+          "gt": "ceiling",
+          "class": "ceiling",
+          "visible_fraction": 0.028369140625,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "ceiling",
+          "match_class": "ceiling",
+          "class_correct": true,
+          "normal_err_deg": 0.8027271526980295,
+          "offset_err_m": 0.1933719559031588,
+          "offset_err_aligned_m": 0.07106234459890537
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.090849609375,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.4477029974306879,
+          "offset_err_m": 0.7223134334960037,
+          "offset_err_aligned_m": 0.0386673811539886
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.3296875,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 2.0874388621324176,
+          "offset_err_m": 0.15572423319762407,
+          "offset_err_aligned_m": 0.08548894492532244
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "planter_box_03-4",
+          "name": "planter box",
+          "class": "furniture",
+          "pixel_fraction": 0.06566731770833334,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9691627792781733,
+          "listed": true,
+          "center_err_m": 0.6524805259712116,
+          "center_err_aligned_m": 0.1492590747251473,
+          "height_rel_err_aligned": 0.11365716468727331,
+          "height_err_m": -0.057103235280694165,
+          "height_rel_err": -0.06677934654515673,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "door-8",
+          "name": "door",
+          "class": "door",
+          "pixel_fraction": 0.095625,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.985984964452155,
+          "listed": true,
+          "center_err_m": 0.724450374225107,
+          "center_err_aligned_m": 0.13798331368703629,
+          "height_rel_err_aligned": 0.07048604024304797,
+          "height_err_m": -0.21887075986685955,
+          "height_rel_err": -0.10295581650531152,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.30941816801005256,
+        "decomposition_r2": 0.8938,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.9724360543662559,
+        "light_source_iou_final": 0.9724360543662559,
+        "false_light_fraction_stage": 0.009895833333333333,
+        "false_light_fraction_final": 0.009895833333333333,
+        "windows": [
+          {
+            "gt": "window-1",
+            "kind": "panel",
+            "visible_fraction": 0.34911783854166667,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.4198990627253064,
+            "rect_iou_aligned": 0.595241528478731,
+            "normal_err_deg": 2.0874388621324176,
+            "width_rel_err_aligned": -0.29753107702271214,
+            "height_rel_err_aligned": -0.15440596969011436,
+            "center_err_m": 0.2049584651613854,
+            "center_err_aligned_m": 0.24151336461105452
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 2,
+        "tone": "clip"
+      }
+    },
+    {
+      "view": "bench-val-room-1079-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": 0.16223146724700932,
+        "pitch_err_deg": -0.06219110223106661,
+        "roll_err_deg": -0.25281420340780425,
+        "fov_err_deg": 4.370436939702216
+      },
+      "depth": {
+        "absrel_metric": 0.08051186226470135,
+        "absrel_scaled": 0.01160006301040427,
+        "delta1_metric": 0.9994369369369369,
+        "scale_gt_over_pred": 0.9293926486000943,
+        "log_scale_err": -0.07322397219674225,
+        "scale_applied": 1.0297
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.385166015625,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 0.25253875287144073,
+          "offset_err_m": 0.16236560905032205,
+          "offset_err_aligned_m": 0.06188187592007188
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.2997233072916667,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 0.6921207466278484,
+          "offset_err_m": 0.42693772972780675,
+          "offset_err_aligned_m": 0.06010901953724179
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.10319661458333333,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.1600595760776582,
+          "offset_err_m": 0.5384216517514426,
+          "offset_err_aligned_m": 0.21377327675647617
+        },
+        {
+          "gt": "wall-right",
+          "class": "wall",
+          "visible_fraction": 0.05708333333333333,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "wall-3",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.638761884548009,
+          "offset_err_m": 0.1139410342709839,
+          "offset_err_aligned_m": 0.04736238657419334
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "wall-3",
+          "class": "wall",
+          "correct": true
+        }
+      ],
+      "objects": [
+        {
+          "gt": "brass_diya_lantern-1",
+          "name": "brass diya lantern",
+          "class": "furniture",
+          "pixel_fraction": 0.0021744791666666666,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "antique_ceramic_vase_01-2",
+          "name": "antique ceramic vase",
+          "class": "furniture",
+          "pixel_fraction": 0.005458984375,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": false,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        },
+        {
+          "gt": "planter_pot_clay-3",
+          "name": "planter pot clay",
+          "class": "furniture",
+          "pixel_fraction": 0.0016178385416666667,
+          "size_bucket": "under_0.2pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9384615384615385,
+          "listed": true,
+          "center_err_m": 0.40807978455448934,
+          "center_err_aligned_m": 0.09889742410922568,
+          "height_rel_err_aligned": 0.06816946654549824,
+          "height_err_m": 0.03312965749762953,
+          "height_rel_err": 0.14931990064095912,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": false,
+          "support_correct": true
+        },
+        {
+          "gt": "wooden_bookshelf_worn-4",
+          "name": "wooden bookshelf worn",
+          "class": "furniture",
+          "pixel_fraction": 0.035169270833333335,
+          "size_bucket": "1_to_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9819628156507261,
+          "listed": true,
+          "center_err_m": 0.7362418357182092,
+          "center_err_aligned_m": 0.4413920033250868,
+          "height_rel_err_aligned": 0.03954372331539867,
+          "height_err_m": 0.24455794858932478,
+          "height_rel_err": 0.11851941682691423,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "painted_wooden_cabinet_02-5",
+          "name": "painted wooden cabinet",
+          "class": "furniture",
+          "pixel_fraction": 0.10299479166666667,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.35541749450611376,
+        "decomposition_r2": 0.952,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.06658938446627773,
+        "light_source_iou_final": 0.8219563687543983,
+        "false_light_fraction_stage": 0.15988606770833333,
+        "false_light_fraction_final": 0.002470703125,
+        "windows": [
+          {
+            "gt": "window-2",
+            "kind": "opening",
+            "visible_fraction": 0.01140625,
+            "clipped": false,
+            "located": false,
+            "emitter": "window-1",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.0,
+            "normal_err_deg": 1.1600595760776582,
+            "width_rel_err_aligned": -0.5325371178154636,
+            "height_rel_err_aligned": -0.028216357733581124,
+            "center_err_m": 0.7655192216921288,
+            "center_err_aligned_m": 0.3564448469515093
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 1,
+        "tone": "rolloff"
+      }
+    },
+    {
+      "view": "bench-val-room-1080-view-0-noisy",
+      "layout_index": 0,
+      "camera": {
+        "height_err_m": -0.17287764358520508,
+        "pitch_err_deg": 0.9226997424380412,
+        "roll_err_deg": -0.3966122169204558,
+        "fov_err_deg": 3.909891969083752
+      },
+      "depth": {
+        "absrel_metric": 0.1584501730409843,
+        "absrel_scaled": 0.029994606333116954,
+        "delta1_metric": 0.9057623336801183,
+        "scale_gt_over_pred": 1.1652226345493257,
+        "log_scale_err": 0.1529121713773317,
+        "scale_applied": 1.1073
+      },
+      "structure": [
+        {
+          "gt": "floor",
+          "class": "floor",
+          "visible_fraction": 0.13577799479166666,
+          "found": 1.0,
+          "found_aligned": 1.0,
+          "match": "floor",
+          "match_class": "floor",
+          "class_correct": true,
+          "normal_err_deg": 1.0011366945449396,
+          "offset_err_m": 0.172666421646968,
+          "offset_err_aligned_m": 0.013574367801235443
+        },
+        {
+          "gt": "ceiling",
+          "class": "ceiling",
+          "visible_fraction": 0.058525390625,
+          "found": 1.0,
+          "found_aligned": 0.0,
+          "match": "ceiling",
+          "match_class": "ceiling",
+          "class_correct": false,
+          "normal_err_deg": 1.0011366945449396,
+          "offset_err_m": 0.01789338793462303,
+          "offset_err_aligned_m": 0.26261995072323585
+        },
+        {
+          "gt": "wall-back",
+          "class": "wall",
+          "visible_fraction": 0.056884765625,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-2",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 2.779024435730627,
+          "offset_err_m": 0.8507826063868489,
+          "offset_err_aligned_m": 0.03455455322496093
+        },
+        {
+          "gt": "wall-left",
+          "class": "wall",
+          "visible_fraction": 0.42362630208333335,
+          "found": 0.0,
+          "found_aligned": 1.0,
+          "match": "wall-1",
+          "match_class": "wall",
+          "class_correct": true,
+          "normal_err_deg": 1.3978752407220096,
+          "offset_err_m": 0.4112942428563664,
+          "offset_err_aligned_m": 0.14006325532512465
+        }
+      ],
+      "structure_predictions": [
+        {
+          "id": "wall-1",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "floor",
+          "class": "floor",
+          "correct": true
+        },
+        {
+          "id": "wall-2",
+          "class": "wall",
+          "correct": true
+        },
+        {
+          "id": "ceiling",
+          "class": "ceiling",
+          "correct": false
+        }
+      ],
+      "objects": [
+        {
+          "gt": "painted_wooden_cabinet_02-1",
+          "name": "painted wooden cabinet",
+          "class": "furniture",
+          "pixel_fraction": 0.19411783854166667,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9436759058973456,
+          "listed": true,
+          "center_err_m": 0.6573416230772372,
+          "center_err_aligned_m": 0.17322863072187863,
+          "height_rel_err_aligned": 0.01117691407589777,
+          "height_err_m": -0.3395725378571077,
+          "height_rel_err": -0.13220282193797966,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "wooden_table_02-2",
+          "name": "wooden table",
+          "class": "furniture",
+          "pixel_fraction": 0.06266276041666667,
+          "size_bucket": "over_5pct",
+          "truncated": true,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9756299906668049,
+          "listed": true,
+          "center_err_m": 0.7035567316056408,
+          "center_err_aligned_m": 0.3945487191986472,
+          "height_rel_err_aligned": 0.10176492842124708,
+          "height_err_m": -0.043542887049028645,
+          "height_rel_err": -0.05445972661921581,
+          "gt_support": "floor",
+          "pred_support": "floor",
+          "pred_truncated": true,
+          "support_correct": true
+        },
+        {
+          "gt": "ceramic_vase_04-3",
+          "name": "ceramic vase",
+          "class": "furniture",
+          "pixel_fraction": 0.0023014322916666665,
+          "size_bucket": "0.2_to_1pct",
+          "truncated": true,
+          "named": true,
+          "found": false,
+          "mask_iou": 0.0,
+          "listed": false
+        },
+        {
+          "gt": "antique_ceramic_vase_01-4",
+          "name": "antique ceramic vase",
+          "class": "furniture",
+          "pixel_fraction": 0.019703776041666666,
+          "size_bucket": "1_to_5pct",
+          "truncated": false,
+          "named": true,
+          "found": 1.0,
+          "mask_iou": 0.9855120184392493,
+          "listed": true,
+          "center_err_m": 0.7266088678610764,
+          "center_err_aligned_m": 0.43122947830527397,
+          "height_rel_err_aligned": -0.09868514757910811,
+          "height_err_m": -0.09955305372219297,
+          "height_rel_err": -0.22648700282972586,
+          "gt_support": "wooden_table_02-2",
+          "pred_support": "wooden-table-02-2-1",
+          "pred_truncated": false,
+          "support_correct": true
+        }
+      ],
+      "object_false_positives": 0,
+      "light": {
+        "albedo_si_rmse": 0.37658687603161156,
+        "decomposition_r2": 0.9532,
+        "windows_visible": true,
+        "light_source_iou_stage": 0.3936147868094938,
+        "light_source_iou_final": 0.42220282181982033,
+        "false_light_fraction_stage": 0.07518229166666666,
+        "false_light_fraction_final": 0.066787109375,
+        "windows": [
+          {
+            "gt": "window-2",
+            "kind": "opening",
+            "visible_fraction": 0.048802083333333336,
+            "clipped": true,
+            "located": true,
+            "emitter": "window-1",
+            "rect_iou": 0.0,
+            "rect_iou_aligned": 0.9190231362467867,
+            "normal_err_deg": 1.3978752407220096,
+            "width_rel_err_aligned": 0.025765501215690805,
+            "height_rel_err_aligned": 0.05442374381532061,
+            "center_err_m": 0.6542309502945948,
+            "center_err_aligned_m": 0.0916093531478687
+          }
+        ],
+        "dominant_confidence": "low",
+        "light_sources": 3,
+        "tone": "clip"
+      }
+    }
+  ]
+}

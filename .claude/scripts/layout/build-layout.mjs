@@ -40,7 +40,7 @@ export const DEFAULT_PARAMS = {
   snap_max_rms_m: 0.05,
   wall_behind_tolerance_m: 0.1,
   wall_behind_max_fraction: 0.01,
-  object_exterior_cut: 0,
+  object_exterior_cut: 1,
   wall_tall_behind_max_fraction: 0.08,
   exterior_min_fraction: 0.5,
   exterior_wall_min_gap_m: 0.5,
