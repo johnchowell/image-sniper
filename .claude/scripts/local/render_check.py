@@ -104,7 +104,6 @@ def main():
     parser.add_argument("--light-basis", type=int, default=1, help="1: fit ceiling and side lights too; 0: window and dominant fill only")
     parser.add_argument("--fit-scale", type=float, default=0.25, help="render size of the light basis relative to the photo")
     parser.add_argument("--fit-samples", type=int, default=16)
-    parser.add_argument("--basis-glossy", type=int, default=1, help="1: glossy surfaces reflect the basis area lights; 0: they reflect only the room (under test)")
     parser.add_argument("--no-emit", default="", help="comma-separated material names whose emission is turned off (experiments)")
     parser.add_argument("--tag", default="", help="suffix for the output files (experiments)")
     args = parser.parse_args(argv)
@@ -171,9 +170,6 @@ def main():
         light.data.energy = 0.0
         light.matrix_world = Matrix.Translation(center) @ (-facing).normalized().to_track_quat("Z", "Y").to_matrix().to_4x4()
         light.visible_camera = False
-        # A basis light stands for light from walls, ceiling and unseen sources, not for an object: with
-        # --basis-glossy 0 a glossy surface reflects the room geometry (already in the scene), not a bright rectangle.
-        light.visible_glossy = bool(args.basis_glossy)
         basis[name] = light
 
     source_cam = G @ Matrix(layout["camera"]["matrix_world_from_camera_opencv"])
