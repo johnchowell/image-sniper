@@ -254,8 +254,10 @@ def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, s
     if glass.any():
         open_glass = glass & ~maps.object_px[np.clip(np.round(vv).astype(int), 0, view.H - 1), np.clip(np.round(uu).astype(int), 0, view.W - 1)]
         emit = np.where(open_glass[..., None], sample(maps.photo, uu, vv), emit).astype(np.float32)
-        # Glass behind things in front of it (a chair, hanging plants) glows like the glass around it.
-        emit = (fill(emit, ~glass | open_glass, np.zeros(3, np.float32)) * glass[..., None]).astype(np.float32)
+        # Glass behind things in front of it (a chair, a cabinet) glows like the open glass: filled from the open
+        # glass only (the wall around it has no emission), its median color far from it.
+        far = np.median(emit[open_glass], 0) if open_glass.any() else np.zeros(3, np.float32)
+        emit = (fill(np.where(open_glass[..., None], emit, 0), open_glass, far) * glass[..., None]).astype(np.float32)
     elif emissive and seen.any():
         emit = fill(emit, seen, np.zeros(3, np.float32)).astype(np.float32)
     lit = (emit.max(-1) > 0.02) | glass
