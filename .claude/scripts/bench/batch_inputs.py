@@ -136,11 +136,11 @@ def mask_stage(worlds, timings):
         log(f"masks {world} {timings['mask_inference'][-1]}s ({len(objects)} names)")
 
 
-def build_stage(worlds, rebuild):
+def build_stage(worlds, rebuild, params=None):
     for world, _ in worlds:
         if not rebuild and os.path.exists(os.path.join(REPO, "worlds", world, "output", "layout", "0-layout.json")):
             continue
-        process = subprocess.run(["node", ".claude/scripts/layout/build-layout.mjs", "--world", world, "--index", "0"], cwd=REPO, capture_output=True, text=True)
+        process = subprocess.run(["node", ".claude/scripts/layout/build-layout.mjs", "--world", world, "--index", "0"] + (["--params", params] if params else []), cwd=REPO, capture_output=True, text=True)
         log(f"build {world} " + ("ok" if process.returncode == 0 else "failed: " + (process.stderr or process.stdout).strip().splitlines()[-1]))
 
 
@@ -150,6 +150,7 @@ def main():
     parser.add_argument("--names", choices=["oracle", "noisy"], default="oracle")
     parser.add_argument("--stages", nargs="+", default=["light", "depth", "masks", "build"])
     parser.add_argument("--rebuild", action="store_true", help="rebuild layouts that exist (after a build-layout change)")
+    parser.add_argument("--params", help="JSON solver-parameter overrides for build-layout (an A/B arm)")
     parser.add_argument("--limit", type=int, help="only the first N worlds (smoke test)")
     parser.add_argument("--threads", type=int, default=os.cpu_count(), help="torch threads (leave a core when another job runs)")
     args = parser.parse_args()
@@ -170,7 +171,7 @@ def main():
         if "masks" in args.stages:
             mask_stage(worlds, timings)
         if "build" in args.stages:
-            build_stage(worlds, args.rebuild)
+            build_stage(worlds, args.rebuild, args.params)
     finally:
         for lock in reversed(locks):
             lock.__exit__(None, None, None)
