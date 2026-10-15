@@ -174,6 +174,13 @@ def score_view(job):
                 view_obj = ps.View.__new__(ps.View)
                 view_obj.__dict__.update(view_pred.__dict__)
                 view_obj.depth = (depth_true / scale).astype(np.float32)
+            elif "affine" in oracle:  # the predicted depth with the view's affine error (scale and shift) removed
+                ok = np.isfinite(view_pred.depth) & np.isfinite(depth_true)
+                p = view_pred.depth[ok].astype(np.float64)
+                (a_, b_), *_ = np.linalg.lstsq(np.stack([p, np.ones_like(p)], 1), depth_true[ok] / scale, rcond=None)
+                view_obj = ps.View.__new__(ps.View)
+                view_obj.__dict__.update(view_pred.__dict__)
+                view_obj.depth = (a_ * view_pred.depth + b_).astype(np.float32)
             elif "objscale" in oracle:  # the predicted depth with this object's own scale error removed
                 ok = gt_mask & np.isfinite(view_pred.depth) & np.isfinite(depth_true)
                 if ok.sum() > 20:
@@ -298,7 +305,7 @@ def main():
     s.add_argument("--args", default="", help="primitive_scene.py options of the variant (quoted)")
     s.add_argument("--limit", type=int)
     s.add_argument("--workers", type=int, default=os.cpu_count())
-    s.add_argument("--oracle", default="", help="pred mode diagnostics, comma list: mask (true masks), depth (true depth), objscale (per-object depth scale removed)")
+    s.add_argument("--oracle", default="", help="pred mode diagnostics, comma list: mask (true masks), depth (true depth), objscale (per-object depth scale removed), affine (per-view depth scale and shift removed)")
     g = sub.add_parser("ceiling", help="surface methods on the true shapes (perfect occupancy)")
     g.add_argument("--split", default="train")
     g.add_argument("--models", type=int, default=40)
