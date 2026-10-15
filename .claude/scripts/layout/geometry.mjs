@@ -189,7 +189,11 @@ export function extractPlanes(points, normals, candidates, options = {}) {
     // A surface is a coherent image region: drop scattered fragments that only happen to lie near the plane.
     const regions = gridWidth ? connectedRegions(inliers, gridWidth, regionReach) : [inliers];
     const minRegion = Math.max(50, Math.round(minRegionFraction * minPoints));
-    const coherent = regions.filter((region) => region.length >= minRegion).flat();
+    // The dominant region sets the plane; another region joins only when it lies on that plane. Disjoint pieces at
+    // different heights (a sill and a table top) otherwise tilt a joint fit into a slope that no surface has.
+    const base = fitPlane(points, regions[0]);
+    const onBase = (region) => region.filter((i) => isInlier(i, base.normal, base.d)).length >= 0.5 * region.length;
+    const coherent = regions.filter((region, k) => region.length >= minRegion && (k === 0 || onBase(region))).flat();
     const consumed = new Uint8Array(distance.length);
     if (coherent.length < minPoints || regions[0].length < dominantRegionFraction * minPoints) {
       for (const i of inliers) consumed[i] = 1;

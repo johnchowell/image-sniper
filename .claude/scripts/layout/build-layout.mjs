@@ -41,6 +41,7 @@ export const DEFAULT_PARAMS = {
   wall_behind_tolerance_m: 0.1,
   wall_behind_max_fraction: 0.01,
   wall_tall_behind_max_fraction: 0.08,
+  exterior_min_fraction: 0.5,
   support_snap_min_m: 0.08,
   support_snap_fraction: 0.1,
   hidden_base: 1,
@@ -497,31 +498,92 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
   for (let cell = 0; cell < cellCount; cell += 1) {
     if (valid[cell] && hasNormal[cell] && !occupied[cell] && !overexposed[cell]) candidates.push(cell);
   }
-  const rawPlanes = extractPlanes(points, normals, candidates, planeOptions).map((plane) => (plane.d < 0 ? { ...plane, normal: scale(plane.normal, -1), d: -plane.d } : plane));
+  let rawPlanes = extractPlanes(points, normals, candidates, planeOptions).map((plane) => (plane.d < 0 ? { ...plane, normal: scale(plane.normal, -1), d: -plane.d } : plane));
 
   // Gravity: the best-supported near-horizontal plane defines up; otherwise assume a level camera.
   const cameraUp = [0, -1, 0];
-  const horizontalCandidates = rawPlanes
-    .filter((plane) => Math.abs(dot(plane.normal, cameraUp)) > Math.cos((UP_SEARCH_DEG * Math.PI) / 180))
-    .sort((a, b) => b.inliers.length - a.inliers.length);
-  let up = cameraUp;
-  let gravitySource = "assumed_level_camera";
-  if (horizontalCandidates.length) {
+  const estimateUp = (planes) => {
+    const horizontalCandidates = planes
+      .filter((plane) => Math.abs(dot(plane.normal, cameraUp)) > Math.cos((UP_SEARCH_DEG * Math.PI) / 180))
+      .sort((a, b) => b.inliers.length - a.inliers.length);
+    if (!horizontalCandidates.length) return { up: cameraUp, source: "assumed_level_camera" };
     const reference = horizontalCandidates[0];
-    up = dot(reference.normal, cameraUp) > 0 ? reference.normal : scale(reference.normal, -1);
-    const aligned = rawPlanes.filter((plane) => Math.abs(dot(plane.normal, up)) > Math.cos((5 * Math.PI) / 180));
+    let estimate = dot(reference.normal, cameraUp) > 0 ? reference.normal : scale(reference.normal, -1);
+    const aligned = planes.filter((plane) => Math.abs(dot(plane.normal, estimate)) > Math.cos((5 * Math.PI) / 180));
     if (aligned.length > 1) {
       let sum = [0, 0, 0];
-      for (const plane of aligned) sum = add(sum, scale(dot(plane.normal, up) > 0 ? plane.normal : scale(plane.normal, -1), plane.inliers.length));
-      up = normalize(sum);
+      for (const plane of aligned) sum = add(sum, scale(dot(plane.normal, estimate) > 0 ? plane.normal : scale(plane.normal, -1), plane.inliers.length));
+      estimate = normalize(sum);
     }
-    gravitySource = "horizontal_planes";
-  } else {
-    warnings.push("No horizontal plane found; gravity assumes a level camera.");
-  }
+    return { up: estimate, source: "horizontal_planes" };
+  };
 
   const sinHorizontal = Math.sin((HORIZONTAL_DEG * Math.PI) / 180);
   const cosHorizontal = Math.cos((HORIZONTAL_DEG * Math.PI) / 180);
+
+  // Room boundary (camera frame, camera at the origin). A wall has no observed point behind it outside its own image
+  // region: points seen through openings (windows, doors) lie inside that region. A furniture face or a plane bent
+  // by depth error has the room behind it. Tall planes keep a looser limit, for depth bleed at their edges.
+  const scenePoints = [];
+  for (let cell = 0; cell < cellCount; cell += 1) if (valid[cell]) scenePoints.push([cellPoint(cell), Math.floor(cell / gw) / gh, (cell % gw) / gw]);
+  const imageExtentOf = (plane) => {
+    const rows = sortedValues(Array.from(plane.inliers, (cell) => Math.floor(cell / gw) / gh));
+    const cols = sortedValues(Array.from(plane.inliers, (cell) => (cell % gw) / gw));
+    return { top: round(percentile(rows, 0.01), 3), bottom: round(percentile(rows, 0.99), 3), left: round(percentile(cols, 0.01), 3), right: round(percentile(cols, 0.99), 3) };
+  };
+  const centroidOf = (plane) => scale(Array.from(plane.inliers, (cell) => cellPoint(cell)).reduce((sum, p) => add(sum, p), [0, 0, 0]), 1 / plane.inliers.length);
+  // Points seen through a wall's openings (behind it, inside its image region) are exterior: they lie behind every
+  // other wall too, so they do not count against them. The wall set and the exterior points settle in a few passes.
+  const testWalls = (planes, upVector) => {
+    let exteriorPoint = new Uint8Array(scenePoints.length);
+    for (let pass = 0; pass < 3; pass += 1) {
+      testWallsOnce(planes, upVector, exteriorPoint);
+      const next = new Uint8Array(scenePoints.length);
+      for (const wall of planes.filter((plane) => plane.wall)) {
+        const { normal, offset, side, extent } = wall.wallPlane;
+        scenePoints.forEach(([p, row, col], k) => {
+          if (row >= extent.top && row <= extent.bottom && col >= extent.left && col <= extent.right &&
+            side * (dot(normal, p) + offset) < -params.wall_behind_tolerance_m) next[k] = 1;
+        });
+      }
+      if (next.every((value, k) => value === exteriorPoint[k])) break;
+      exteriorPoint = next;
+    }
+  };
+  const testWallsOnce = (planes, upVector, exteriorPoint) => {
+    for (const plane of planes) {
+      plane.wall = false;
+      plane.behindFraction = undefined;
+      if (Math.abs(dot(plane.normal, upVector)) >= sinHorizontal) continue;
+      const normal = normalize(sub(plane.normal, scale(upVector, dot(plane.normal, upVector))));
+      const offset = -dot(normal, centroidOf(plane));
+      const heights = sortedValues(Array.from(plane.inliers, (cell) => dot(cellPoint(cell), upVector)));
+      const height = percentile(heights, 0.99) - percentile(heights, 0.01);
+      const extent = imageExtentOf(plane);
+      const side = Math.sign(offset) || 1;
+      let behind = 0;
+      scenePoints.forEach(([p, row, col], k) => {
+        if (exteriorPoint[k] || (row >= extent.top && row <= extent.bottom && col >= extent.left && col <= extent.right)) return;
+        if (side * (dot(normal, p) + offset) < -params.wall_behind_tolerance_m) behind += 1;
+      });
+      plane.behindFraction = behind / Math.max(scenePoints.length, 1);
+      plane.wall = plane.behindFraction <= (height >= params.wall_min_height_m ? params.wall_tall_behind_max_fraction : params.wall_behind_max_fraction);
+      plane.wallPlane = { normal, offset, side, extent };
+    }
+  };
+  let { up, source: gravitySource } = estimateUp(rawPlanes);
+  testWalls(rawPlanes, up);
+  // A plane whose points lie behind a wall is seen through an opening: outdoor ground, trees, the next room. It is
+  // not room structure, and as the lowest or highest plane it would set a false floor or ceiling.
+  const exterior = rawPlanes.filter((plane) => !plane.wall && rawPlanes.some((wall) => wall.wall && wall !== plane &&
+    Array.from(plane.inliers).filter((cell) => wall.wallPlane.side * (dot(wall.wallPlane.normal, cellPoint(cell)) + wall.wallPlane.offset) < -params.wall_behind_tolerance_m).length >= params.exterior_min_fraction * plane.inliers.length));
+  if (exterior.length) {
+    warnings.push(`Dropped ${exterior.length} plane(s) seen through an opening (behind a wall).`);
+    rawPlanes = rawPlanes.filter((plane) => !exterior.includes(plane));
+    ({ up, source: gravitySource } = estimateUp(rawPlanes));
+    testWalls(rawPlanes, up);
+  }
+  if (gravitySource === "assumed_level_camera") warnings.push("No horizontal plane found; gravity assumes a level camera.");
   const heightOf = (plane) => -plane.d * Math.sign(dot(plane.normal, up));
   const horizontalPlanes = rawPlanes.filter((plane) => Math.abs(dot(plane.normal, up)) > cosHorizontal);
   const below = horizontalPlanes.filter((plane) => heightOf(plane) < -0.2);
@@ -567,10 +629,6 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     .filter((plane) => plane.inliers.length >= 0.25 * maxAbove)
     .sort((a, b) => heightOf(b) - heightOf(a))[0];
 
-  // Every observed point in the layout frame and its image position; a wall test counts the points behind a plane.
-  const scenePoints = [];
-  for (let cell = 0; cell < cellCount; cell += 1) if (valid[cell]) scenePoints.push([toLayout(cellPoint(cell)), Math.floor(cell / gw) / gh, (cell % gw) / gw]);
-
   const counters = {};
   const structure = [];
   const labels = new Uint16Array(cellCount);
@@ -613,25 +671,10 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     const residuals = layoutPoints.map((p) => (dot(normal, p) + offset) ** 2);
     const rms = Math.sqrt(residuals.reduce((sum, value) => sum + value, 0) / residuals.length);
     // Where the visible part lies in the image (fractions of the frame): a plane cut by the frame continues past it.
-    const rows = sortedValues(Array.from(plane.inliers, (cell) => Math.floor(cell / gw) / gh));
-    const cols = sortedValues(Array.from(plane.inliers, (cell) => (cell % gw) / gw));
-    const imageExtent = { top: round(percentile(rows, 0.01), 3), bottom: round(percentile(rows, 0.99), 3), left: round(percentile(cols, 0.01), 3), right: round(percentile(cols, 0.99), 3) };
+    const imageExtent = imageExtentOf(plane);
 
-    // A wall bounds the room: no observed surface lies behind it. Points seen through openings (windows, doors) lie
-    // inside the plane's own image region, so only points outside it count. A furniture face or a plane bent by
-    // depth error has the room behind it. Tall planes keep a looser limit, for depth bleed at their edges.
-    let behindFraction;
-    if (kind === "vertical_surface") {
-      const side = Math.sign(dot(normal, cameraPosition) + offset) || 1;
-      let behind = 0;
-      for (const [p, row, col] of scenePoints) {
-        if (row >= imageExtent.top && row <= imageExtent.bottom && col >= imageExtent.left && col <= imageExtent.right) continue;
-        if (side * (dot(normal, p) + offset) < -params.wall_behind_tolerance_m) behind += 1;
-      }
-      behindFraction = behind / Math.max(scenePoints.length, 1);
-      const limit = size[1] >= params.wall_min_height_m ? params.wall_tall_behind_max_fraction : params.wall_behind_max_fraction;
-      if (behindFraction <= limit) kind = "wall";
-    }
+    const behindFraction = kind === "vertical_surface" ? plane.behindFraction : undefined;
+    if (kind === "vertical_surface" && plane.wall) kind = "wall";
     counters[kind] = (counters[kind] || 0) + 1;
     const id = kind === "floor" || kind === "ceiling" ? kind : `${kind.replace("_surface", "")}-${counters[kind]}`;
     const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) =>
