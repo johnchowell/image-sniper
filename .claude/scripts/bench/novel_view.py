@@ -5,8 +5,9 @@ novel-<name>.png beside each view's gt.json).
   cameras  write worlds/<world>/output/scene/.novel-cameras.json: each true novel camera placed through the
            layout's source camera (relative pose from novel.json, its translation divided by the view's depth
            scale, so a wrong metric scale does not move the camera into or out of the room)
-  score    PSNR of <scene stem>-novel-<name>.png renders (render_check.py --cameras) against the truth, per
-           view and mean; the truth is box-downsampled to the render size
+  score    PSNR and LPIPS (AlexNet) of <scene stem>-novel-<name>.png renders (render_check.py --cameras)
+           against the truth, per view and mean; the truth is box-downsampled to the render size. PSNR favors a
+           flat mean color over a texture with the wrong phase; LPIPS does not
 """
 import argparse
 import glob
@@ -69,6 +70,10 @@ def psnr(a, b):
 
 
 def score(args):
+    import lpips
+    import torch
+    net = lpips.LPIPS(net="alex", verbose=False)
+    to_tensor = lambda a: torch.from_numpy(a.transpose(2, 0, 1)[None]).float() * 2 - 1
     rows = []
     for spec in args.scenes:
         world, stem = spec.split("=", 1) if "=" in spec else (spec, None)
@@ -78,13 +83,17 @@ def score(args):
             stem = max(renders, key=lambda p: int(os.path.basename(p).split("-")[0])).rsplit("-novel-", 1)[0]
         vdir = view_dir(world)
         novel = json.load(open(os.path.join(vdir, "novel.json")))
-        per = {}
+        per, perceptual = {}, {}
         for view in novel["views"]:
             render = np.asarray(Image.open(f"{stem}-novel-{view['name']}.png").convert("RGB")).astype(np.float64) / 255
             truth = Image.open(os.path.join(vdir, view["image"])).convert("RGB").resize(render.shape[1::-1], Image.BOX)
-            per[view["name"]] = round(psnr(render, np.asarray(truth).astype(np.float64) / 255), 3)
+            truth = np.asarray(truth).astype(np.float64) / 255
+            per[view["name"]] = round(psnr(render, truth), 3)
+            with torch.no_grad():
+                perceptual[view["name"]] = round(float(net(to_tensor(render), to_tensor(truth))), 4)
         rows.append({"world": world, "scene": os.path.relpath(stem, evaluate.REPO), "psnr_db": per,
-                     "psnr_db_mean": round(float(np.mean(list(per.values()))), 3)})
+                     "psnr_db_mean": round(float(np.mean(list(per.values()))), 3), "lpips": perceptual,
+                     "lpips_mean": round(float(np.mean(list(perceptual.values()))), 4)})
         print(json.dumps(rows[-1]))
     if args.out:
         json.dump(rows, open(args.out, "w"), indent=2)

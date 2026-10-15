@@ -10,5 +10,7 @@ if [ -x .venv-render/bin/python ] && [ "$(cat .venv-render/.setup-stamp 2>/dev/n
 fi
 [ -x .venv-render/bin/python ] || python3.11 -m venv .venv-render
 .venv-render/bin/pip install "bpy==4.5.14" "numpy==1.26.4" "requests==2.34.2"
+# Perceptual novel-view metric (novel_view.py); the local runtime .venv comes from .claude/scripts/local/setup.sh.
+[ -x .venv/bin/pip ] && .venv/bin/pip install "lpips==0.1.4"
 echo "$stamp" > .venv-render/.setup-stamp
 echo "Render runtime ready: .venv-render/bin/python"
