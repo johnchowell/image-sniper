@@ -26,6 +26,8 @@ CANDIDATES = {
     "relative-3": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 3},
     "relative-2.5": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 2.5},
     "relative-2": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 2},
+    "reflector-0.1-0.25": {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 2.5,
+                           "reflector_albedo_step": 0.1, "reflector_dominance": 0.25},
 }
 
 
@@ -38,7 +40,9 @@ def apply(split, params, python):
                         "--index", "0", "--postprocess-only", "--dominance", str(params["dominance"]),
                         "--min-luminance", str(params["min_luminance"]), "--source-clipped", str(params["source_clipped"]),
                         "--clipped-candidates", str(params["clipped_candidates"]),
-                        "--source-relative-luminance", str(params["source_relative_luminance"])], cwd=REPO, check=True, capture_output=True)
+                        "--source-relative-luminance", str(params["source_relative_luminance"]),
+                        "--reflector-albedo-step", str(params.get("reflector_albedo_step", 0)), "--reflector-dominance", str(params.get("reflector_dominance", 0))],
+                       cwd=REPO, check=True, capture_output=True)
         subprocess.run(["node", ".claude/scripts/layout/build-layout.mjs", "--world", world, "--index", "0"], cwd=REPO, check=True, capture_output=True)
 
 

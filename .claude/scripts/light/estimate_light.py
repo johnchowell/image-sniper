@@ -63,12 +63,15 @@ def kelvin_from_rgb(rgb):
 
 
 def find_emitters(photo, photo_luma, unclipped, residual_dominance, dominance, min_luminance, source_clipped, clipped_candidates,
-                  source_relative_luminance=0):
+                  source_relative_luminance=0, albedo=None, reflector_albedo_step=0, reflector_dominance=0):
     """Bright regions of light that is not diffusely reflected: candidates are bright pixels the model assigns to the
     residual, plus (clipped_candidates) overexposed pixels. Light seen directly (a window, a lamp) is either; the model
     is inconsistent about which. Regions mostly overexposed are light sources, and (source_relative_luminance > 0)
     regions whose mean luminance is that many times the image median: a phone's HDR tone curve keeps windows below
-    clipping. The rest are reflections; the layout stage reclassifies light sources on confirmed objects as highlights."""
+    clipping. The rest are reflections; the layout stage reclassifies light sources on confirmed objects as highlights.
+    albedo (sRGB, reflector_albedo_step > 0): a bright region is a lit surface, not a light source, when the albedo
+    around it continues into it (log step of the median albedo under reflector_albedo_step) and its unclipped light is
+    diffuse (mean residual dominance under reflector_dominance): a sunlit patch is as bright and as clipped as a window."""
     import cv2
 
     candidates = (residual_dominance > dominance) & (photo_luma >= min_luminance)
@@ -90,6 +93,18 @@ def find_emitters(photo, photo_luma, unclipped, residual_dominance, dominance, m
         clipped = float(1 - unclipped[region].mean())
         relative = float(photo_luma[region].mean() / np.median(photo_luma))
         source = clipped >= source_clipped or (source_relative_luminance > 0 and relative >= source_relative_luminance)
+        extra = {}
+        if source and albedo is not None and reflector_albedo_step > 0:
+            seen = region & unclipped
+            ring = (cv2.dilate(region.astype(np.uint8), np.ones((21, 21), np.uint8)) > 0) & (cv2.dilate(region.astype(np.uint8), np.ones((7, 7), np.uint8)) == 0)
+            ring &= unclipped & (candidates == 0)
+            if seen.sum() >= 30 and ring.sum() >= 30:
+                step = abs(np.log(np.median(albedo[seen].mean(-1)) + 1e-3) - np.log(np.median(albedo[ring].mean(-1)) + 1e-3))
+                diffuse = float(residual_dominance[seen].mean())
+                extra = {"albedo_step": round(float(step), 3), "unclipped_dominance": round(diffuse, 3)}
+                if step < reflector_albedo_step and diffuse < reflector_dominance:
+                    source = False
+                    extra["lit_surface"] = True
         emitters.append({
             "id": emitter_id,
             "kind": "light_source" if source else "reflection",
@@ -99,11 +114,13 @@ def find_emitters(photo, photo_luma, unclipped, residual_dominance, dominance, m
             "mean_linear_rgb": [round(float(c), 4) for c in photo[region].mean(0)],
             "relative_luminance": round(relative, 3),
             "clipped_fraction": round(clipped, 3),
+            **extra,
         })
     return emitters, emitter_map
 
 
-DEFAULT_RULE = {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 2.5}
+DEFAULT_RULE = {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 2.5,
+                "reflector_albedo_step": 0, "reflector_dominance": 0}
 
 
 def load_model():
@@ -155,7 +172,8 @@ def write_estimate(image_path, image, prediction, out_dir, index, settings, timi
     residual_dominance = residual_luma / np.maximum(diffuse_luma + residual_luma, 1e-9)
     emitters, emitter_map = find_emitters(photo, photo_luma, unclipped, residual_dominance, settings["dominance"],
                                           settings["min_luminance"], settings["source_clipped"], settings["clipped_candidates"],
-                                          settings.get("source_relative_luminance", 0))
+                                          settings.get("source_relative_luminance", 0), linear_to_srgb(albedo),
+                                          settings.get("reflector_albedo_step", 0), settings.get("reflector_dominance", 0))
 
     outside = unclipped & (emitter_map == 0)
     files = {
@@ -228,6 +246,9 @@ def main():
     parser.add_argument("--clipped-candidates", type=int, default=DEFAULT_RULE["clipped_candidates"], help="1: overexposed pixels are emitter candidates too")
     parser.add_argument("--source-relative-luminance", type=float, default=DEFAULT_RULE["source_relative_luminance"],
                         help="> 0: a region this many times brighter than the image median is a light source even unclipped")
+    parser.add_argument("--reflector-albedo-step", type=float, default=DEFAULT_RULE["reflector_albedo_step"],
+                        help="> 0: a bright region whose albedo continues the surface around it (log step below this) and whose light is diffuse is a lit surface")
+    parser.add_argument("--reflector-dominance", type=float, default=DEFAULT_RULE["reflector_dominance"], help="largest mean residual dominance of a lit surface")
     args = parser.parse_args()
 
     image = Image.open(args.image).convert("RGB")
@@ -246,7 +267,8 @@ def main():
     started = time.time()
     settings = {"steps": args.steps, "ensemble": args.ensemble, "processing_resolution": args.resolution, "seed": args.seed,
                 "dominance": args.dominance, "min_luminance": args.min_luminance, "source_clipped": args.source_clipped,
-                "clipped_candidates": args.clipped_candidates, "source_relative_luminance": args.source_relative_luminance}
+                "clipped_candidates": args.clipped_candidates, "source_relative_luminance": args.source_relative_luminance,
+                "reflector_albedo_step": args.reflector_albedo_step, "reflector_dominance": args.reflector_dominance}
     summary = write_estimate(args.image, image, prediction, args.out_dir, args.index, settings, timings)
     timings["postprocess"] = round(time.time() - started, 1)
     with open(f"{args.out_dir.rstrip('/')}/{args.index}-light.json", "w") as f:
