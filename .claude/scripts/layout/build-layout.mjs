@@ -69,7 +69,8 @@ export const DEFAULT_PARAMS = {
   scale_ceiling_height_m: 2.6,
   scale_ceiling_sigma: 0.08,
   scale_use_objects: 1,
-  scale_outlier_z: 3
+  scale_outlier_z: 3,
+  floor_prior_select: 0
 };
 
 // Typical heights of objects that carry scale (median m, log-normal sigma); first match wins.
@@ -611,9 +612,32 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
   const horizontalPlanes = rawPlanes.filter((plane) => Math.abs(dot(plane.normal, up)) > cosHorizontal);
   const below = horizontalPlanes.filter((plane) => heightOf(plane) < -0.2);
   const maxBelow = Math.max(0, ...below.map((plane) => plane.inliers.length));
-  const floorPlane = below
+  const aboveHeights = horizontalPlanes.filter((plane) => heightOf(plane) > 0.3);
+  const maxAbove = Math.max(0, ...aboveHeights.map((plane) => plane.inliers.length));
+  const ceilingPlane = aboveHeights
+    .filter((plane) => plane.inliers.length >= 0.25 * maxAbove)
+    .sort((a, b) => heightOf(b) - heightOf(a))[0];
+  let floorPlane = below
     .filter((plane) => plane.inliers.length >= 0.25 * maxBelow)
     .sort((a, b) => heightOf(a) - heightOf(b))[0];
+  // A large plane above a small lower one can be a bed or table top whose mask missed it. The lower plane is the
+  // floor when the camera and ceiling height priors fit it better by more than scale_outlier_z sigmas (chi-square of
+  // the priors and the depth model's scale at their best common scale).
+  if (params.floor_prior_select && floorPlane) {
+    const misfit = (floor) => {
+      const items = [{ log: -Math.log(depthScale), sigma: params.scale_depth_model_sigma },
+        { log: Math.log(params.scale_camera_height_m / -heightOf(floor)), sigma: params.scale_camera_sigma }];
+      if (ceilingPlane) items.push({ log: Math.log(params.scale_ceiling_height_m / (heightOf(ceilingPlane) - heightOf(floor))), sigma: params.scale_ceiling_sigma });
+      const weight = items.reduce((sum, e) => sum + 1 / e.sigma ** 2, 0);
+      const mean = items.reduce((sum, e) => sum + e.log / e.sigma ** 2, 0) / weight;
+      return items.reduce((sum, e) => sum + ((e.log - mean) / e.sigma) ** 2, 0);
+    };
+    const lower = below.filter((plane) => heightOf(plane) < heightOf(floorPlane)).sort((a, b) => misfit(a) - misfit(b))[0];
+    if (lower && misfit(floorPlane) - misfit(lower) > params.scale_outlier_z ** 2) {
+      warnings.push(`Floor moved ${round(heightOf(floorPlane) - heightOf(lower), 2)} m down to a smaller plane: the camera and ceiling height priors fit it (misfit ${round(misfit(lower), 1)} vs ${round(misfit(floorPlane), 1)}).`);
+      floorPlane = lower;
+    }
+  }
   let cameraHeight;
   let floorSource;
   if (floorPlane) {
@@ -646,11 +670,6 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
   };
 
   // Structure primitives.
-  const aboveHeights = horizontalPlanes.filter((plane) => heightOf(plane) > 0.3);
-  const maxAbove = Math.max(0, ...aboveHeights.map((plane) => plane.inliers.length));
-  const ceilingPlane = aboveHeights
-    .filter((plane) => plane.inliers.length >= 0.25 * maxAbove)
-    .sort((a, b) => heightOf(b) - heightOf(a))[0];
 
   const counters = {};
   const structure = [];
