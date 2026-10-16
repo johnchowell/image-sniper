@@ -132,6 +132,10 @@
       "center_err_aligned_m_median_whole": 0.1244,
       "center_err_m_median": 0.3021,
       "height_rel_err_aligned_median": 0.0716,
+      "box_iou_aligned_mean": 0.3225,
+      "box_iou_aligned_mean_truncated": 0.3106,
+      "depth_rel_err_aligned_median": 0.2135,
+      "depth_rel_err_aligned_median_truncated": 0.2524,
       "height_rel_err_aligned_median_whole": 0.0497,
       "truncation_flag_accuracy": 0.9595,
       "support_accuracy": 0.9505
