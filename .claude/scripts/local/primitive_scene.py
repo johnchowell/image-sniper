@@ -139,6 +139,36 @@ def quilt(texture, known, patch, seed=0):
     return out
 
 
+def detail_fill(texture, known, fallback, long_side, texel_m, margin_m, patch_m):
+    """Structure and texture apart (Bertalmio et al. 2003): the hole's low frequencies come from fill() (local
+    inpainting, the surface's median color far away), its high frequencies are quilted from the known texels'
+    detail (texture minus its masked Gaussian low-pass at half the patch size). A wrong minority of known texels
+    (an unmasked bed sheet on a floor) then adds texture but does not move the hole's mean color."""
+    base = fill(np.where(known[..., None], texture, 0).astype(np.float32), known, fallback)
+    h, w = known.shape
+    scale = min(1.0, long_side / max(h, w))
+    patch = int(round(patch_m * scale / texel_m))
+    r = int(round(margin_m / texel_m))
+    ctx = known
+    if r > 0:
+        hole = cv2.dilate((~known).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1)))
+        ctx = known & (hole == 0)
+    size = (max(8, int(round(w * scale))), max(8, int(round(h * scale))))
+    small = cv2.resize(np.where(ctx[..., None], texture, 0).astype(np.float32), size, interpolation=cv2.INTER_AREA)
+    small_known = cv2.resize(ctx.astype(np.float32), size, interpolation=cv2.INTER_AREA) > 0.99
+    if small_known.mean() < 0.02:
+        return base
+    k = small_known.astype(np.float32)
+    sigma = max(1.0, patch / 2)
+    low = cv2.GaussianBlur(small * k[..., None], (0, 0), sigma) / np.maximum(cv2.GaussianBlur(k, (0, 0), sigma), 1e-6)[..., None]
+    detail = np.where(small_known[..., None], small - low, 0).astype(np.float32)
+    q = quilt(detail, small_known, patch)
+    if q is None:
+        return base
+    q = cv2.resize(q, (w, h), interpolation=cv2.INTER_CUBIC)
+    return np.where(known[..., None], texture, np.clip(base + q, 0, 1)).astype(np.float32)
+
+
 def synthesize(texture, known, fallback, long_side, texel_m, margin_m, method="lama", patch_m=0.25):
     """Fills unknown texels of a rectified room texture with LaMa (its Fourier convolutions continue periodic
     patterns: planks, bricks, tiles), at most long_side texels on the long side; known texels stay as they are.
@@ -147,6 +177,8 @@ def synthesize(texture, known, fallback, long_side, texel_m, margin_m, method="l
     Without enough known texels to continue, fill() (inpainting near, the fallback far)."""
     if known.all() or known.mean() < 0.02:
         return fill(texture, known, fallback)
+    if method == "detail":
+        return detail_fill(texture, known, fallback, long_side, texel_m, margin_m, patch_m)
     from simple_lama_inpainting import SimpleLama
     if not _LAMA:
         _LAMA.append(SimpleLama())
@@ -531,8 +563,8 @@ def build_parser():
     parser.add_argument("--backdrop-min-m", type=float, default=10.0, help="nearest backdrop distance (monocular depth often flattens the outside onto the glass)")
     parser.add_argument("--backdrop-spread", type=float, default=1.0, help="backdrop half-extent past the opening per meter of distance (1: 45 degrees)")
     parser.add_argument("--backdrop-texture", type=int, default=2048, help="largest backdrop texture side")
-    parser.add_argument("--texture-fill", choices=["telea", "lama", "quilt"], default="telea",
-                        help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far), lama (texture continued by LaMa) or quilt (seen texture continued by exemplar blocks)")
+    parser.add_argument("--texture-fill", choices=["telea", "lama", "quilt", "detail"], default="telea",
+                        help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far), lama (texture continued by LaMa) quilt (seen texture continued by exemplar blocks) or detail (telea low frequencies plus quilted high-pass detail)")
     parser.add_argument("--quilt-patch-m", type=float, default=0.25, help="quilt: block size (m)")
     parser.add_argument("--lama-margin-m", type=float, default=0.05, help="lama: band of seen texels at a hole that is filled too")
     parser.add_argument("--lama-size", type=int, default=1024, help="lama: long side (texels) of the texture LaMa fills")
