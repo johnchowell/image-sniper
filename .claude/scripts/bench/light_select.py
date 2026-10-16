@@ -32,6 +32,10 @@ CANDIDATES = {
 
 
 def apply(split, params, python):
+    newer = [p for v in evaluate.views(split) for p in glob.glob(os.path.join(REPO, "worlds", evaluate.world_name(v), "output", "*", "[1-9]*-l*.json"))
+             if os.path.basename(os.path.dirname(p)) in ("light", "layout")]
+    if newer:
+        raise SystemExit(f"Later stages read the highest light and layout index, not the index 0 this study builds. Remove: {newer}")
     for view_dir in evaluate.views(split):
         world = evaluate.world_name(view_dir)
         light = os.path.join("worlds", world, "output", "light")
@@ -50,11 +54,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", default="train")
     parser.add_argument("--candidates", nargs="*", default=list(CANDIDATES))
+    parser.add_argument("--save-scores", action="store_true", help="also write light-<name>-<split>.json per candidate (for evaluate.py compare)")
     args = parser.parse_args()
     rows = {}
     for name in args.candidates:
         apply(args.split, CANDIDATES[name], sys.executable)
-        summary = evaluate.summarize([evaluate.score_view(v) for v in evaluate.views(args.split)])
+        results = [evaluate.score_view(v, layout_index=0) for v in evaluate.views(args.split)]  # apply() rebuilt index 0
+        summary = evaluate.summarize(results)
+        if args.save_scores:
+            json.dump({"name": f"light-{name}", "split": args.split, "names": "oracle", "summary": summary, "views": results},
+                      open(os.path.join(REPO, "benchmark", "results", f"light-{name}-{args.split}.json"), "w"), indent=2, default=float)
         rows[name] = {"params": CANDIDATES[name], **summary["light"]}
         print(name, json.dumps(rows[name]), flush=True)
     path = os.path.join(REPO, "benchmark", "results", f"light-select-{args.split}.json")
