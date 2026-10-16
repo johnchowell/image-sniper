@@ -125,13 +125,17 @@ def box_iou(a, b, n=64):
         far = d[np.argmax(np.linalg.norm(d, axis=1))]
         # The edges from corner 0 are the 3 corner offsets that sum to the far corner.
         edges = min(itertools.combinations(d, 3), key=lambda e: np.linalg.norm(sum(e) - far))
-        return c[0], np.linalg.inv(np.stack(edges, 1))
+        m = np.stack(edges, 1)
+        return (c[0], np.linalg.inv(m)) if abs(np.linalg.det(m)) > 1e-12 else (None, None)  # a flat box has no volume
     both = np.concatenate([a, b])
     lo, hi = both.min(0), both.max(0)
     g = np.stack(np.meshgrid(*[l + (np.arange(n) + 0.5) * (h - l) / n for l, h in zip(lo, hi)], indexing="ij"), -1).reshape(-1, 3)
     inside = []
     for c in (a, b):
         o, inv = frame(c)
+        if o is None:
+            inside.append(np.zeros(len(g), bool))
+            continue
         u = (g - o) @ inv.T
         inside.append(((u >= 0) & (u <= 1)).all(1))
     union = (inside[0] | inside[1]).sum()
