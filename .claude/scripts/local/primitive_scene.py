@@ -274,15 +274,30 @@ def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, s
     # Glass: texels inside a light source's rectangle on this surface. The depth there lies behind the surface (the
     # view through a window), so they are never "seen" as surface; they glow with the photo's color.
     glass = np.zeros(seen.shape, bool)
+    rects = []
     for e in maps.emitters if emissive else []:
         en = np.array(e["normal"])
         if abs(en @ normal) < 0.9:
             continue
         d = P - np.array(e["center"])
-        glass |= (np.abs(d @ np.array(e["u_axis"])) <= e["size"][0] / 2) & (np.abs(d @ np.array(e["v_axis"])) <= e["size"][1] / 2) & (np.abs(d @ en) < 0.3)
+        rect = (np.abs(d @ np.array(e["u_axis"])) <= e["size"][0] / 2) & (np.abs(d @ np.array(e["v_axis"])) <= e["size"][1] / 2) & (np.abs(d @ en) < 0.3)
+        glass |= rect
+        rects.append((e, rect))
     glass &= inside
+    hole = np.zeros(seen.shape, bool)
+    openings = []
     if glass.any():
         open_glass = glass & ~maps.object_px[np.clip(np.round(vv).astype(int), 0, view.H - 1), np.clip(np.round(uu).astype(int), 0, view.W - 1)]
+        # An opening: most of the open glass shows depth well behind the wall (outdoors, the next room). It becomes
+        # a hole in the wall (frames and mullions seen at the wall's depth stay) with a backdrop behind it, so the
+        # view through it has parallax. Glass whose depth lies on the wall (a frosted panel, or outdoors the depth
+        # model flattened onto the glass) stays an emissive surface.
+        for e, rect in rects if args.window_backdrop else []:
+            look = rect & open_glass & np.isfinite(height)
+            behind = look & (height < -args.opening_depth_m)
+            if look.sum() >= 50 and behind.sum() > 0.5 * look.sum():
+                hole |= rect & ~seen
+                openings.append({"emitter": e["id"], "distance_m": round(float(max(np.median(-height[behind]), args.backdrop_min_m)), 3)})
         emit = np.where(open_glass[..., None], sample(maps.photo, uu, vv), emit).astype(np.float32)
         # Glass behind things in front of it (a chair, a cabinet) glows like the open glass: filled from the open
         # glass only (the wall around it has no emission), its median color far from it.
@@ -290,6 +305,7 @@ def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, s
         emit = (fill(np.where(open_glass[..., None], emit, 0), open_glass, far) * glass[..., None]).astype(np.float32)
     elif emissive and seen.any():
         emit = fill(emit, seen, np.zeros(3, np.float32)).astype(np.float32)
+    emit[hole] = 0
     lit = (emit.max(-1) > 0.02) | glass
     if fallback is None:
         wall = seen & ~lit  # the surface's own color: glass texels are not wall
@@ -322,13 +338,60 @@ def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, s
         mesh.faces = mesh.faces[:, ::-1]
     # A panel (a furniture face) exists only where the camera saw it.
     alpha = cv2.dilate(seen.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(np.float32) if cutout else None
+    if hole.any():
+        alpha = (~hole).astype(np.float32)
     material = trimesh.visual.material.PBRMaterial(
-        name=name, baseColorTexture=image_of(color, alpha), alphaMode="MASK" if cutout else None, alphaCutoff=0.5 if cutout else None,
+        name=name, baseColorTexture=image_of(color, alpha), alphaMode="MASK" if alpha is not None else None, alphaCutoff=0.5 if alpha is not None else None,
         metallicRoughnessTexture=image_of(np.dstack([np.zeros_like(rough), rough, np.zeros_like(rough)])),
         normalTexture=image_of(normal_map), metallicFactor=0.0, roughnessFactor=1.0, doubleSided=True,
         emissiveTexture=image_of(emit) if emit.max() > 0.02 else None, emissiveFactor=[1.0, 1.0, 1.0] if emit.max() > 0.02 else None)
     mesh.visual = trimesh.visual.TextureVisuals(uv=uv.reshape(-1, 2), material=material)
-    return mesh, {"texture_px": [tw, th], "seen_fraction": round(float(seen.mean()), 3)}
+    info = {"texture_px": [tw, th], "seen_fraction": round(float(seen.mean()), 3)}
+    if openings:
+        info["openings"] = openings
+    return mesh, info
+
+
+def backdrop(name, maps, view, e, distance, args):
+    """The view through an opening on a plane `distance` behind it, facing the room, spread past the opening so a
+    camera moved in the room still sees backdrop through it. Texels whose source ray passes through the opening
+    and shows depth behind the wall take the photo's color (emission only: outdoors is not lit by the room);
+    the rest is continued from them (texture_fill) or takes their median color."""
+    c, u_axis, v_axis = np.array(e["center"]), np.array(e["u_axis"]), np.array(e["v_axis"])
+    n = np.array(e["normal"])
+    if (view.position - c) @ n < 0:
+        n = -n
+    size_u, size_v = e["size"][0] + 2 * distance * args.backdrop_spread, e["size"][1] + 2 * distance * args.backdrop_spread
+    texel = max((np.linalg.norm(c - view.position) + distance) / view.fx, max(size_u, size_v) / args.backdrop_texture)  # a photo pixel at the backdrop
+    tw, th = max(4, int(round(size_u / texel))), max(4, int(round(size_v / texel)))
+    origin = c - n * distance - u_axis * size_u / 2 - v_axis * size_v / 2
+    a, b = np.meshgrid((np.arange(tw) + 0.5) / tw * size_u, (np.arange(th)[::-1] + 0.5) / th * size_v)
+    P = origin + a[..., None] * u_axis + b[..., None] * v_axis
+    u, v, z = view.project(P)
+    inside = (z > 0.05) & (u >= 0) & (u < view.W - 1) & (v >= 0) & (v < view.H - 1)
+    uu, vv = np.where(inside, u, 0), np.where(inside, v, 0)
+    ray = P - view.position
+    with np.errstate(divide="ignore", invalid="ignore"):
+        X = view.position + ray * (((c - view.position) @ n) / (ray @ n))[..., None]
+    through = (np.abs((X - c) @ u_axis) <= e["size"][0] / 2) & (np.abs((X - c) @ v_axis) <= e["size"][1] / 2)
+    obs, _ = view.observed(uu, vv)
+    ui, vi = np.clip(np.round(uu).astype(int), 0, view.W - 1), np.clip(np.round(vv).astype(int), 0, view.H - 1)
+    seen = inside & through & ~maps.object_px[vi, ui] & (((obs - c) @ n) < -args.opening_depth_m)
+    color = sample(maps.photo, uu, vv)
+    far = np.median(color[seen], 0) if seen.any() else np.array([0.7, 0.75, 0.8], np.float32)
+    if args.texture_fill == "lama":
+        color = synthesize(np.where(seen[..., None], color, 0), seen, far, args.lama_size, texel, 0.0)
+    else:
+        color = fill(np.where(seen[..., None], color, 0), seen, far)
+    corners = np.array([origin, origin + u_axis * size_u, origin + u_axis * size_u + v_axis * size_v, origin + v_axis * size_v])
+    mesh = trimesh.Trimesh(vertices=corners, faces=[[0, 1, 2], [0, 2, 3]], process=False)
+    if np.dot(mesh.face_normals.mean(0), n) < 0:
+        mesh.faces = mesh.faces[:, ::-1]
+    material = trimesh.visual.material.PBRMaterial(
+        name=name, baseColorFactor=[0, 0, 0, 255], metallicFactor=0.0, roughnessFactor=1.0, doubleSided=True,
+        emissiveTexture=image_of(color), emissiveFactor=[1.0, 1.0, 1.0])
+    mesh.visual = trimesh.visual.TextureVisuals(uv=np.array([[0, 0], [1, 0], [1, 1], [0, 1]], float), material=material)
+    return mesh, {"texture_px": [tw, th], "seen_fraction": round(float(seen.mean()), 3), "distance_m": distance}
 
 
 def clip_polygon(poly, point, normal):
@@ -412,6 +475,11 @@ def build_parser():
                         help="the object's generated asset (object_mesh.py), registered to the view: used as the mesh, or as the hidden-part "
                              "hypothesis of the completion (in place of the prior, with it, where both agree, or as evidence on the prior's log-odds)")
     parser.add_argument("--generated-weight", type=float, default=1.0, help="fuse: log-odds the generated asset adds where it is full and subtracts where it is empty")
+    parser.add_argument("--window-backdrop", type=int, default=0, help="1: an opening (depth well behind the glass) becomes a hole with the outside on a backdrop behind it")
+    parser.add_argument("--opening-depth-m", type=float, default=0.3, help="depth behind the wall that counts as seen through an opening")
+    parser.add_argument("--backdrop-min-m", type=float, default=10.0, help="nearest backdrop distance (monocular depth often flattens the outside onto the glass)")
+    parser.add_argument("--backdrop-spread", type=float, default=1.0, help="backdrop half-extent past the opening per meter of distance (1: 45 degrees)")
+    parser.add_argument("--backdrop-texture", type=int, default=2048, help="largest backdrop texture side")
     parser.add_argument("--texture-fill", choices=["telea", "lama"], default="telea",
                         help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far) or lama (texture continued by LaMa)")
     parser.add_argument("--lama-margin-m", type=float, default=0.05, help="lama: band of seen texels at a hole that is filled too")
@@ -491,6 +559,12 @@ def main():
             wall_colors.append(np.asarray(mesh.visual.material.baseColorTexture.convert("RGB")).reshape(-1, 3).mean(0) / 255)
         scene.add_geometry(mesh, geom_name=f"room-wall-{k}")
         report["surfaces"].append({"name": f"room-wall-{k}", "plane": owner[k], **info})
+        for opening in info.get("openings", []):
+            e = next(x for x in maps.emitters if x["id"] == opening["emitter"])
+            bname = f"window-backdrop-{e['id']}"
+            mesh, binfo = backdrop(bname, maps, view, e, opening["distance_m"], args)
+            scene.add_geometry(mesh, geom_name=bname)
+            report["surfaces"].append({"name": bname, **binfo})
     # Floor and ceiling over the room polygon's bounding rectangle (texels outside the room are never seen).
     xs, zs = [p[0] for p in poly], [p[1] for p in poly]
     for name, y, normal in (("room-floor", 0.0, np.array([0, 1.0, 0])), ("room-ceiling", room_h, np.array([0, -1.0, 0]))):
@@ -540,7 +614,7 @@ def main():
     write_request(os.path.join(scene_dir, f".{n}-primitive-scene-request.json"), {
         "kind": "primitive-scene", "provider": "local/primitives", "endpoint": "local/primitives", "index": n, "status": "completed",
         "input_files": [layout_path, layout["source_image"], maps.plate_path], "output_files": [out],
-        "input": {k: getattr(args, k) for k in ("texel_m", "texel_min_m", "max_texture", "grid_m", "relief_m", "relief_sigma_m", "no_relief", "depth_noise", "voxel_m", "voxels", "uv_grid_m", "surface", "smooth_iterations", "clutter_min_px", "clutter_depth_m", "texture_fill", "lama_size", "lama_margin_m")},
+        "input": {k: getattr(args, k) for k in ("texel_m", "texel_min_m", "max_texture", "grid_m", "relief_m", "relief_sigma_m", "no_relief", "depth_noise", "voxel_m", "voxels", "uv_grid_m", "surface", "smooth_iterations", "clutter_min_px", "clutter_depth_m", "texture_fill", "lama_size", "lama_margin_m", "window_backdrop", "opening_depth_m", "backdrop_min_m", "backdrop_spread")},
         "maps": {"structure_albedo": maps.plate_light["files"]["albedo"] if maps.plate_light else None,
                  "object_albedo": maps.photo_light["files"]["albedo"] if maps.photo_light else None},
         "result": report})

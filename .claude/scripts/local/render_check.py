@@ -121,6 +121,9 @@ def main():
     bpy.ops.preferences.addon_enable(module="io_scene_gltf2")
     bpy.ops.import_scene.gltf(filepath=os.path.abspath(glb))
     scene = bpy.context.scene
+    for obj in scene.objects:  # the view through an opening lies outdoors: it must not shade the room (a sun through the opening)
+        if obj.name.startswith("window-backdrop"):
+            obj.visible_shadow = False
     off = {name for name in args.no_emit.split(",") if name}
     emissive_nodes = []
     for mat in bpy.data.materials:  # window textures glow brighter than 1
