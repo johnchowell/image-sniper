@@ -1,0 +1,162 @@
+[
+  {
+    "world": "bench-train-room-1006-view-0",
+    "scene": "worlds/bench-train-room-1006-view-0/output/scene/3-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 16.158,
+      "orbit+35": 16.861,
+      "forward": 15.996
+    },
+    "psnr_db_mean": 16.338,
+    "lpips": {
+      "orbit-35": 0.3327,
+      "orbit+35": 0.3319,
+      "forward": 0.2975
+    },
+    "lpips_mean": 0.3207
+  },
+  {
+    "world": "bench-train-room-1010-view-0",
+    "scene": "worlds/bench-train-room-1010-view-0/output/scene/3-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 17.194,
+      "orbit+35": 20.049,
+      "forward": 19.795
+    },
+    "psnr_db_mean": 19.013,
+    "lpips": {
+      "orbit-35": 0.329,
+      "orbit+35": 0.303,
+      "forward": 0.2122
+    },
+    "lpips_mean": 0.2814
+  },
+  {
+    "world": "bench-train-room-1015-view-0",
+    "scene": "worlds/bench-train-room-1015-view-0/output/scene/6-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 13.91,
+      "orbit+35": 14.07,
+      "forward": 15.075
+    },
+    "psnr_db_mean": 14.352,
+    "lpips": {
+      "orbit-35": 0.5747,
+      "orbit+35": 0.6358,
+      "forward": 0.4395
+    },
+    "lpips_mean": 0.55
+  },
+  {
+    "world": "bench-train-room-1023-view-0",
+    "scene": "worlds/bench-train-room-1023-view-0/output/scene/3-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 19.883,
+      "orbit+35": 18.474,
+      "forward": 19.251
+    },
+    "psnr_db_mean": 19.203,
+    "lpips": {
+      "orbit-35": 0.2251,
+      "orbit+35": 0.2368,
+      "forward": 0.1552
+    },
+    "lpips_mean": 0.2057
+  },
+  {
+    "world": "bench-train-room-1028-view-0",
+    "scene": "worlds/bench-train-room-1028-view-0/output/scene/4-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 14.687,
+      "orbit+35": 15.057,
+      "forward": 16.158
+    },
+    "psnr_db_mean": 15.301,
+    "lpips": {
+      "orbit-35": 0.3822,
+      "orbit+35": 0.3948,
+      "forward": 0.3461
+    },
+    "lpips_mean": 0.3744
+  },
+  {
+    "world": "bench-train-room-1030-view-0",
+    "scene": "worlds/bench-train-room-1030-view-0/output/scene/3-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 13.829,
+      "orbit+35": 14.772,
+      "forward": 17.854
+    },
+    "psnr_db_mean": 15.485,
+    "lpips": {
+      "orbit-35": 0.4641,
+      "orbit+35": 0.3511,
+      "forward": 0.3222
+    },
+    "lpips_mean": 0.3791
+  },
+  {
+    "world": "bench-train-room-1036-view-0",
+    "scene": "worlds/bench-train-room-1036-view-0/output/scene/4-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 19.85,
+      "orbit+35": 16.459,
+      "forward": 20.22
+    },
+    "psnr_db_mean": 18.843,
+    "lpips": {
+      "orbit-35": 0.3364,
+      "orbit+35": 0.4095,
+      "forward": 0.3218
+    },
+    "lpips_mean": 0.3559
+  },
+  {
+    "world": "bench-train-room-1045-view-0",
+    "scene": "worlds/bench-train-room-1045-view-0/output/scene/4-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 18.999,
+      "orbit+35": 22.807,
+      "forward": 21.291
+    },
+    "psnr_db_mean": 21.032,
+    "lpips": {
+      "orbit-35": 0.2656,
+      "orbit+35": 0.2354,
+      "forward": 0.1611
+    },
+    "lpips_mean": 0.2207
+  },
+  {
+    "world": "bench-train-room-1052-view-0",
+    "scene": "worlds/bench-train-room-1052-view-0/output/scene/1-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 17.69,
+      "orbit+35": 16.32,
+      "forward": 17.944
+    },
+    "psnr_db_mean": 17.318,
+    "lpips": {
+      "orbit-35": 0.3837,
+      "orbit+35": 0.4691,
+      "forward": 0.3167
+    },
+    "lpips_mean": 0.3898
+  },
+  {
+    "world": "bench-train-room-1058-view-0",
+    "scene": "worlds/bench-train-room-1058-view-0/output/scene/3-primitive-scene-matte",
+    "psnr_db": {
+      "orbit-35": 18.535,
+      "orbit+35": 16.399,
+      "forward": 21.7
+    },
+    "psnr_db_mean": 18.878,
+    "lpips": {
+      "orbit-35": 0.4993,
+      "orbit+35": 0.4323,
+      "forward": 0.3273
+    },
+    "lpips_mean": 0.4196
+  }
+]

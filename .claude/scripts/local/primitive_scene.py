@@ -563,8 +563,10 @@ def build_parser():
     parser.add_argument("--backdrop-min-m", type=float, default=10.0, help="nearest backdrop distance (monocular depth often flattens the outside onto the glass)")
     parser.add_argument("--backdrop-spread", type=float, default=1.0, help="backdrop half-extent past the opening per meter of distance (1: 45 degrees)")
     parser.add_argument("--backdrop-texture", type=int, default=2048, help="largest backdrop texture side")
-    parser.add_argument("--texture-fill", choices=["telea", "lama", "quilt", "detail"], default="telea",
-                        help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far), lama (texture continued by LaMa) quilt (seen texture continued by exemplar blocks) or detail (telea low frequencies plus quilted high-pass detail)")
+    # detail vs telea, novel views: LPIPS train -0.024 [-0.041, -0.012] (9/9 rooms), val -0.039 [-0.052, -0.026] (10/10);
+    # PSNR -0.03 dB on both (texture with the wrong phase).
+    parser.add_argument("--texture-fill", choices=["telea", "lama", "quilt", "detail"], default="detail",
+                        help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far), lama (texture continued by LaMa), quilt (seen texture continued by exemplar blocks) or detail (telea low frequencies plus quilted high-pass detail)")
     parser.add_argument("--quilt-patch-m", type=float, default=0.25, help="quilt: block size (m)")
     parser.add_argument("--lama-margin-m", type=float, default=0.05, help="lama: band of seen texels at a hole that is filled too")
     parser.add_argument("--lama-size", type=int, default=1024, help="lama: long side (texels) of the texture LaMa fills")

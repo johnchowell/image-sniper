@@ -1,0 +1,146 @@
+[
+  {
+    "world": "bench-train-room-1006-view-0",
+    "scene": "worlds/bench-train-room-1006-view-0/output/scene/6-primitive-scene-detail",
+    "psnr_db": {
+      "orbit-35": 16.112,
+      "orbit+35": 16.845,
+      "forward": 15.942
+    },
+    "psnr_db_mean": 16.3,
+    "lpips": {
+      "orbit-35": 0.3168,
+      "orbit+35": 0.3166,
+      "forward": 0.2969
+    },
+    "lpips_mean": 0.3101
+  },
+  {
+    "world": "bench-train-room-1010-view-0",
+    "scene": "worlds/bench-train-room-1010-view-0/output/scene/6-primitive-scene-detail",
+    "psnr_db": {
+      "orbit-35": 17.204,
+      "orbit+35": 20.041,
+      "forward": 19.794
+    },
+    "psnr_db_mean": 19.013,
+    "lpips": {
+      "orbit-35": 0.2935,
+      "orbit+35": 0.2856,
+      "forward": 0.2119
+    },
+    "lpips_mean": 0.2637
+  },
+  {
+    "world": "bench-train-room-1015-view-0",
+    "scene": "worlds/bench-train-room-1015-view-0/output/scene/13-primitive-scene-detail",
+    "psnr_db": {
+      "orbit-35": 13.796,
+      "orbit+35": 14.003,
+      "forward": 14.847
+    },
+    "psnr_db_mean": 14.215,
+    "lpips": {
+      "orbit-35": 0.4565,
+      "orbit+35": 0.579,
+      "forward": 0.3554
+    },
+    "lpips_mean": 0.4636
+  },
+  {
+    "world": "bench-train-room-1023-view-0",
+    "scene": "worlds/bench-train-room-1023-view-0/output/scene/8-primitive-scene-detail",
+    "psnr_db": {
+      "orbit-35": 19.912,
+      "orbit+35": 18.479,
+      "forward": 19.296
+    },
+    "psnr_db_mean": 19.229,
+    "lpips": {
+      "orbit-35": 0.2128,
+      "orbit+35": 0.2303,
+      "forward": 0.1567
+    },
+    "lpips_mean": 0.1999
+  },
+  {
+    "world": "bench-train-room-1028-view-0",
+    "scene": "worlds/bench-train-room-1028-view-0/output/scene/8-primitive-scene-detail",
+    "psnr_db": {
+      "orbit-35": 14.675,
+      "orbit+35": 15.045,
+      "forward": 16.155
+    },
+    "psnr_db_mean": 15.292,
+    "lpips": {
+      "orbit-35": 0.3626,
+      "orbit+35": 0.3609,
+      "forward": 0.348
+    },
+    "lpips_mean": 0.3572
+  },
+  {
+    "world": "bench-train-room-1030-view-0",
+    "scene": "worlds/bench-train-room-1030-view-0/output/scene/6-primitive-scene-detail",
+    "psnr_db": {
+      "orbit-35": 13.826,
+      "orbit+35": 14.762,
+      "forward": 17.855
+    },
+    "psnr_db_mean": 15.481,
+    "lpips": {
+      "orbit-35": 0.4405,
+      "orbit+35": 0.3296,
+      "forward": 0.3192
+    },
+    "lpips_mean": 0.3631
+  },
+  {
+    "world": "bench-train-room-1036-view-0",
+    "scene": "worlds/bench-train-room-1036-view-0/output/scene/8-primitive-scene-detail",
+    "psnr_db": {
+      "orbit-35": 19.73,
+      "orbit+35": 16.43,
+      "forward": 20.152
+    },
+    "psnr_db_mean": 18.771,
+    "lpips": {
+      "orbit-35": 0.3275,
+      "orbit+35": 0.3974,
+      "forward": 0.3216
+    },
+    "lpips_mean": 0.3488
+  },
+  {
+    "world": "bench-train-room-1045-view-0",
+    "scene": "worlds/bench-train-room-1045-view-0/output/scene/7-primitive-scene-detail",
+    "psnr_db": {
+      "orbit-35": 18.992,
+      "orbit+35": 22.763,
+      "forward": 21.284
+    },
+    "psnr_db_mean": 21.013,
+    "lpips": {
+      "orbit-35": 0.2431,
+      "orbit+35": 0.2042,
+      "forward": 0.1614
+    },
+    "lpips_mean": 0.2029
+  },
+  {
+    "world": "bench-train-room-1052-view-0",
+    "scene": "worlds/bench-train-room-1052-view-0/output/scene/6-primitive-scene-detail",
+    "psnr_db": {
+      "orbit-35": 17.693,
+      "orbit+35": 16.309,
+      "forward": 17.95
+    },
+    "psnr_db_mean": 17.317,
+    "lpips": {
+      "orbit-35": 0.3443,
+      "orbit+35": 0.3947,
+      "forward": 0.3164
+    },
+    "lpips_mean": 0.3518
+  }
+]
