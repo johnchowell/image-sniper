@@ -84,7 +84,9 @@ export const DEFAULT_PARAMS = {
   scale_ceiling_sigma: 0.08,
   scale_use_objects: 1,
   scale_outlier_z: 3,
-  floor_prior_select: 0
+  floor_prior_select: 0,
+  floor_below_walls: 0,  // 1: a floor plane that wall points continue beneath is a support surface; the floor moves to the walls' foot
+  floor_wall_below_m: 0.25
 };
 
 // Typical heights of objects that carry scale (median m, log-normal sigma); first match wins.
@@ -651,6 +653,22 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     if (lower && misfit(floorPlane) - misfit(lower) > params.scale_outlier_z ** 2) {
       warnings.push(`Floor moved ${round(heightOf(floorPlane) - heightOf(lower), 2)} m down to a smaller plane: the camera and ceiling height priors fit it (misfit ${round(misfit(lower), 1)} vs ${round(misfit(floorPlane), 1)}).`);
       floorPlane = lower;
+    }
+  }
+  // Walls end at the floor. Wall points more than floor_wall_below_m beneath the floor plane make it a support surface
+  // (a bed or table top filling the lower image, its own size outvoting a small visible patch of floor): the floor
+  // is then the largest horizontal plane below it that the walls' foot reaches.
+  if (params.floor_below_walls && floorPlane) {
+    const feet = rawPlanes.filter((plane) => plane.wall).map((plane) => percentile(sortedValues(Array.from(plane.inliers, (cell) => dot(cellPoint(cell), up))), 0.01));
+    const foot = Math.min(...feet);
+    const top = heightOf(floorPlane);
+    if (feet.length && foot < top - params.floor_wall_below_m) {
+      const lower = below.filter((plane) => heightOf(plane) < top - params.floor_wall_below_m && heightOf(plane) >= foot - params.floor_wall_below_m)
+        .sort((a, b) => b.inliers.length - a.inliers.length)[0];
+      if (lower) {
+        warnings.push(`Floor moved ${round(top - heightOf(lower), 2)} m down: walls continue ${round(top - foot, 2)} m below the larger plane, a support surface.`);
+        floorPlane = lower;
+      }
     }
   }
   let cameraHeight;

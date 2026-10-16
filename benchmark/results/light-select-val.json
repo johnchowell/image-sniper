@@ -1,0 +1,54 @@
+{
+  "reflector-0.1-0.25": {
+    "params": {
+      "dominance": 0.4,
+      "min_luminance": 0.3,
+      "source_clipped": 0.7,
+      "clipped_candidates": 1,
+      "source_relative_luminance": 2.5,
+      "reflector_albedo_step": 0.1,
+      "reflector_dominance": 0.25
+    },
+    "albedo_si_rmse_mean": 0.3038,
+    "decomposition_r2_mean": 0.9296,
+    "views_with_windows": 20,
+    "windows": 23,
+    "light_source_iou_stage_mean": 0.6174,
+    "light_source_iou_final_mean": 0.7308,
+    "false_light_fraction_final_mean": 0.0236,
+    "window_located": 0.7826,
+    "window_located_clipped": 0.9167,
+    "window_located_rolloff": 0.6364,
+    "window_rect_iou_aligned_mean": 0.5599,
+    "window_rect_iou_mean": 0.3382,
+    "window_normal_err_deg_median": 1.077,
+    "window_width_rel_err_aligned_median": 0.1491,
+    "window_center_err_aligned_m_median": 0.1569,
+    "light_sources_per_view": 2.05
+  },
+  "relative-2.5": {
+    "params": {
+      "dominance": 0.4,
+      "min_luminance": 0.3,
+      "source_clipped": 0.7,
+      "clipped_candidates": 1,
+      "source_relative_luminance": 2.5
+    },
+    "albedo_si_rmse_mean": 0.3038,
+    "decomposition_r2_mean": 0.9296,
+    "views_with_windows": 20,
+    "windows": 23,
+    "light_source_iou_stage_mean": 0.5599,
+    "light_source_iou_final_mean": 0.6692,
+    "false_light_fraction_final_mean": 0.0341,
+    "window_located": 0.8261,
+    "window_located_clipped": 0.9167,
+    "window_located_rolloff": 0.7273,
+    "window_rect_iou_aligned_mean": 0.5614,
+    "window_rect_iou_mean": 0.3382,
+    "window_normal_err_deg_median": 1.077,
+    "window_width_rel_err_aligned_median": 0.1491,
+    "window_center_err_aligned_m_median": 0.1569,
+    "light_sources_per_view": 2.3
+  }
+}

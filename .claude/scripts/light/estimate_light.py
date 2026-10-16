@@ -119,8 +119,10 @@ def find_emitters(photo, photo_luma, unclipped, residual_dominance, dominance, m
     return emitters, emitter_map
 
 
+# reflector 0.1/0.25 vs off, final light-source IoU: train +0.020 [+0.005, +0.039], val +0.062 [+0.008, +0.136]; false light
+# fraction lower on both; windows located tie (train 0, val -1 of 23).
 DEFAULT_RULE = {"dominance": 0.4, "min_luminance": 0.3, "source_clipped": 0.7, "clipped_candidates": 1, "source_relative_luminance": 2.5,
-                "reflector_albedo_step": 0, "reflector_dominance": 0}
+                "reflector_albedo_step": 0.1, "reflector_dominance": 0.25}
 
 
 def load_model():
