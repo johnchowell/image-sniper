@@ -39,6 +39,9 @@ export const DEFAULT_PARAMS = {
   wall_min_height_m: 1.5,
   snap_max_rms_m: 0.05,
   wall_behind_tolerance_m: 0.1,
+  // > 0: a point is behind a wall when its depth along its ray exceeds the wall's by this fraction (scale-invariant;
+  // a fixed metre tolerance moves cells across the test when the metric scale changes).
+  wall_behind_relative: 0,
   wall_behind_max_fraction: 0.01,
   object_exterior_cut: 1,
   // A mask mostly seen through a wall is the opening itself (train: precision 0.910 -> 0.914, all else tied; val: no change).
@@ -541,6 +544,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
   const centroidOf = (plane) => scale(Array.from(plane.inliers, (cell) => cellPoint(cell)).reduce((sum, p) => add(sum, p), [0, 0, 0]), 1 / plane.inliers.length);
   // Points seen through a wall's openings (behind it, inside its image region) are exterior: they lie behind every
   // other wall too, so they do not count against them. The wall set and the exterior points settle in a few passes.
+  const behindTolerance = (offset) => (params.wall_behind_relative ? params.wall_behind_relative * Math.abs(offset) : params.wall_behind_tolerance_m);
   const testWalls = (planes, upVector) => {
     let exteriorPoint = new Uint8Array(scenePoints.length);
     for (let pass = 0; pass < 3; pass += 1) {
@@ -550,7 +554,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
         const { normal, offset, side, extent } = wall.wallPlane;
         scenePoints.forEach(([p, row, col], k) => {
           if (row >= extent.top && row <= extent.bottom && col >= extent.left && col <= extent.right &&
-            side * (dot(normal, p) + offset) < -params.wall_behind_tolerance_m) next[k] = 1;
+            side * (dot(normal, p) + offset) < -behindTolerance(offset)) next[k] = 1;
         });
       }
       if (next.every((value, k) => value === exteriorPoint[k])) break;
@@ -571,7 +575,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
       let behind = 0;
       scenePoints.forEach(([p, row, col], k) => {
         if (exteriorPoint[k] || (row >= extent.top && row <= extent.bottom && col >= extent.left && col <= extent.right)) return;
-        if (side * (dot(normal, p) + offset) < -params.wall_behind_tolerance_m) behind += 1;
+        if (side * (dot(normal, p) + offset) < -behindTolerance(offset)) behind += 1;
       });
       plane.behindFraction = behind / Math.max(scenePoints.length, 1);
       plane.wall = plane.behindFraction <= (height >= params.wall_min_height_m ? params.wall_tall_behind_max_fraction : params.wall_behind_max_fraction);
@@ -591,7 +595,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
       const row = Math.floor(cell / gw) / gh, col = (cell % gw) / gw;
       if (row < extent.top || row > extent.bottom || col < extent.left || col > extent.right) return false;
     }
-    return side * (dot(normal, cellPoint(cell)) + offset) < -params.wall_behind_tolerance_m;
+    return side * (dot(normal, cellPoint(cell)) + offset) < -behindTolerance(offset);
   };
   // Depth error can split one wall into parallel planes a few cm apart; a wall beyond an opening is metres away.
   const gapBehind = (wall, plane) => percentile(sortedValues(Array.from(plane.inliers, (cell) => -wall.wallPlane.side * (dot(wall.wallPlane.normal, cellPoint(cell)) + wall.wallPlane.offset))), 0.5);
