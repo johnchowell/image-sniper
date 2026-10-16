@@ -607,6 +607,7 @@ def build_parser():
                         help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far), lama (texture continued by LaMa), quilt (seen texture continued by exemplar blocks) or detail (telea low frequencies plus quilted high-pass detail)")
     # wall exemplar vs detail, novel views, 10 train rooms: PSNR +0.029 [-0.002, +0.073], LPIPS -0.0017 [-0.0043, +0.0001] (tie;
     # 4 of 10 rooms change).
+    # detail vs flat, novel views: train LPIPS -0.002 [-0.007, +0.000] (1015 only), val PSNR -0.002 [-0.005, +0.001]; both ties.
     parser.add_argument("--glass-fill", choices=["flat", "detail"], default="flat", help="glass hidden behind objects: inpainting near the open glass and its median color far (flat), plus the open glass's quilted detail (detail)")
     parser.add_argument("--wall-exemplar", action="store_true", help="quilt/detail: a wall with too few seen texels continues the most-seen wall's texture")
     parser.add_argument("--quilt-patch-m", type=float, default=0.25, help="quilt: block size (m)")
