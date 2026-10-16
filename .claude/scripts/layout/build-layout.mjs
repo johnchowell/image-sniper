@@ -61,6 +61,7 @@ export const DEFAULT_PARAMS = {
   // Unseen depth of any other object from its footprint aspect: at least object_depth_aspect times its seen width
   // (train truth: the median short/long footprint side is 0.7-1.0 for most furniture). Thin objects are exempt.
   object_depth_aspect: 0,
+  object_depth_aspect_min_height: 0,  // 1: the aspect bound uses min(seen width, height) (elongated low objects: beds, players)
   hidden_base_jump_m: 0.1,
   hidden_base_jump_fraction: 0.05,
   flat_mask_min_extent_m: 1.5,
@@ -1004,7 +1005,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     const seenWidth = alongX ? rect.sizeZ : rect.sizeX;
     const thin = THIN.test(String(name || "").toLowerCase().trim());
     const prior = (params.object_depth_prior ? depthPriorOf(name) : undefined)
-      ?? (params.object_depth_aspect && !thin ? params.object_depth_aspect * seenWidth : undefined);
+      ?? (params.object_depth_aspect && !thin ? params.object_depth_aspect * (params.object_depth_aspect_min_height ? Math.min(seenWidth, top - bottom) : seenWidth) : undefined);
     if (!prior) return rect;
     const away = dot(view, axis) >= 0 ? axis : scale(axis, -1);
     const front = add(center, scale(away, -depth / 2));
