@@ -53,6 +53,9 @@ export const DEFAULT_PARAMS = {
   support_snap_fraction: 0.1,
   hidden_base: 1,
   hidden_base_min_top_m: 0.2,
+  // 1: a box's extent along the view (only its front face is seen) grows to the typical depth of its kind
+  // (DEPTH_PRIOR_M), away from the camera, up to the wall behind it.
+  object_depth_prior: 0,
   hidden_base_jump_m: 0.1,
   hidden_base_jump_fraction: 0.05,
   flat_mask_min_extent_m: 1.5,
@@ -970,8 +973,48 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     }
   }
 
-  const finalizeBox = (draft) => {
-    const { rect, bottom, top, support } = draft;
+  // Typical depths (m) of common furniture, by head noun: one view sees a front face, not how deep the object is.
+  const DEPTH_PRIOR_M = [["wardrobe", 0.6], ["armoire", 0.6], ["cabinet", 0.5], ["cupboard", 0.5], ["dresser", 0.5], ["sideboard", 0.45],
+    ["hutch", 0.45], ["chest", 0.45], ["credenza", 0.45], ["bookshelf", 0.35], ["bookcase", 0.35], ["shelves", 0.35], ["shelf", 0.35],
+    ["shelving", 0.35], ["nightstand", 0.4], ["desk", 0.65], ["table", 0.75], ["chair", 0.55], ["armchair", 0.8], ["stool", 0.4],
+    ["sofa", 0.9], ["couch", 0.9], ["bench", 0.4], ["register", 0.4], ["planter", 0.4], ["refrigerator", 0.7], ["fridge", 0.7],
+    ["oven", 0.6], ["stove", 0.6], ["piano", 0.6], ["heater", 0.4], ["radiator", 0.2], ["crate", 0.4], ["box", 0.35]];
+  const depthPriorOf = (name) => {
+    const words = String(name || "").toLowerCase().split(/[^a-z]+/).filter(Boolean);
+    for (let k = words.length - 1; k >= 0; k -= 1) {  // the head noun of an English noun phrase is its last noun
+      const hit = DEPTH_PRIOR_M.find(([noun]) => words[k] === noun || words[k] === `${noun}s`);
+      if (hit) return hit[1];
+    }
+    return undefined;
+  };
+  const extendDepth = (rect, name, bottom, top) => {
+    const prior = depthPriorOf(name);
+    if (!prior) return rect;
+    const localX = [Math.cos(rect.yaw), 0, -Math.sin(rect.yaw)];
+    const localZ = [Math.sin(rect.yaw), 0, Math.cos(rect.yaw)];
+    const center = [rect.center[0], (bottom + top) / 2, rect.center[1]];
+    const view = normalize([center[0] - cameraPosition[0], 0, center[2] - cameraPosition[2]]);
+    const alongX = Math.abs(dot(view, localX)) > Math.abs(dot(view, localZ));
+    const axis = alongX ? localX : localZ;
+    const depth = alongX ? rect.sizeX : rect.sizeZ;
+    const away = dot(view, axis) >= 0 ? axis : scale(axis, -1);
+    const front = add(center, scale(away, -depth / 2));
+    let target = Math.max(depth, prior);
+    for (const plane of structure) {
+      if (plane.class !== "wall") continue;
+      const denom = dot(plane.normal, away);
+      if (Math.abs(denom) < 0.2) continue;
+      const t = dot(plane.normal, sub(plane.center, front)) / denom;
+      if (t > depth) target = Math.min(target, t - 0.01);
+    }
+    if (!(target > depth)) return rect;
+    const shift = scale(away, (target - depth) / 2);
+    return { ...rect, center: [rect.center[0] + shift[0], rect.center[1] + shift[2]], sizeX: alongX ? target : rect.sizeX, sizeZ: alongX ? rect.sizeZ : target, depthPrior: true };
+  };
+
+  const finalizeBox = (draft, name) => {
+    const { bottom, top, support } = draft;
+    const rect = params.object_depth_prior ? extendDepth(draft.rect, name, bottom, top) : draft.rect;
     const center = [rect.center[0], (bottom + top) / 2, rect.center[1]];
     const size = [rect.sizeX, top - bottom, rect.sizeZ];
     const localX = [Math.cos(rect.yaw), 0, -Math.sin(rect.yaw)];
@@ -1005,6 +1048,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
         y: verticalCut ? "visible_lower_bound" : support === "none_detected" ? "observed" : "observed_to_support",
         z: depthAxis === "z" || lateralCut ? "visible_lower_bound" : "observed"
       },
+      ...(rect.depthPrior ? { depth_basis: "prior" } : {}),
       truncated: truncatedEdges.length > 0,
       truncated_edges: truncatedEdges,
       bottom_y_m: round(bottom),
@@ -1018,7 +1062,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
       point_count: draft.point_count
     };
   };
-  for (const object of objects) object.instances = object.instances.map(finalizeBox);
+  for (const object of objects) object.instances = object.instances.map((draft) => finalizeBox(draft, object.name));
 
   // Lighting from the intrinsic light estimate of the same photo, when one exists.
   const lightEstimate = await loadLightEstimate(world, depthRequest.input_files?.[0]);
