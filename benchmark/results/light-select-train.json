@@ -137,17 +137,17 @@
     "views_with_windows": 46,
     "windows": 51,
     "light_source_iou_stage_mean": 0.5376,
-    "light_source_iou_final_mean": 0.6013,
-    "false_light_fraction_final_mean": 0.0264,
-    "window_located": 0.6275,
-    "window_located_clipped": 0.56,
-    "window_located_rolloff": 0.6923,
-    "window_rect_iou_aligned_mean": 0.4573,
-    "window_rect_iou_mean": 0.2829,
-    "window_normal_err_deg_median": 0.9124,
-    "window_width_rel_err_aligned_median": 0.1318,
-    "window_center_err_aligned_m_median": 0.3225,
-    "light_sources_per_view": 1.8667
+    "light_source_iou_final_mean": 0.6572,
+    "false_light_fraction_final_mean": 0.0276,
+    "window_located": 0.8627,
+    "window_located_clipped": 0.76,
+    "window_located_rolloff": 0.9615,
+    "window_rect_iou_aligned_mean": 0.6098,
+    "window_rect_iou_mean": 0.4015,
+    "window_normal_err_deg_median": 0.754,
+    "window_width_rel_err_aligned_median": 0.1248,
+    "window_center_err_aligned_m_median": 0.1663,
+    "light_sources_per_view": 1.7167
   },
   "relative-2": {
     "params": {
@@ -173,5 +173,32 @@
     "window_width_rel_err_aligned_median": 0.1393,
     "window_center_err_aligned_m_median": 0.3278,
     "light_sources_per_view": 1.9333
+  },
+  "reflector-0.1-0.25": {
+    "params": {
+      "dominance": 0.4,
+      "min_luminance": 0.3,
+      "source_clipped": 0.7,
+      "clipped_candidates": 1,
+      "source_relative_luminance": 2.5,
+      "reflector_albedo_step": 0.1,
+      "reflector_dominance": 0.25
+    },
+    "albedo_si_rmse_mean": 0.3222,
+    "decomposition_r2_mean": 0.9168,
+    "views_with_windows": 46,
+    "windows": 51,
+    "light_source_iou_stage_mean": 0.5698,
+    "light_source_iou_final_mean": 0.6773,
+    "false_light_fraction_final_mean": 0.0225,
+    "window_located": 0.8627,
+    "window_located_clipped": 0.76,
+    "window_located_rolloff": 0.9615,
+    "window_rect_iou_aligned_mean": 0.6098,
+    "window_rect_iou_mean": 0.4015,
+    "window_normal_err_deg_median": 0.754,
+    "window_width_rel_err_aligned_median": 0.1248,
+    "window_center_err_aligned_m_median": 0.1663,
+    "light_sources_per_view": 1.5667
   }
 }
