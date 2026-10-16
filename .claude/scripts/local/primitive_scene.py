@@ -414,7 +414,11 @@ def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, s
         # Glass behind things in front of it (a chair, a cabinet) glows like the open glass: filled from the open
         # glass only (the wall around it has no emission), its median color far from it.
         far = np.median(emit[open_glass], 0) if open_glass.any() else np.zeros(3, np.float32)
-        emit = (fill(np.where(open_glass[..., None], emit, 0), open_glass, far) * glass[..., None]).astype(np.float32)
+        if args.glass_fill == "detail" and open_glass.any():
+            emit = detail_fill(np.where(open_glass[..., None], emit, 0).astype(np.float32), open_glass, far, args.lama_size, texel, args.lama_margin_m, args.quilt_patch_m)
+        else:
+            emit = fill(np.where(open_glass[..., None], emit, 0), open_glass, far)
+        emit = (emit * glass[..., None]).astype(np.float32)
     elif emissive and seen.any():
         emit = fill(emit, seen, np.zeros(3, np.float32)).astype(np.float32)
     emit[hole] = 0
@@ -603,6 +607,7 @@ def build_parser():
                         help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far), lama (texture continued by LaMa), quilt (seen texture continued by exemplar blocks) or detail (telea low frequencies plus quilted high-pass detail)")
     # wall exemplar vs detail, novel views, 10 train rooms: PSNR +0.029 [-0.002, +0.073], LPIPS -0.0017 [-0.0043, +0.0001] (tie;
     # 4 of 10 rooms change).
+    parser.add_argument("--glass-fill", choices=["flat", "detail"], default="flat", help="glass hidden behind objects: inpainting near the open glass and its median color far (flat), plus the open glass's quilted detail (detail)")
     parser.add_argument("--wall-exemplar", action="store_true", help="quilt/detail: a wall with too few seen texels continues the most-seen wall's texture")
     parser.add_argument("--quilt-patch-m", type=float, default=0.25, help="quilt: block size (m)")
     parser.add_argument("--lama-margin-m", type=float, default=0.05, help="lama: band of seen texels at a hole that is filled too")
