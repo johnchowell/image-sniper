@@ -58,6 +58,9 @@ export const DEFAULT_PARAMS = {
   // (DEPTH_PRIOR_M), away from the camera, up to the wall behind it. vs 0, box IoU: train +0.031 [+0.019, +0.044],
   // val +0.022 [+0.002, +0.058]; every other metric ties.
   object_depth_prior: 1,
+  // Unseen depth of any other object from its footprint aspect: at least object_depth_aspect times its seen width
+  // (train truth: the median short/long footprint side is 0.7-1.0 for most furniture). Thin objects are exempt.
+  object_depth_aspect: 0,
   hidden_base_jump_m: 0.1,
   hidden_base_jump_fraction: 0.05,
   flat_mask_min_extent_m: 1.5,
@@ -989,9 +992,8 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     }
     return undefined;
   };
+  const THIN = /\b(doors?|doorways?|paintings?|pictures?|frames?|mirrors?|posters?|curtains?|rugs?|carpets?|mats?|windows?|signs?|boards?|panels?)$/;
   const extendDepth = (rect, name, bottom, top) => {
-    const prior = depthPriorOf(name);
-    if (!prior) return rect;
     const localX = [Math.cos(rect.yaw), 0, -Math.sin(rect.yaw)];
     const localZ = [Math.sin(rect.yaw), 0, Math.cos(rect.yaw)];
     const center = [rect.center[0], (bottom + top) / 2, rect.center[1]];
@@ -999,6 +1001,11 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     const alongX = Math.abs(dot(view, localX)) > Math.abs(dot(view, localZ));
     const axis = alongX ? localX : localZ;
     const depth = alongX ? rect.sizeX : rect.sizeZ;
+    const seenWidth = alongX ? rect.sizeZ : rect.sizeX;
+    const thin = THIN.test(String(name || "").toLowerCase().trim());
+    const prior = (params.object_depth_prior ? depthPriorOf(name) : undefined)
+      ?? (params.object_depth_aspect && !thin ? params.object_depth_aspect * seenWidth : undefined);
+    if (!prior) return rect;
     const away = dot(view, axis) >= 0 ? axis : scale(axis, -1);
     const front = add(center, scale(away, -depth / 2));
     let target = Math.max(depth, prior);
@@ -1016,7 +1023,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
 
   const finalizeBox = (draft, name) => {
     const { bottom, top, support } = draft;
-    const rect = params.object_depth_prior ? extendDepth(draft.rect, name, bottom, top) : draft.rect;
+    const rect = params.object_depth_prior || params.object_depth_aspect ? extendDepth(draft.rect, name, bottom, top) : draft.rect;
     const center = [rect.center[0], (bottom + top) / 2, rect.center[1]];
     const size = [rect.sizeX, top - bottom, rect.sizeZ];
     const localX = [Math.cos(rect.yaw), 0, -Math.sin(rect.yaw)];
