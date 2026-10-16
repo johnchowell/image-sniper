@@ -602,7 +602,7 @@ def build_parser():
     parser.add_argument("--texture-fill", choices=["telea", "lama", "quilt", "detail"], default="detail",
                         help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far), lama (texture continued by LaMa), quilt (seen texture continued by exemplar blocks) or detail (telea low frequencies plus quilted high-pass detail)")
     # wall exemplar vs detail, novel views, 10 train rooms: PSNR +0.029 [-0.002, +0.073], LPIPS -0.0017 [-0.0043, +0.0001] (tie;
-    # 3 rooms change).
+    # 4 of 10 rooms change).
     parser.add_argument("--wall-exemplar", action="store_true", help="quilt/detail: a wall with too few seen texels continues the most-seen wall's texture")
     parser.add_argument("--quilt-patch-m", type=float, default=0.25, help="quilt: block size (m)")
     parser.add_argument("--lama-margin-m", type=float, default=0.05, help="lama: band of seen texels at a hole that is filled too")
