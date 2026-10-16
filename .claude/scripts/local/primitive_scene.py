@@ -112,6 +112,9 @@ def quilt(texture, known, patch, seed=0):
         return None
     rng = np.random.default_rng(seed)
     out = np.where(known[..., None], texture, 0).astype(np.float32)
+    fy, fx = np.nonzero(full)  # the search runs over the exemplar's bounding box only
+    y0, y1, x0, x1 = fy.min(), fy.max() + 1, fx.min(), fx.max() + 1
+    full = full[y0:y1, x0:x1]
     filled = known.copy()
     step = max(1, patch - patch // 4)
     ys = sorted(set(list(range(0, h - patch + 1, step)) + [h - patch]))
@@ -124,12 +127,12 @@ def quilt(texture, known, patch, seed=0):
             continue
         if have.any():
             mask = np.repeat(have[..., None], 3, -1).astype(np.float32)
-            err = cv2.matchTemplate(out, np.ascontiguousarray(out[y:y + patch, x:x + patch]), cv2.TM_SQDIFF, mask=mask)
+            err = cv2.matchTemplate(out[y0:y1 + patch - 1, x0:x1 + patch - 1], np.ascontiguousarray(out[y:y + patch, x:x + patch]), cv2.TM_SQDIFF, mask=mask)
             err = np.where(full & np.isfinite(err), np.maximum(err, 0), np.inf)
             pick = np.argwhere(err <= err.min() * 1.1 + 1e-6)
         if not have.any() or not len(pick):
             pick = np.argwhere(full)
-        sy, sx = pick[rng.integers(len(pick))]
+        sy, sx = pick[rng.integers(len(pick))] + (y0, x0)
         block = out[y:y + patch, x:x + patch]
         block[~have] = out[sy:sy + patch, sx:sx + patch][~have]
         have[:] = True

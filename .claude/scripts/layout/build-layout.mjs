@@ -41,6 +41,7 @@ export const DEFAULT_PARAMS = {
   wall_behind_tolerance_m: 0.1,
   wall_behind_max_fraction: 0.01,
   object_exterior_cut: 1,
+  object_exterior_drop: 0,
   wall_tall_behind_max_fraction: 0.08,
   exterior_min_fraction: 0.5,
   exterior_wall_min_gap_m: 0.5,
@@ -743,6 +744,13 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
         const cut = instance.gridMask.reduce((sum, value) => sum + value, 0) - inside.reduce((sum, value) => sum + value, 0);
         if (cut) warnings.push(`Cut ${cut} cells of a mask of "${object.object_id}" that are seen through a wall.`);
         instance.gridMask = inside;
+        // Most of the mask seen through a wall: the detection is the opening itself (a window called a cassette player);
+        // what is left is the frame around it, on the wall.
+        const total = cut + inside.reduce((sum, value) => sum + value, 0);
+        if (params.object_exterior_drop && total && cut > params.object_exterior_drop * total) {
+          warnings.push(`Dropped a mask of "${object.object_id}": ${cut} of its ${total} cells are seen through a wall.`);
+          instance.gridMask = inside.map(() => 0);
+        }
       }
     }
   }
