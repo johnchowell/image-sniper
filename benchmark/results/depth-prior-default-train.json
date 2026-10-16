@@ -50,6 +50,10 @@
       "center_err_aligned_m_median_whole": 0.1293,
       "center_err_m_median": 0.3242,
       "height_rel_err_aligned_median": 0.0716,
+      "box_iou_aligned_mean": 0.292,
+      "box_iou_aligned_mean_truncated": 0.2755,
+      "depth_rel_err_aligned_median": 0.2261,
+      "depth_rel_err_aligned_median_truncated": 0.2904,
       "height_rel_err_aligned_median_whole": 0.0497,
       "truncation_flag_accuracy": 0.9595,
       "support_accuracy": 0.9505
@@ -197,6 +201,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.29099995008291785,
+          "depth_rel_err_aligned": -0.4350309772965629,
           "support_correct": true
         },
         {
@@ -218,6 +224,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.21589876741473593,
+          "depth_rel_err_aligned": -0.07268975383278585,
           "support_correct": true
         },
         {
@@ -239,6 +247,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.24866495210916206,
+          "depth_rel_err_aligned": -0.4179753153713501,
           "support_correct": true
         }
       ],
@@ -391,6 +401,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.6245806951033127,
+          "depth_rel_err_aligned": -0.12663082212799262,
           "support_correct": true
         },
         {
@@ -412,6 +424,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.31400287368465535,
+          "depth_rel_err_aligned": -0.20241862332139568,
           "support_correct": true
         },
         {
@@ -433,6 +447,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5036649713057905,
+          "depth_rel_err_aligned": 0.4192735647362816,
           "support_correct": true
         },
         {
@@ -454,6 +470,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.38949677655114023,
           "support_correct": true
         }
       ],
@@ -600,6 +618,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.8230545049845794,
+          "depth_rel_err_aligned": -0.057774091575780735,
           "support_correct": true
         },
         {
@@ -633,6 +653,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5411535592136497,
+          "depth_rel_err_aligned": 0.1819600067921167,
           "support_correct": true
         }
       ],
@@ -804,6 +826,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.023848066621051052,
+          "depth_rel_err_aligned": -0.2553603500443329,
           "support_correct": true
         },
         {
@@ -825,6 +849,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": 0.9195842169021707,
           "support_correct": true
         },
         {
@@ -846,6 +872,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.484400612689114,
+          "depth_rel_err_aligned": -0.24462447989161817,
           "support_correct": true
         },
         {
@@ -867,6 +895,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.04888405411920317,
+          "depth_rel_err_aligned": -0.8043600538569404,
           "support_correct": true
         }
       ],
@@ -1029,6 +1059,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5303657980860847,
+          "depth_rel_err_aligned": -0.1843464135308173,
           "support_correct": true
         },
         {
@@ -1050,6 +1082,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.10594609517893502,
+          "depth_rel_err_aligned": -0.5396881566569023,
           "support_correct": true
         },
         {
@@ -1071,6 +1105,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.42170806187359144,
+          "depth_rel_err_aligned": -0.11384409877488395,
           "support_correct": true
         },
         {
@@ -1092,6 +1128,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5084368212953166,
+          "depth_rel_err_aligned": -0.07014892604912268,
           "support_correct": true
         },
         {
@@ -1113,6 +1151,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.2501614807225427,
+          "depth_rel_err_aligned": -0.375879100694821,
           "support_correct": true
         },
         {
@@ -1134,6 +1174,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.1436130952410459,
           "support_correct": true
         }
       ],
@@ -1265,6 +1307,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.50513045407953,
+          "depth_rel_err_aligned": -0.28514676412991224,
           "support_correct": true
         },
         {
@@ -1286,6 +1330,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.41333019047939745,
+          "depth_rel_err_aligned": -0.3655406748468381,
           "support_correct": true
         },
         {
@@ -1307,6 +1353,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5922757563766777,
+          "depth_rel_err_aligned": 0.01452224518113655,
           "support_correct": true
         }
       ],
@@ -1441,6 +1489,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.20831157982666806,
+          "depth_rel_err_aligned": -0.0769593771818712,
           "support_correct": true
         },
         {
@@ -1462,6 +1512,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.5471627069090265,
+          "depth_rel_err_aligned": -0.040256087871756566,
           "support_correct": true
         },
         {
@@ -1483,6 +1535,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5447115239617577,
+          "depth_rel_err_aligned": -0.22620198024838534,
           "support_correct": true
         },
         {
@@ -1504,6 +1558,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.6166981949280019,
           "support_correct": true
         },
         {
@@ -1525,6 +1581,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.011834654586636467,
+          "depth_rel_err_aligned": -0.2946999657113464,
           "support_correct": true
         }
       ],
@@ -1672,6 +1730,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0763952046300124,
+          "depth_rel_err_aligned": -0.2552573190624765,
           "support_correct": true
         },
         {
@@ -1693,6 +1753,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.7206516044041636,
           "support_correct": true
         },
         {
@@ -1714,6 +1776,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.042829480981977225,
+          "depth_rel_err_aligned": -0.02088459254708278,
           "support_correct": true
         }
       ],
@@ -1848,6 +1912,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.04776100696496034,
+          "depth_rel_err_aligned": -0.49859323863096755,
           "support_correct": true
         },
         {
@@ -1869,6 +1935,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.34416204853812343,
+          "depth_rel_err_aligned": -0.13999199361215597,
           "support_correct": true
         },
         {
@@ -1890,6 +1958,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.09708470305702643,
+          "depth_rel_err_aligned": -0.13882160638145388,
           "support_correct": true
         },
         {
@@ -1911,6 +1981,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.3229063445726988,
+          "depth_rel_err_aligned": -0.5085135212821313,
           "support_correct": true
         },
         {
@@ -1944,6 +2016,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.004100732007439746,
           "support_correct": true
         }
       ],
@@ -2109,6 +2183,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.535849981615394,
+          "depth_rel_err_aligned": -0.2283240912772259,
           "support_correct": true
         },
         {
@@ -2130,6 +2206,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.2710490809371112,
+          "depth_rel_err_aligned": -0.3480161457518047,
           "support_correct": true
         },
         {
@@ -2151,6 +2229,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6010796671953696,
+          "depth_rel_err_aligned": -0.04772288684239107,
           "support_correct": true
         },
         {
@@ -2279,6 +2359,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.03969569351990219,
+          "depth_rel_err_aligned": -0.5442749186822772,
           "support_correct": true
         },
         {
@@ -2300,6 +2382,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.7208994079083131,
+          "depth_rel_err_aligned": -0.05041584910123405,
           "support_correct": true
         },
         {
@@ -2321,6 +2405,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.45843500045668656,
+          "depth_rel_err_aligned": -0.32865728235752456,
           "support_correct": true
         },
         {
@@ -2498,6 +2584,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.33661657379786497,
+          "depth_rel_err_aligned": -0.20913224105310887,
           "support_correct": true
         },
         {
@@ -2519,6 +2607,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.24985041928624685,
+          "depth_rel_err_aligned": -0.20410558165241563,
           "support_correct": true
         },
         {
@@ -2540,6 +2630,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.7635203310395606,
           "support_correct": true
         },
         {
@@ -2585,6 +2677,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.6742733899180253,
           "support_correct": true
         },
         {
@@ -2606,6 +2700,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.3772133742209912,
+          "depth_rel_err_aligned": -0.11549658584458883,
           "support_correct": true
         }
       ],
@@ -2747,6 +2843,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.674688963727951,
           "support_correct": true
         },
         {
@@ -2768,6 +2866,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.11778144020364538,
+          "depth_rel_err_aligned": -0.6628928129392474,
           "support_correct": true
         },
         {
@@ -2789,6 +2889,8 @@
           "gt_support": "floor",
           "pred_support": "woodentable-01-1-1",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.7687895456851856,
           "support_correct": false
         },
         {
@@ -2810,6 +2912,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.3508798899631862,
+          "depth_rel_err_aligned": -0.24363963784144,
           "support_correct": true
         }
       ],
@@ -2966,6 +3070,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.07479544126241963,
+          "depth_rel_err_aligned": -0.2663356161619573,
           "support_correct": true
         },
         {
@@ -2987,6 +3093,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.6143902647623004,
+          "depth_rel_err_aligned": -0.08342843145746313,
           "support_correct": true
         },
         {
@@ -3020,6 +3128,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.2844268154232133,
+          "depth_rel_err_aligned": -0.17539719412458699,
           "support_correct": true
         },
         {
@@ -3041,6 +3151,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.467864420618258,
           "support_correct": true
         }
       ],
@@ -3154,6 +3266,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.7124578463525337,
           "support_correct": true
         },
         {
@@ -3175,6 +3289,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0007668583812619822,
+          "depth_rel_err_aligned": -0.10403211091855903,
           "support_correct": true
         }
       ],
@@ -3300,6 +3416,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.6146927329964815,
+          "depth_rel_err_aligned": -0.07539418494388582,
           "support_correct": true
         },
         {
@@ -3321,6 +3439,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.07853756664369013,
+          "depth_rel_err_aligned": -0.6431851114374271,
           "support_correct": true
         },
         {
@@ -3342,6 +3462,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.5240797957621101,
           "support_correct": true
         },
         {
@@ -3363,6 +3485,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.4529341388121649,
+          "depth_rel_err_aligned": -0.13005526611401563,
           "support_correct": true
         }
       ],
@@ -3497,6 +3621,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.28405572755417957,
+          "depth_rel_err_aligned": -0.17854636991384693,
           "support_correct": true
         },
         {
@@ -3530,6 +3656,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.03437766500300577,
+          "depth_rel_err_aligned": 0.6976310375663939,
           "support_correct": true
         },
         {
@@ -3551,6 +3679,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.7765290379198573,
+          "depth_rel_err_aligned": -0.056695329305159824,
           "support_correct": true
         },
         {
@@ -3584,6 +3714,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.4027784285245748,
+          "depth_rel_err_aligned": -0.33224100080072594,
           "support_correct": true
         },
         {
@@ -3732,6 +3864,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.4376596880002511,
+          "depth_rel_err_aligned": -0.2751940146980616,
           "support_correct": true
         },
         {
@@ -3753,6 +3887,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.21676386947510484,
+          "depth_rel_err_aligned": -0.35853570728510004,
           "support_correct": true
         },
         {
@@ -3774,6 +3910,8 @@
           "gt_support": "WoodenTable_03-1",
           "pred_support": "woodentable-03-1-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.21782435725776156,
+          "depth_rel_err_aligned": 0.15473849582577295,
           "support_correct": true
         },
         {
@@ -3795,6 +3933,8 @@
           "gt_support": "WoodenTable_03-1",
           "pred_support": "woodentable-03-1-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.002409833559629893,
+          "depth_rel_err_aligned": -0.5139693072376467,
           "support_correct": true
         },
         {
@@ -3816,6 +3956,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.4268299820241629,
+          "depth_rel_err_aligned": 0.35175265991061044,
           "support_correct": true
         }
       ],
@@ -3939,6 +4081,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.29194820577704794,
+          "depth_rel_err_aligned": -0.23464469144307146,
           "support_correct": true
         },
         {
@@ -3960,6 +4104,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.6904774394676298,
+          "depth_rel_err_aligned": -0.1207463993198324,
           "support_correct": true
         },
         {
@@ -3981,6 +4127,8 @@
           "gt_support": "floor",
           "pred_support": "none_detected",
           "pred_truncated": false,
+          "box_iou_aligned": 0.009149537757727864,
+          "depth_rel_err_aligned": -0.7004080229883901,
           "support_correct": false
         },
         {
@@ -4002,6 +4150,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.3949642223059127,
+          "depth_rel_err_aligned": -0.2871629816054338,
           "support_correct": true
         },
         {
@@ -4023,6 +4173,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.17899236942587235,
           "support_correct": true
         }
       ],
@@ -4170,6 +4322,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.2712333701010738,
+          "depth_rel_err_aligned": -0.45886108843716134,
           "support_correct": true
         },
         {
@@ -4191,6 +4345,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.08235990431487313,
+          "depth_rel_err_aligned": -0.7405323910969487,
           "support_correct": true
         },
         {
@@ -4248,6 +4404,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": 0.05203730130472149,
           "support_correct": true
         }
       ],
@@ -4361,6 +4519,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.4956131040826435,
+          "depth_rel_err_aligned": -0.11971259043375433,
           "support_correct": true
         },
         {
@@ -4382,6 +4542,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.8003421037992992,
+          "depth_rel_err_aligned": 0.01164442033453973,
           "support_correct": true
         },
         {
@@ -4403,6 +4565,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.6163220167922867,
+          "depth_rel_err_aligned": -0.05521685610341112,
           "support_correct": true
         },
         {
@@ -4424,6 +4588,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.29753673828463806,
+          "depth_rel_err_aligned": -0.2883253025170277,
           "support_correct": true
         },
         {
@@ -4445,6 +4611,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.6217064970916569,
           "support_correct": true
         }
       ],
@@ -4594,6 +4762,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.2973655383515775,
+          "depth_rel_err_aligned": -0.5205066507667732,
           "support_correct": true
         },
         {
@@ -4615,6 +4785,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.8149542025399117,
+          "depth_rel_err_aligned": -0.001087484521778174,
           "support_correct": true
         },
         {
@@ -4636,6 +4808,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5185345424338917,
+          "depth_rel_err_aligned": 0.1050352731703777,
           "support_correct": true
         },
         {
@@ -4657,6 +4831,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6233866245767674,
+          "depth_rel_err_aligned": -0.059366172109272225,
           "support_correct": true
         },
         {
@@ -4678,6 +4854,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.023136513407210613,
+          "depth_rel_err_aligned": 0.005177314431408484,
           "support_correct": true
         },
         {
@@ -4699,6 +4877,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.005741331412696779,
+          "depth_rel_err_aligned": -0.34837725040738754,
           "support_correct": true
         }
       ],
@@ -4855,6 +5035,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5949964104288401,
+          "depth_rel_err_aligned": -0.09218304586628323,
           "support_correct": true
         },
         {
@@ -4876,6 +5058,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.494063315431238,
+          "depth_rel_err_aligned": -0.2035145192278108,
           "support_correct": true
         },
         {
@@ -4897,6 +5081,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.5217716675822585,
           "support_correct": true
         }
       ],
@@ -5049,6 +5235,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.056239282153539384,
+          "depth_rel_err_aligned": -0.48845844325208493,
           "support_correct": true
         },
         {
@@ -5070,6 +5258,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.29440862538870677,
+          "depth_rel_err_aligned": -0.16221928827122226,
           "support_correct": true
         }
       ],
@@ -5199,6 +5389,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.3809504780363048,
+          "depth_rel_err_aligned": -0.06364938610481048,
           "support_correct": true
         },
         {
@@ -5220,6 +5412,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.20889946992515818,
+          "depth_rel_err_aligned": -0.3312382497481253,
           "support_correct": true
         },
         {
@@ -5253,6 +5447,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 5.158760865640073e-05,
+          "depth_rel_err_aligned": -0.08704138092878311,
           "support_correct": true
         },
         {
@@ -5274,6 +5470,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.3570397802377828,
           "support_correct": true
         }
       ],
@@ -5426,6 +5624,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.32550203197959765,
+          "depth_rel_err_aligned": -0.08395767434208497,
           "support_correct": true
         },
         {
@@ -5447,6 +5647,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5669230050748778,
+          "depth_rel_err_aligned": -0.04127412311138103,
           "support_correct": true
         },
         {
@@ -5468,6 +5670,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.26855706780918354,
+          "depth_rel_err_aligned": 0.1908001338053621,
           "support_correct": true
         },
         {
@@ -5489,6 +5693,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.7620158555289137,
+          "depth_rel_err_aligned": 0.011405685165690169,
           "support_correct": true
         },
         {
@@ -5510,6 +5716,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": 0.09112477841612973,
           "support_correct": true
         }
       ],
@@ -5639,6 +5847,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.5546826638454007,
+          "depth_rel_err_aligned": -0.175794230286085,
           "support_correct": true
         },
         {
@@ -5660,6 +5870,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.36607179319638994,
+          "depth_rel_err_aligned": -0.11266001877864869,
           "support_correct": true
         },
         {
@@ -5681,6 +5893,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.40150119941190127,
+          "depth_rel_err_aligned": -0.13752634586588805,
           "support_correct": true
         },
         {
@@ -5702,6 +5916,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0033844666168520066,
+          "depth_rel_err_aligned": -0.43197411232790334,
           "support_correct": true
         }
       ],
@@ -5836,6 +6052,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.36568370175984816,
+          "depth_rel_err_aligned": -0.34271809073833115,
           "support_correct": true
         },
         {
@@ -5857,6 +6075,8 @@
           "gt_support": "WoodenTable_03-2",
           "pred_support": "none_detected",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.34772427482876217,
           "support_correct": false
         },
         {
@@ -5878,6 +6098,8 @@
           "gt_support": "WoodenTable_03-2",
           "pred_support": "woodentable-03-2-1",
           "pred_truncated": true,
+          "box_iou_aligned": 0.07361170899698666,
+          "depth_rel_err_aligned": -0.46511597957207135,
           "support_correct": true
         },
         {
@@ -5899,6 +6121,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.3929300609094559,
+          "depth_rel_err_aligned": -0.2524161824233823,
           "support_correct": true
         },
         {
@@ -5920,6 +6144,8 @@
           "gt_support": "floor",
           "pred_support": "woodentable-03-2-1",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.21393061248586615,
           "support_correct": false
         }
       ],
@@ -6067,6 +6293,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.11154569900834366,
           "support_correct": true
         },
         {
@@ -6088,6 +6316,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.15370565317929477,
+          "depth_rel_err_aligned": -0.4953306650374207,
           "support_correct": true
         },
         {
@@ -6109,6 +6339,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.20352893771340105,
+          "depth_rel_err_aligned": -0.608147312545513,
           "support_correct": true
         }
       ],
@@ -6256,6 +6488,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.1492150692790459,
+          "depth_rel_err_aligned": -0.6373974188592104,
           "support_correct": true
         },
         {
@@ -6277,6 +6511,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.6906593634590646,
+          "depth_rel_err_aligned": -0.015736799424046637,
           "support_correct": true
         }
       ],
@@ -6406,6 +6642,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.8070587166520304,
+          "depth_rel_err_aligned": -0.029320992862614553,
           "support_correct": true
         },
         {
@@ -6427,6 +6665,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.1383777004087105,
+          "depth_rel_err_aligned": -0.3763034117688888,
           "support_correct": true
         },
         {
@@ -6448,6 +6688,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.024371928557170422,
+          "depth_rel_err_aligned": -0.1728384635951211,
           "support_correct": true
         },
         {
@@ -6469,6 +6711,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.010700924818169734,
+          "depth_rel_err_aligned": -0.6206118504436274,
           "support_correct": true
         },
         {
@@ -6490,6 +6734,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.08340595181037863,
+          "depth_rel_err_aligned": -0.61696986592175,
           "support_correct": true
         },
         {
@@ -6511,6 +6757,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0015659402116962782,
+          "depth_rel_err_aligned": -0.49451517683767027,
           "support_correct": true
         },
         {
@@ -6672,6 +6920,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.4372617933678709,
+          "depth_rel_err_aligned": -0.08221584344617833,
           "support_correct": true
         },
         {
@@ -6693,6 +6943,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.36150499955955845,
           "support_correct": true
         },
         {
@@ -6714,6 +6966,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5668021949901908,
+          "depth_rel_err_aligned": -0.07078739107612084,
           "support_correct": true
         },
         {
@@ -6735,6 +6989,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.2464021264476932,
+          "depth_rel_err_aligned": -0.4025765708961255,
           "support_correct": true
         }
       ],
@@ -6894,6 +7150,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.03243419776900074,
+          "depth_rel_err_aligned": -0.6061680764179245,
           "support_correct": true
         },
         {
@@ -6927,6 +7185,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5180721832533446,
+          "depth_rel_err_aligned": -0.2195758648849289,
           "support_correct": true
         },
         {
@@ -6948,6 +7208,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.011341269783198823,
+          "depth_rel_err_aligned": -0.7385524581684902,
           "support_correct": true
         },
         {
@@ -7090,6 +7352,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6902590206656356,
+          "depth_rel_err_aligned": -0.012480881014917077,
           "support_correct": true
         },
         {
@@ -7111,6 +7375,8 @@
           "gt_support": "modern_coffee_table_02-3",
           "pred_support": "modern-coffee-table-02-3-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.11947112362050122,
+          "depth_rel_err_aligned": -0.26527121015739946,
           "support_correct": true
         },
         {
@@ -7132,6 +7398,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.5151797249031081,
+          "depth_rel_err_aligned": -0.12433769683951056,
           "support_correct": true
         }
       ],
@@ -7261,6 +7529,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.03680155657318056,
+          "depth_rel_err_aligned": -0.5545708386099775,
           "support_correct": true
         }
       ],
@@ -7395,6 +7665,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.543615441722346,
+          "depth_rel_err_aligned": -0.08317118714133537,
           "support_correct": true
         },
         {
@@ -7440,6 +7712,8 @@
           "gt_support": "WoodenTable_01-1",
           "pred_support": "woodentable-01-1-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0011552346570397113,
+          "depth_rel_err_aligned": -0.5173400508587149,
           "support_correct": true
         },
         {
@@ -7461,6 +7735,8 @@
           "gt_support": "WoodenTable_01-1",
           "pred_support": "woodentable-01-1-1",
           "pred_truncated": true,
+          "box_iou_aligned": 0.323,
+          "depth_rel_err_aligned": -0.12024073949012606,
           "support_correct": true
         },
         {
@@ -7482,6 +7758,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.25686732505566257,
+          "depth_rel_err_aligned": -0.2243251390109539,
           "support_correct": true
         }
       ],
@@ -7648,6 +7926,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.049930114900290694,
+          "depth_rel_err_aligned": -0.7376845499846881,
           "support_correct": true
         },
         {
@@ -7669,6 +7949,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.45150321090904916,
+          "depth_rel_err_aligned": -0.18912228811817544,
           "support_correct": true
         },
         {
@@ -7702,6 +7984,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.3817947346900261,
+          "depth_rel_err_aligned": -0.15714354119781151,
           "support_correct": true
         },
         {
@@ -7723,6 +8007,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.3887105010342649,
+          "depth_rel_err_aligned": -0.15043822507834007,
           "support_correct": true
         },
         {
@@ -7744,6 +8030,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.48568018742029534,
           "support_correct": true
         },
         {
@@ -7765,6 +8053,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.3536034767212587,
+          "depth_rel_err_aligned": -0.108188441956809,
           "support_correct": true
         }
       ],
@@ -7955,6 +8245,8 @@
           "gt_support": "WoodenTable_03-2",
           "pred_support": "painted-wooden-cabinet-02-4-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.17225789998377114,
+          "depth_rel_err_aligned": -0.43247962566535264,
           "support_correct": false
         },
         {
@@ -7976,6 +8268,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.6266711952784674,
           "support_correct": true
         },
         {
@@ -7997,6 +8291,8 @@
           "gt_support": "WoodenTable_03-2",
           "pred_support": "painted-wooden-cabinet-02-4-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.20148801989896434,
+          "depth_rel_err_aligned": -0.09363833406417027,
           "support_correct": false
         },
         {
@@ -8018,6 +8314,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.4644853951775397,
+          "depth_rel_err_aligned": 0.12422871635338485,
           "support_correct": true
         }
       ],
@@ -8147,6 +8445,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.23493382333359963,
+          "depth_rel_err_aligned": -0.3949461233201519,
           "support_correct": true
         },
         {
@@ -8168,6 +8468,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.320383216869391,
           "support_correct": true
         }
       ],
@@ -8279,6 +8581,8 @@
           "gt_support": "floor",
           "pred_support": "none_detected",
           "pred_truncated": true,
+          "box_iou_aligned": 0.057961074444282036,
+          "depth_rel_err_aligned": -0.6083324157175212,
           "support_correct": false
         },
         {
@@ -8300,6 +8604,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.17215001205532296,
+          "depth_rel_err_aligned": -0.14832222328431427,
           "support_correct": true
         },
         {
@@ -8321,6 +8627,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.2703028198813024,
+          "depth_rel_err_aligned": -0.03006879000310017,
           "support_correct": true
         },
         {
@@ -8354,6 +8662,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.20881968001282086,
+          "depth_rel_err_aligned": -0.3156492613442687,
           "support_correct": true
         },
         {
@@ -8375,6 +8685,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": 0.10821289855164794,
           "support_correct": true
         }
       ],
@@ -8488,6 +8800,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6621219155899306,
+          "depth_rel_err_aligned": -0.034715775309751756,
           "support_correct": true
         },
         {
@@ -8509,6 +8823,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.3680171391407475,
+          "depth_rel_err_aligned": -0.4728640381614083,
           "support_correct": true
         },
         {
@@ -8530,6 +8846,8 @@
           "gt_support": "floor",
           "pred_support": "none_detected",
           "pred_truncated": true,
+          "box_iou_aligned": 0.24394028843721008,
+          "depth_rel_err_aligned": -0.36240305857945293,
           "support_correct": false
         },
         {
@@ -8551,6 +8869,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": 0.04814556061701672,
           "support_correct": true
         },
         {
@@ -8740,6 +9060,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.26556013239566556,
+          "depth_rel_err_aligned": -0.5011756537126008,
           "support_correct": true
         },
         {
@@ -8761,6 +9083,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5255670871915978,
+          "depth_rel_err_aligned": -0.22609236283782566,
           "support_correct": true
         },
         {
@@ -8782,6 +9106,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.1981730540710181,
+          "depth_rel_err_aligned": -0.3343438491014345,
           "support_correct": true
         },
         {
@@ -8815,6 +9141,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6870951640897077,
+          "depth_rel_err_aligned": -0.057941780850650534,
           "support_correct": true
         },
         {
@@ -8836,6 +9164,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.385617004302362,
+          "depth_rel_err_aligned": -0.21315179445808022,
           "support_correct": true
         },
         {
@@ -8857,6 +9187,8 @@
           "gt_support": "coffee_table_round_01-6",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": 0.23085260031004545,
           "support_correct": false
         },
         {
@@ -8878,6 +9210,8 @@
           "gt_support": "coffee_table_round_01-6",
           "pred_support": "coffee-table-round-01-6-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.06738806676824806,
+          "depth_rel_err_aligned": -0.4252507855759692,
           "support_correct": true
         }
       ],
@@ -8994,6 +9328,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5418142533295551,
+          "depth_rel_err_aligned": -0.16946614614619354,
           "support_correct": true
         },
         {
@@ -9015,6 +9351,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6452597923577099,
+          "depth_rel_err_aligned": -0.02728887066289155,
           "support_correct": true
         },
         {
@@ -9036,6 +9374,8 @@
           "gt_support": "floor",
           "pred_support": "none_detected",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.6644634182704653,
           "support_correct": false
         }
       ],
@@ -9188,6 +9528,8 @@
           "gt_support": "floor",
           "pred_support": "none_detected",
           "pred_truncated": true,
+          "box_iou_aligned": 0.13217676905909848,
+          "depth_rel_err_aligned": -0.4158536334018867,
           "support_correct": false
         },
         {
@@ -9209,6 +9551,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5633157287682875,
+          "depth_rel_err_aligned": -0.10089351913488388,
           "support_correct": true
         }
       ],
@@ -9356,6 +9700,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6655070054618856,
+          "depth_rel_err_aligned": -0.047706847944365055,
           "support_correct": true
         },
         {
@@ -9401,6 +9747,8 @@
           "gt_support": "modern_coffee_table_02-1",
           "pred_support": "modern-coffee-table-02-1-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.4252980241719259,
+          "depth_rel_err_aligned": -0.1660121542167618,
           "support_correct": true
         }
       ],
@@ -9563,6 +9911,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.7377460553038587,
+          "depth_rel_err_aligned": 0.021748851547624064,
           "support_correct": true
         },
         {
@@ -9608,6 +9958,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.6310633638166268,
+          "depth_rel_err_aligned": -0.12051908099701672,
           "support_correct": true
         },
         {
@@ -9629,6 +9981,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.18760166578160373,
+          "depth_rel_err_aligned": -0.6581233087752234,
           "support_correct": true
         }
       ],
@@ -9758,6 +10112,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.3969616179463314,
+          "depth_rel_err_aligned": -0.252456875421328,
           "support_correct": true
         },
         {
@@ -9779,6 +10135,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.39015839855767165,
+          "depth_rel_err_aligned": -0.14631114403151718,
           "support_correct": true
         },
         {
@@ -9800,6 +10158,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0304884236774577,
+          "depth_rel_err_aligned": -0.2015893065188993,
           "support_correct": true
         },
         {
@@ -9821,6 +10181,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.1163458884344182,
+          "depth_rel_err_aligned": -0.21463162534570876,
           "support_correct": true
         },
         {
@@ -9842,6 +10204,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.3206773618206235,
           "support_correct": true
         }
       ],
@@ -9958,6 +10322,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5500671512087217,
+          "depth_rel_err_aligned": -0.34395915090048607,
           "support_correct": true
         },
         {
@@ -9979,6 +10345,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.5298670231478224,
+          "depth_rel_err_aligned": -0.11861045064530107,
           "support_correct": true
         },
         {
@@ -10000,6 +10368,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6912384014538592,
+          "depth_rel_err_aligned": -0.040038985301393853,
           "support_correct": true
         }
       ],
@@ -10129,6 +10499,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.3300302544936822,
+          "depth_rel_err_aligned": -0.2946435326333557,
           "support_correct": true
         },
         {
@@ -10150,6 +10522,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.6229759730604985,
+          "depth_rel_err_aligned": -0.13709169269844018,
           "support_correct": true
         },
         {
@@ -10171,6 +10545,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.613392872901848,
+          "depth_rel_err_aligned": 0.012421205319344241,
           "support_correct": true
         },
         {
@@ -10192,6 +10568,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.00014610368048453295,
+          "depth_rel_err_aligned": -0.43400372497843365,
           "support_correct": true
         },
         {
@@ -10213,6 +10591,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": 0.09602282925455613,
           "support_correct": true
         }
       ],
@@ -10344,6 +10724,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.11163959093111626,
+          "depth_rel_err_aligned": -0.3652771509472748,
           "support_correct": true
         },
         {
@@ -10365,6 +10747,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.8498760105809393,
           "support_correct": true
         },
         {
@@ -10386,6 +10770,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.13725211906169918,
+          "depth_rel_err_aligned": 0.151308860183798,
           "support_correct": true
         }
       ],
@@ -10533,6 +10919,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.7030420290007465,
+          "depth_rel_err_aligned": -0.0834061188690164,
           "support_correct": true
         },
         {
@@ -10554,6 +10942,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.46252855070173676,
+          "depth_rel_err_aligned": 0.12354881453021889,
           "support_correct": true
         },
         {
@@ -10575,6 +10965,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.16167155359580992,
+          "depth_rel_err_aligned": -0.5173442200171499,
           "support_correct": true
         }
       ],
@@ -10709,6 +11101,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.548188220883944,
+          "depth_rel_err_aligned": -0.10311526561073321,
           "support_correct": true
         }
       ],
@@ -10856,6 +11250,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.3131587339225995,
+          "depth_rel_err_aligned": -0.5624081268958836,
           "support_correct": true
         },
         {
@@ -10877,6 +11273,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6084844495962592,
+          "depth_rel_err_aligned": -0.2924541523034588,
           "support_correct": true
         },
         {
@@ -10898,6 +11296,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.18122911402722308,
+          "depth_rel_err_aligned": -0.6239210231361636,
           "support_correct": true
         },
         {
@@ -10919,6 +11319,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5516875135341369,
+          "depth_rel_err_aligned": 0.32708587447816273,
           "support_correct": true
         },
         {
@@ -10940,6 +11342,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.6762188997063823,
+          "depth_rel_err_aligned": -0.14743896583139035,
           "support_correct": true
         },
         {
@@ -11081,6 +11485,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.2444676219844005,
+          "depth_rel_err_aligned": -0.15812292256823432,
           "support_correct": true
         },
         {
@@ -11102,6 +11508,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5943047805327044,
+          "depth_rel_err_aligned": -0.10840696455102335,
           "support_correct": true
         },
         {
@@ -11273,6 +11681,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.42956511796318175,
+          "depth_rel_err_aligned": -0.3427752147824118,
           "support_correct": true
         },
         {
@@ -11294,6 +11704,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.12449630166561446,
+          "depth_rel_err_aligned": -0.3178335951160316,
           "support_correct": true
         },
         {
@@ -11315,6 +11727,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.5356826691140042,
+          "depth_rel_err_aligned": -0.2830436447552259,
           "support_correct": true
         }
       ],
@@ -11462,6 +11876,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.4957745152658877,
+          "depth_rel_err_aligned": -0.010967453493718951,
           "support_correct": true
         },
         {
@@ -11483,6 +11899,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.5258684730738722,
+          "depth_rel_err_aligned": 0.0021934769916245106,
           "support_correct": true
         },
         {
@@ -11504,6 +11922,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.39443287256201476,
+          "depth_rel_err_aligned": -0.20581911085663998,
           "support_correct": true
         },
         {
@@ -11537,6 +11957,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.2787952588111675,
+          "depth_rel_err_aligned": -0.2950145643735873,
           "support_correct": true
         }
       ],
@@ -11650,6 +12072,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.4368132079093876,
+          "depth_rel_err_aligned": -0.3621887775334154,
           "support_correct": true
         },
         {
@@ -11671,6 +12095,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.22435314826106464,
+          "depth_rel_err_aligned": -0.23709596024233598,
           "support_correct": true
         },
         {
@@ -11704,6 +12130,8 @@
           "gt_support": "modern_coffee_table_02-1",
           "pred_support": "modern-coffee-table-02-1-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.12787809542733664,
+          "depth_rel_err_aligned": 2.1797090104472945,
           "support_correct": true
         },
         {
@@ -11852,6 +12280,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.35465172740294737,
+          "depth_rel_err_aligned": -0.15340982512020687,
           "support_correct": true
         },
         {
@@ -11885,6 +12315,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.11167101592729237,
+          "depth_rel_err_aligned": -0.2076347806609047,
           "support_correct": true
         }
       ],
@@ -12014,6 +12446,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.05998760628625415,
+          "depth_rel_err_aligned": -0.48969820123258584,
           "support_correct": true
         },
         {
@@ -12035,6 +12469,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.8978588726113123,
+          "depth_rel_err_aligned": 0.02781670393333254,
           "support_correct": true
         },
         {
@@ -12056,6 +12492,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.012058985667034179,
+          "depth_rel_err_aligned": -0.6808306363729749,
           "support_correct": true
         },
         {
@@ -12077,6 +12515,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.18562726933387627,
+          "depth_rel_err_aligned": -0.22190716347898934,
           "support_correct": true
         },
         {
@@ -12098,6 +12538,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": false,
+          "box_iou_aligned": 0.019867320848593738,
+          "depth_rel_err_aligned": -0.19660439128874216,
           "support_correct": true
         }
       ],
@@ -12229,6 +12671,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.39699000885291513,
+          "depth_rel_err_aligned": -0.2328219823226279,
           "support_correct": true
         },
         {
@@ -12250,6 +12694,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.6503803141632011,
+          "depth_rel_err_aligned": -0.046681736269368446,
           "support_correct": true
         },
         {
@@ -12271,6 +12717,8 @@
           "gt_support": "WoodenTable_03-3",
           "pred_support": "woodentable-03-3-1",
           "pred_truncated": false,
+          "box_iou_aligned": 0.0,
+          "depth_rel_err_aligned": -0.002417479642441684,
           "support_correct": true
         },
         {
@@ -12292,6 +12740,8 @@
           "gt_support": "floor",
           "pred_support": "floor",
           "pred_truncated": true,
+          "box_iou_aligned": 0.08026847102477355,
+          "depth_rel_err_aligned": -0.4435766274342912,
           "support_correct": true
         }
       ],

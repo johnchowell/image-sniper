@@ -354,6 +354,46 @@
       "verdict": "tie"
     },
     {
+      "metric": "objects.box_iou_aligned_mean",
+      "a": 0.292,
+      "b": 0.3225,
+      "diff_ci95": [
+        0.0188,
+        0.0443
+      ],
+      "verdict": "b higher"
+    },
+    {
+      "metric": "objects.box_iou_aligned_mean_truncated",
+      "a": 0.2755,
+      "b": 0.3106,
+      "diff_ci95": [
+        0.0192,
+        0.0538
+      ],
+      "verdict": "b higher"
+    },
+    {
+      "metric": "objects.depth_rel_err_aligned_median",
+      "a": 0.2261,
+      "b": 0.2135,
+      "diff_ci95": [
+        -0.0355,
+        0.0
+      ],
+      "verdict": "tie"
+    },
+    {
+      "metric": "objects.depth_rel_err_aligned_median_truncated",
+      "a": 0.2904,
+      "b": 0.2524,
+      "diff_ci95": [
+        -0.085,
+        -0.0032
+      ],
+      "verdict": "b lower"
+    },
+    {
       "metric": "objects.height_rel_err_aligned_median_whole",
       "a": 0.0497,
       "b": 0.0497,
