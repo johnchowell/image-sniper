@@ -15,6 +15,7 @@ All geometry is compared in the OpenCV camera frame (x right, y down, z forward)
 import argparse
 import datetime
 import glob
+import itertools
 import json
 import os
 import random
@@ -113,6 +114,28 @@ def gt_camera(gt):
 
 def to_cam(points, R, t):
     return np.asarray(points) @ R.T + t
+
+
+def box_iou(a, b, n=64):
+    """Volume IoU of two rectangular boxes given by their 8 corners (any order, any orientation), counted at the
+    cell centers of an n^3 grid over their union."""
+    def frame(c):
+        c = np.asarray(c, float)
+        d = c[1:] - c[0]
+        far = d[np.argmax(np.linalg.norm(d, axis=1))]
+        # The edges from corner 0 are the 3 corner offsets that sum to the far corner.
+        edges = min(itertools.combinations(d, 3), key=lambda e: np.linalg.norm(sum(e) - far))
+        return c[0], np.linalg.inv(np.stack(edges, 1))
+    both = np.concatenate([a, b])
+    lo, hi = both.min(0), both.max(0)
+    g = np.stack(np.meshgrid(*[l + (np.arange(n) + 0.5) * (h - l) / n for l, h in zip(lo, hi)], indexing="ij"), -1).reshape(-1, 3)
+    inside = []
+    for c in (a, b):
+        o, inv = frame(c)
+        u = (g - o) @ inv.T
+        inside.append(((u >= 0) & (u <= 1)).all(1))
+    union = (inside[0] | inside[1]).sum()
+    return float((inside[0] & inside[1]).sum() / union) if union else 0.0
 
 
 def plane_in_cam(point, normal, R, t):
@@ -320,6 +343,12 @@ def score_view(view_dir, names="oracle", layout_index=None):
                 "pred_support": best["support"],
                 "pred_truncated": best.get("truncated"),
             })
+            if best.get("corners"):
+                # Box shape: volume IoU and the extent along the view (one view sees the front face only).
+                pred_corners = scale * to_cam(np.array(best["corners"]), R_pc, t_pc)
+                gt_depth = np.ptp(corners_cam[:, 2])
+                record.update({"box_iou_aligned": box_iou(pred_corners, corners_cam),
+                               "depth_rel_err_aligned": float((np.ptp(pred_corners[:, 2]) - gt_depth) / gt_depth)})
             pred_by_gt[best["id"]] = obj["id"]
         objects.append(record)
     for record in objects:
@@ -463,6 +492,10 @@ def summarize(results):
             "center_err_aligned_m_median_whole": median_abs([o.get("center_err_aligned_m") for o in found if not o["truncated"]]),
             "center_err_m_median": median_abs([o.get("center_err_m") for o in found]),
             "height_rel_err_aligned_median": median_abs([o.get("height_rel_err_aligned") for o in found]),
+            "box_iou_aligned_mean": mean([o.get("box_iou_aligned") for o in found]),
+            "box_iou_aligned_mean_truncated": mean([o.get("box_iou_aligned") for o in found if o["truncated"]]),
+            "depth_rel_err_aligned_median": median_abs([o.get("depth_rel_err_aligned") for o in found]),
+            "depth_rel_err_aligned_median_truncated": median_abs([o.get("depth_rel_err_aligned") for o in found if o["truncated"]]),
             "height_rel_err_aligned_median_whole": median_abs([o.get("height_rel_err_aligned") for o in found if not o["truncated"]]),
             "truncation_flag_accuracy": mean([o.get("pred_truncated") == o["truncated"] for o in found if o.get("pred_truncated") is not None]),
             "support_accuracy": mean([o.get("support_correct") for o in found]),

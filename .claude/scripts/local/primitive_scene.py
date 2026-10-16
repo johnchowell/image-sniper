@@ -94,47 +94,59 @@ def fill(texture, known, fallback):
 _LAMA = []
 
 
-def quilt(texture, known, patch, seed=0):
-    """Exemplar texture continuation (image quilting, Efros and Freeman 2001): unknown texels are filled with
-    patch x patch blocks copied from fully known places, in order of distance from the known texels, each block
-    the best match (within 10%, at random) of the texels already there in its quarter-width overlap. A room
-    surface is a stationary material, so its unseen part has the color distribution and pattern of its seen
-    part; LaMa regresses to gray far from its context. None without one fully known block."""
-    h, w = known.shape
-    patch = min(patch, h, w)
+def full_blocks(known, patch):
+    """Top-left corners of the patch x patch blocks that are fully known, halving the patch down to 8 until one
+    fits; (None, None) without one."""
+    patch = min(patch, *known.shape)
     while patch >= 8:
         inside = cv2.integral(known.astype(np.uint8))
         full = (inside[patch:, patch:] - inside[:-patch, patch:] - inside[patch:, :-patch] + inside[:-patch, :-patch]) == patch * patch
         if full.any():
-            break
+            return full, patch
         patch //= 2
-    else:
+    return None, None
+
+
+def quilt(texture, known, patch, seed=0, source=None):
+    """Exemplar texture continuation (image quilting, Efros and Freeman 2001): unknown texels are filled with
+    patch x patch blocks copied from fully known places, in order of distance from the known texels, each block
+    the best match (within 10%, at random) of the texels already there in its quarter-width overlap. A room
+    surface is a stationary material, so its unseen part has the color distribution and pattern of its seen
+    part; LaMa regresses to gray far from its context. source: (texture, known) of another surface of the same
+    material at the same texel size, the exemplar when this one has no fully known block. None without one."""
+    h, w = known.shape
+    src, src_known = (texture, known) if source is None else source
+    full, patch = full_blocks(src_known, min(patch, h, w))
+    if full is None:
         return None
     rng = np.random.default_rng(seed)
     out = np.where(known[..., None], texture, 0).astype(np.float32)
+    src = np.where(src_known[..., None], src, 0).astype(np.float32)
     fy, fx = np.nonzero(full)  # the search runs over the exemplar's bounding box only
     y0, y1, x0, x1 = fy.min(), fy.max() + 1, fx.min(), fx.max() + 1
     full = full[y0:y1, x0:x1]
+    search = np.ascontiguousarray(src[y0:y1 + patch - 1, x0:x1 + patch - 1])
     filled = known.copy()
     step = max(1, patch - patch // 4)
     ys = sorted(set(list(range(0, h - patch + 1, step)) + [h - patch]))
     xs = sorted(set(list(range(0, w - patch + 1, step)) + [w - patch]))
-    dist = cv2.distanceTransform((~known).astype(np.uint8), cv2.DIST_L2, 3)
+    dist = cv2.distanceTransform((~known).astype(np.uint8), cv2.DIST_L2, 3) if known.any() else np.zeros((h, w), np.float32)
     blocks = sorted((dist[y + patch // 2, x + patch // 2], y, x) for y in ys for x in xs if not known[y:y + patch, x:x + patch].all())
     for _, y, x in blocks:
         have = filled[y:y + patch, x:x + patch]
         if have.all():
             continue
+        pick = None
         if have.any():
             mask = np.repeat(have[..., None], 3, -1).astype(np.float32)
-            err = cv2.matchTemplate(out[y0:y1 + patch - 1, x0:x1 + patch - 1], np.ascontiguousarray(out[y:y + patch, x:x + patch]), cv2.TM_SQDIFF, mask=mask)
+            err = cv2.matchTemplate(search, np.ascontiguousarray(out[y:y + patch, x:x + patch]), cv2.TM_SQDIFF, mask=mask)
             err = np.where(full & np.isfinite(err), np.maximum(err, 0), np.inf)
             pick = np.argwhere(err <= err.min() * 1.1 + 1e-6)
-        if not have.any() or not len(pick):
+        if pick is None or not len(pick):
             pick = np.argwhere(full)
-        sy, sx = pick[rng.integers(len(pick))] + (y0, x0)
+        sy, sx = pick[rng.integers(len(pick))]
         block = out[y:y + patch, x:x + patch]
-        block[~have] = out[sy:sy + patch, sx:sx + patch][~have]
+        block[~have] = search[sy:sy + patch, sx:sx + patch][~have]
         have[:] = True
     return out
 
@@ -156,7 +168,7 @@ def detail_fill(texture, known, fallback, long_side, texel_m, margin_m, patch_m)
     size = (max(8, int(round(w * scale))), max(8, int(round(h * scale))))
     small = cv2.resize(np.where(ctx[..., None], texture, 0).astype(np.float32), size, interpolation=cv2.INTER_AREA)
     small_known = cv2.resize(ctx.astype(np.float32), size, interpolation=cv2.INTER_AREA) > 0.99
-    if small_known.mean() < 0.02:
+    if small_known.mean() < 0.02 or full_blocks(small_known, patch)[0] is None:
         return base
     k = small_known.astype(np.float32)
     sigma = max(1.0, patch / 2)
@@ -169,31 +181,49 @@ def detail_fill(texture, known, fallback, long_side, texel_m, margin_m, patch_m)
     return np.where(known[..., None], texture, np.clip(base + q, 0, 1)).astype(np.float32)
 
 
-def synthesize(texture, known, fallback, long_side, texel_m, margin_m, method="lama", patch_m=0.25):
+def synthesize(texture, known, fallback, long_side, texel_m, margin_m, method="lama", patch_m=0.25, exemplar=None):
     """Fills unknown texels of a rectified room texture with LaMa (its Fourier convolutions continue periodic
-    patterns: planks, bricks, tiles), at most long_side texels on the long side; known texels stay as they are.
-    Known texels within margin_m of a hole are filled too and are not context: there an occluder's edge and its
-    contact shadow tint the surface, and LaMa would continue that tint across the hole as a dark patch.
-    Without enough known texels to continue, fill() (inpainting near, the fallback far)."""
-    if known.all() or known.mean() < 0.02:
-        return fill(texture, known, fallback)
+    patterns: planks, bricks, tiles) or quilt(), at most long_side texels on the long side; known texels stay as
+    they are. Known texels within margin_m of a hole are filled too and are not context: there an occluder's edge
+    and its contact shadow tint the surface, and LaMa would continue that tint across the hole as a dark patch.
+    exemplar: (texture, known, texel_m) of a sibling surface (another wall), quilted from when this surface has
+    too few known texels of its own. Without either, fill() (inpainting near, the fallback far)."""
+    if known.all():
+        return texture
+    h, w = known.shape
+    scale = min(1.0, long_side / max(h, w))
+    patch = int(round(patch_m * scale / texel_m))
+    own = known.mean() >= 0.02 and full_blocks(known, patch)[0] is not None
+    if method in ("quilt", "detail") and not own and exemplar is not None:
+        e_tex, e_known, e_texel = exemplar
+        f = e_texel / (texel_m / scale)  # the exemplar at this surface's working texel size
+        e_size = (max(8, int(round(e_known.shape[1] * f))), max(8, int(round(e_known.shape[0] * f))))
+        source = (cv2.resize(np.where(e_known[..., None], e_tex, 0).astype(np.float32), e_size, interpolation=cv2.INTER_AREA),
+                  cv2.resize(e_known.astype(np.float32), e_size, interpolation=cv2.INTER_AREA) > 0.99)
+        size = (max(8, int(round(w * scale))), max(8, int(round(h * scale))))
+        small = cv2.resize(np.where(known[..., None], texture, 0).astype(np.float32), size, interpolation=cv2.INTER_AREA)
+        small_known = cv2.resize(known.astype(np.float32), size, interpolation=cv2.INTER_AREA) > 0.99
+        out = quilt(small, small_known, patch, source=source)
+        if out is not None:
+            out = cv2.resize(out, (w, h), interpolation=cv2.INTER_CUBIC)
+            return np.where(known[..., None], texture, np.clip(out, 0, 1)).astype(np.float32)
     if method == "detail":
         return detail_fill(texture, known, fallback, long_side, texel_m, margin_m, patch_m)
+    if known.mean() < 0.02:
+        return fill(texture, known, fallback)
     from simple_lama_inpainting import SimpleLama
     if not _LAMA:
         _LAMA.append(SimpleLama())
-    h, w = known.shape
     r = int(round(margin_m / texel_m))
     if r > 0:
         hole = cv2.dilate((~known).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1)))
         known = known & (hole == 0)
-    scale = min(1.0, long_side / max(h, w))
     size = (max(8, int(round(w * scale))), max(8, int(round(h * scale))))
     small = cv2.resize(np.where(known[..., None], texture, 0).astype(np.float32), size, interpolation=cv2.INTER_AREA)
     small_known = cv2.resize(known.astype(np.float32), size, interpolation=cv2.INTER_AREA) > 0.99
     out = None
     if method == "quilt":
-        out = quilt(small, small_known, int(round(patch_m * scale / texel_m)))
+        out = quilt(small, small_known, patch)
     if out is None:
         small = fill(small, small_known, fallback)  # a neutral start under the hole (LaMa sees the masked pixels too)
         out = _LAMA[0](image_of(small), Image.fromarray(((~small_known) * 255).astype(np.uint8)))
@@ -334,7 +364,8 @@ def texel_for(view, origin, u_axis, v_axis, normal, size_u, size_v, valid_px, ar
     return float(np.clip(np.percentile(footprint, 10), args.texel_min_m, args.texel_m))
 
 
-def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, size_v, valid_px, args, structure=True, fallback=None, cutout=False, emissive=False):
+def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, size_v, valid_px, args, structure=True, fallback=None, cutout=False, emissive=False,
+                     exemplar=None, exemplars=None):
     """A planar primitive with relief and PBR maps. valid_px: pixels whose depth belongs to this surface."""
     texel = max(texel_for(view, origin, u_axis, v_axis, normal, size_u, size_v, valid_px, args), max(size_u, size_v) / args.max_texture)
     tw, th = max(4, int(round(size_u / texel))), max(4, int(round(size_v / texel)))
@@ -394,7 +425,10 @@ def textured_surface(name, maps, view, origin, u_axis, v_axis, normal, size_u, s
     if structure and not cutout and args.texture_fill != "telea":
         # Glass and glowing texels are not the surface's material: they are no context for its continuation.
         wall = seen & ~lit
-        color = synthesize(np.where(wall[..., None], color, 0), wall, fallback, args.lama_size, texel, args.lama_margin_m, args.texture_fill, args.quilt_patch_m)
+        if exemplars is not None and wall.any():
+            exemplars.append((np.where(wall[..., None], color, 0).astype(np.float32), wall, texel))
+        color = synthesize(np.where(wall[..., None], color, 0), wall, fallback, args.lama_size, texel, args.lama_margin_m, args.texture_fill,
+                           args.quilt_patch_m, exemplar)
     else:
         color = fill(np.where(seen[..., None], color, 0), seen, fallback)
     rough = np.where(seen, sample(rough_src, uu, vv), 0.8).astype(np.float32)
@@ -567,6 +601,7 @@ def build_parser():
     # PSNR -0.03 dB on both (texture with the wrong phase).
     parser.add_argument("--texture-fill", choices=["telea", "lama", "quilt", "detail"], default="detail",
                         help="unseen texels of room surfaces: telea (inpainting near seen texels, the median color far), lama (texture continued by LaMa), quilt (seen texture continued by exemplar blocks) or detail (telea low frequencies plus quilted high-pass detail)")
+    parser.add_argument("--wall-exemplar", action="store_true", help="quilt/detail: a wall with too few seen texels continues the most-seen wall's texture")
     parser.add_argument("--quilt-patch-m", type=float, default=0.25, help="quilt: block size (m)")
     parser.add_argument("--lama-margin-m", type=float, default=0.05, help="lama: band of seen texels at a hole that is filled too")
     parser.add_argument("--lama-size", type=int, default=1024, help="lama: long side (texels) of the texture LaMa fills")
@@ -631,6 +666,7 @@ def main():
         owner[k] = match["id"] if dist < 0.05 else None
     # Shell walls first (they set the fallback color for unseen walls).
     edges = sorted(range(len(poly)), key=lambda k: owner[k] is None)
+    wall_exemplars = []
     for k in edges:
         a, b = poly[k], poly[(k + 1) % len(poly)]
         length = float(np.linalg.norm(b - a))
@@ -641,8 +677,12 @@ def main():
         if (view.position - np.array([a[0], 0, a[1]])) @ inward < 0:
             inward = -inward
         fallback = np.median(wall_colors, 0) if (owner[k] is None and wall_colors) else None
+        # The walls of a room share one material: a wall seen too little to continue its own texture takes the
+        # most-seen wall's (by seen area) as its exemplar.
+        exemplar = max(wall_exemplars, key=lambda e: e[1].sum() * e[2] ** 2, default=None) if args.wall_exemplar else None
         mesh, info = textured_surface(f"room-wall-{k}", maps, view, np.array([a[0], 0, a[1]]), u_axis, np.array([0, 1.0, 0]), inward,
-                                      length, room_h, structure_px, args, fallback=fallback, emissive=owner[k] in lit)
+                                      length, room_h, structure_px, args, fallback=fallback, emissive=owner[k] in lit,
+                                      exemplar=exemplar, exemplars=wall_exemplars)
         if owner[k]:
             wall_colors.append(np.asarray(mesh.visual.material.baseColorTexture.convert("RGB")).reshape(-1, 3).mean(0) / 255)
         scene.add_geometry(mesh, geom_name=f"room-wall-{k}")
@@ -702,7 +742,7 @@ def main():
     write_request(os.path.join(scene_dir, f".{n}-primitive-scene-request.json"), {
         "kind": "primitive-scene", "provider": "local/primitives", "endpoint": "local/primitives", "index": n, "status": "completed",
         "input_files": [layout_path, layout["source_image"], maps.plate_path], "output_files": [out],
-        "input": {k: getattr(args, k) for k in ("texel_m", "texel_min_m", "max_texture", "grid_m", "relief_m", "relief_sigma_m", "no_relief", "depth_noise", "voxel_m", "voxels", "uv_grid_m", "surface", "smooth_iterations", "clutter_min_px", "clutter_depth_m", "texture_fill", "lama_size", "lama_margin_m", "quilt_patch_m", "window_backdrop", "opening_depth_m", "backdrop_min_m", "backdrop_spread")},
+        "input": {k: getattr(args, k) for k in ("texel_m", "texel_min_m", "max_texture", "grid_m", "relief_m", "relief_sigma_m", "no_relief", "depth_noise", "voxel_m", "voxels", "uv_grid_m", "surface", "smooth_iterations", "clutter_min_px", "clutter_depth_m", "texture_fill", "lama_size", "lama_margin_m", "quilt_patch_m", "wall_exemplar", "window_backdrop", "opening_depth_m", "backdrop_min_m", "backdrop_spread")},
         "maps": {"structure_albedo": maps.plate_light["files"]["albedo"] if maps.plate_light else None,
                  "object_albedo": maps.photo_light["files"]["albedo"] if maps.photo_light else None},
         "result": report})
