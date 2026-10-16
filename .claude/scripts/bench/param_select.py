@@ -6,6 +6,7 @@ The worlds are left built with the last set given.
   param_select.py --split train --study light-lift --set default '{}' --set support-0.1 '{"light_min_support": 0.1}'
 """
 import argparse
+import glob
 import json
 import os
 import subprocess
@@ -18,8 +19,11 @@ import evaluate  # noqa: E402
 
 
 def rebuild(split, params, names="oracle"):
-    for view_dir in evaluate.views(split):
-        world = evaluate.world_name(view_dir, names)
+    worlds = [evaluate.world_name(v, names) for v in evaluate.views(split)]
+    newer = [p for w in worlds for p in glob.glob(os.path.join(REPO, "worlds", w, "output", "layout", "[1-9]*-layout.json"))]
+    if newer:
+        raise SystemExit(f"Scene builds read the highest layout index, not the index 0 this study builds. Remove: {newer}")
+    for world in worlds:
         subprocess.run(["node", ".claude/scripts/layout/build-layout.mjs", "--world", world, "--index", "0", "--params", json.dumps(params)],
                        cwd=REPO, check=True, capture_output=True)
 
@@ -36,7 +40,7 @@ def main():
     for name, text in args.set:
         params = json.loads(text)
         rebuild(args.split, params)
-        results = [evaluate.score_view(v) for v in evaluate.views(args.split)]
+        results = [evaluate.score_view(v, layout_index=0) for v in evaluate.views(args.split)]
         summary = evaluate.summarize(results)
         rows[name] = {"params": params, **summary}
         if args.save_scores:
