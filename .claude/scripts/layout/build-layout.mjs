@@ -41,7 +41,8 @@ export const DEFAULT_PARAMS = {
   wall_behind_tolerance_m: 0.1,
   wall_behind_max_fraction: 0.01,
   object_exterior_cut: 1,
-  object_exterior_drop: 0,
+  // A mask mostly seen through a wall is the opening itself (train: precision 0.910 -> 0.914, all else tied; val: no change).
+  object_exterior_drop: 0.5,
   wall_tall_behind_max_fraction: 0.08,
   exterior_min_fraction: 0.5,
   exterior_wall_min_gap_m: 0.5,
