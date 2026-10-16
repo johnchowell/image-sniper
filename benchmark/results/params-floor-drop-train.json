@@ -1,0 +1,91 @@
+{
+  "f-d40": {
+    "params": {
+      "floor_below_walls": 1,
+      "object_exterior_drop": 0.4
+    },
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.0732,
+      "pitch_err_deg": 0.3258,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.0798,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.944,
+      "scale_err_median": 0.063,
+      "log_scale_bias": 0.0606
+    },
+    "structure": {
+      "floor_found_aligned": 0.9831,
+      "wall_found_aligned": 0.8871,
+      "ceiling_found_aligned": 1.0,
+      "wall_found": 0.6935,
+      "class_correct": 1.0,
+      "floor_precision": 0.9833,
+      "wall_precision": 0.8662,
+      "ceiling_precision": 0.9394,
+      "wall_predicted_per_view": 2.3667,
+      "normal_err_deg_median": 0.622,
+      "offset_err_m_median": 0.0807,
+      "offset_err_aligned_m_median": 0.0547
+    },
+    "objects": {
+      "recall": 0.8517,
+      "recall_of_listed": 0.8517,
+      "listed_fraction": 1.0,
+      "precision": 0.918,
+      "recall_by_size": {
+        "under_0.2pct": 0.5714,
+        "0.2_to_1pct": 0.7969,
+        "1_to_5pct": 0.8592,
+        "over_5pct": 0.9346
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.7824,
+      "center_err_aligned_m_median": 0.1513,
+      "center_err_aligned_m_median_truncated": 0.1997,
+      "center_err_aligned_m_median_whole": 0.1192,
+      "center_err_m_median": 0.3014,
+      "height_rel_err_aligned_median": 0.0714,
+      "box_iou_aligned_mean": 0.3374,
+      "box_iou_aligned_mean_truncated": 0.321,
+      "depth_rel_err_aligned_median": 0.2143,
+      "depth_rel_err_aligned_median_truncated": 0.2439,
+      "height_rel_err_aligned_median_whole": 0.0508,
+      "truncation_flag_accuracy": 0.9598,
+      "support_accuracy": 0.9464
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5698,
+      "light_source_iou_final_mean": 0.6773,
+      "false_light_fraction_final_mean": 0.0225,
+      "window_located": 0.8627,
+      "window_located_clipped": 0.76,
+      "window_located_rolloff": 0.9615,
+      "window_rect_iou_aligned_mean": 0.6097,
+      "window_rect_iou_mean": 0.3984,
+      "window_normal_err_deg_median": 0.754,
+      "window_width_rel_err_aligned_median": 0.1248,
+      "window_center_err_aligned_m_median": 0.1663,
+      "light_sources_per_view": 1.5667
+    },
+    "plate": {
+      "psnr_furniture_px_mean": 18.6851,
+      "psnr_unedited_source_mean": 10.7237,
+      "views": 2
+    },
+    "environment": {
+      "absrel_hidden_metric_mean": 0.4773,
+      "absrel_hidden_aligned_mean": 0.3934,
+      "views": 2
+    }
+  }
+}
