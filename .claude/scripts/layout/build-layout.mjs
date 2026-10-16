@@ -46,7 +46,8 @@ export const DEFAULT_PARAMS = {
   wall_behind_max_fraction: 0.01,
   object_exterior_cut: 1,
   // A mask mostly seen through a wall is the opening itself (train: precision 0.910 -> 0.914, all else tied; val: no change).
-  object_exterior_drop: 0.5,
+  // 0.4 with floor_below_walls (train: 1058 only, its window-seen mask 0.49 cut after the floor moves; val: no change).
+  object_exterior_drop: 0.4,
   wall_tall_behind_max_fraction: 0.08,
   exterior_min_fraction: 0.5,
   exterior_wall_min_gap_m: 0.5,
@@ -85,7 +86,9 @@ export const DEFAULT_PARAMS = {
   scale_use_objects: 1,
   scale_outlier_z: 3,
   floor_prior_select: 0,
-  floor_below_walls: 0,  // 1: a floor plane that wall points continue beneath is a support surface; the floor moves to the walls' foot
+  // 1: a floor plane that wall points continue beneath is a support surface; the floor moves to the walls' foot.
+  // Train: fires on 1058 only (camera height err -0.53 -> -0.10 m, floor precision 0.967 -> 0.983); val: fires on none.
+  floor_below_walls: 1,
   floor_wall_below_m: 0.25
 };
 
