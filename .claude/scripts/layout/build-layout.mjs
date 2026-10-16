@@ -40,7 +40,8 @@ export const DEFAULT_PARAMS = {
   snap_max_rms_m: 0.05,
   wall_behind_tolerance_m: 0.1,
   // > 0: a point is behind a wall when its depth along its ray exceeds the wall's by this fraction (scale-invariant;
-  // a fixed metre tolerance moves cells across the test when the metric scale changes).
+  // a fixed metre tolerance moves cells across the test when the metric scale changes). 0.02: train all ties, val
+  // all ties with point estimates worse (camera height 0.084 -> 0.100 m, walls found 0.571 -> 0.548): off.
   wall_behind_relative: 0,
   wall_behind_max_fraction: 0.01,
   object_exterior_cut: 1,
