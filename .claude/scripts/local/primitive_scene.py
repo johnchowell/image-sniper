@@ -536,7 +536,9 @@ def build_parser():
     parser.add_argument("--quilt-patch-m", type=float, default=0.25, help="quilt: block size (m)")
     parser.add_argument("--lama-margin-m", type=float, default=0.05, help="lama: band of seen texels at a hole that is filled too")
     parser.add_argument("--lama-size", type=int, default=1024, help="lama: long side (texels) of the texture LaMa fills")
-    parser.add_argument("--roughness", type=float, default=-1.0, help="constant roughness of every material; -1 estimates it from the light stage's non-diffuse light")
+    parser.add_argument("--roughness", type=float, default=0.8,
+                        help="constant roughness of every material; -1 estimates it from the light stage's non-diffuse light (novel views: "
+                             "0.8 is better on LPIPS on train and val, and on PSNR on val)")
     parser.add_argument("--free-weight", type=float, default=0.15, help="registration: cost (m) of the asset's surface fraction in seen-through space or outside the prior's cube")
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
     parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
