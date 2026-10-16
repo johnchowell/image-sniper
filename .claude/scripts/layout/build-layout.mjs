@@ -55,13 +55,14 @@ export const DEFAULT_PARAMS = {
   hidden_base: 1,
   hidden_base_min_top_m: 0.2,
   // 1: a box's extent along the view (only its front face is seen) grows to the typical depth of its kind
-  // (DEPTH_PRIOR_M), away from the camera, up to the wall behind it. vs 0, box IoU: train +0.031 [+0.019, +0.044],
-  // val +0.022 [+0.002, +0.058]; every other metric ties.
+  // (DEPTH_PRIOR_M), away from the camera, up to the wall behind it. vs 0, box IoU: train +0.035 [+0.021, +0.050],
+  // val +0.022 [+0.002, +0.058]; train depth error -0.018 [-0.039, -0.001]; every other metric ties.
   object_depth_prior: 1,
   // Unseen depth of any other object from its footprint aspect: at least object_depth_aspect times its seen width
   // (train truth: the median short/long footprint side is 0.7-1.0 for most furniture). Thin objects are exempt.
-  object_depth_aspect: 0,
-  object_depth_aspect_min_height: 0,  // 1: the aspect bound uses min(seen width, height) (elongated low objects: beds, players)
+  // 1.0 with min_height vs 0, box IoU: train +0.010 [+0.004, +0.017], val +0.0096 [+0.0028, +0.0194]; every other metric ties.
+  object_depth_aspect: 1.0,
+  object_depth_aspect_min_height: 1,  // 1: the aspect bound uses min(seen width, height) (elongated low objects: beds, players)
   hidden_base_jump_m: 0.1,
   hidden_base_jump_fraction: 0.05,
   flat_mask_min_extent_m: 1.5,
