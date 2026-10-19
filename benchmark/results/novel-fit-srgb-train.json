@@ -1,0 +1,162 @@
+[
+  {
+    "world": "bench-train-room-1006-view-0",
+    "scene": "worlds/bench-train-room-1006-view-0/output/scene/7-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 15.784,
+      "orbit+35": 16.647,
+      "forward": 15.656
+    },
+    "psnr_db_mean": 16.029,
+    "lpips": {
+      "orbit-35": 0.3152,
+      "orbit+35": 0.3122,
+      "forward": 0.2989
+    },
+    "lpips_mean": 0.3088
+  },
+  {
+    "world": "bench-train-room-1010-view-0",
+    "scene": "worlds/bench-train-room-1010-view-0/output/scene/7-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 16.936,
+      "orbit+35": 20.076,
+      "forward": 19.742
+    },
+    "psnr_db_mean": 18.918,
+    "lpips": {
+      "orbit-35": 0.2923,
+      "orbit+35": 0.2833,
+      "forward": 0.2096
+    },
+    "lpips_mean": 0.2617
+  },
+  {
+    "world": "bench-train-room-1015-view-0",
+    "scene": "worlds/bench-train-room-1015-view-0/output/scene/19-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 13.602,
+      "orbit+35": 13.585,
+      "forward": 14.77
+    },
+    "psnr_db_mean": 13.986,
+    "lpips": {
+      "orbit-35": 0.4578,
+      "orbit+35": 0.5796,
+      "forward": 0.3535
+    },
+    "lpips_mean": 0.4636
+  },
+  {
+    "world": "bench-train-room-1023-view-0",
+    "scene": "worlds/bench-train-room-1023-view-0/output/scene/9-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 20.041,
+      "orbit+35": 18.417,
+      "forward": 19.195
+    },
+    "psnr_db_mean": 19.218,
+    "lpips": {
+      "orbit-35": 0.2124,
+      "orbit+35": 0.2311,
+      "forward": 0.1584
+    },
+    "lpips_mean": 0.2006
+  },
+  {
+    "world": "bench-train-room-1028-view-0",
+    "scene": "worlds/bench-train-room-1028-view-0/output/scene/9-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 15.058,
+      "orbit+35": 15.206,
+      "forward": 16.169
+    },
+    "psnr_db_mean": 15.478,
+    "lpips": {
+      "orbit-35": 0.3585,
+      "orbit+35": 0.3614,
+      "forward": 0.3398
+    },
+    "lpips_mean": 0.3532
+  },
+  {
+    "world": "bench-train-room-1030-view-0",
+    "scene": "worlds/bench-train-room-1030-view-0/output/scene/7-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 13.8,
+      "orbit+35": 14.694,
+      "forward": 17.643
+    },
+    "psnr_db_mean": 15.379,
+    "lpips": {
+      "orbit-35": 0.4293,
+      "orbit+35": 0.3303,
+      "forward": 0.32
+    },
+    "lpips_mean": 0.3599
+  },
+  {
+    "world": "bench-train-room-1036-view-0",
+    "scene": "worlds/bench-train-room-1036-view-0/output/scene/9-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 19.8,
+      "orbit+35": 15.871,
+      "forward": 19.977
+    },
+    "psnr_db_mean": 18.549,
+    "lpips": {
+      "orbit-35": 0.3248,
+      "orbit+35": 0.3999,
+      "forward": 0.323
+    },
+    "lpips_mean": 0.3492
+  },
+  {
+    "world": "bench-train-room-1045-view-0",
+    "scene": "worlds/bench-train-room-1045-view-0/output/scene/8-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 19.225,
+      "orbit+35": 22.85,
+      "forward": 21.306
+    },
+    "psnr_db_mean": 21.127,
+    "lpips": {
+      "orbit-35": 0.2293,
+      "orbit+35": 0.1817,
+      "forward": 0.1624
+    },
+    "lpips_mean": 0.1911
+  },
+  {
+    "world": "bench-train-room-1052-view-0",
+    "scene": "worlds/bench-train-room-1052-view-0/output/scene/7-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 18.364,
+      "orbit+35": 15.796,
+      "forward": 18.642
+    },
+    "psnr_db_mean": 17.601,
+    "lpips": {
+      "orbit-35": 0.3415,
+      "orbit+35": 0.387,
+      "forward": 0.3121
+    },
+    "lpips_mean": 0.3469
+  },
+  {
+    "world": "bench-train-room-1058-view-0",
+    "scene": "worlds/bench-train-room-1058-view-0/output/scene/8-primitive-scene-fosrgb",
+    "psnr_db": {
+      "orbit-35": 18.557,
+      "orbit+35": 16.37,
+      "forward": 21.9
+    },
+    "psnr_db_mean": 18.942,
+    "lpips": {
+      "orbit-35": 0.4371,
+      "orbit+35": 0.4004,
+      "forward": 0.253
+    },
+    "lpips_mean": 0.3635
+  }
+]

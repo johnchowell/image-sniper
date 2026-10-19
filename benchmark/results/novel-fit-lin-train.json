@@ -1,0 +1,162 @@
+[
+  {
+    "world": "bench-train-room-1006-view-0",
+    "scene": "worlds/bench-train-room-1006-view-0/output/scene/7-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 15.937,
+      "orbit+35": 16.658,
+      "forward": 15.869
+    },
+    "psnr_db_mean": 16.155,
+    "lpips": {
+      "orbit-35": 0.3185,
+      "orbit+35": 0.3173,
+      "forward": 0.297
+    },
+    "lpips_mean": 0.3109
+  },
+  {
+    "world": "bench-train-room-1010-view-0",
+    "scene": "worlds/bench-train-room-1010-view-0/output/scene/7-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 17.172,
+      "orbit+35": 20.029,
+      "forward": 19.771
+    },
+    "psnr_db_mean": 18.991,
+    "lpips": {
+      "orbit-35": 0.2934,
+      "orbit+35": 0.2846,
+      "forward": 0.2121
+    },
+    "lpips_mean": 0.2634
+  },
+  {
+    "world": "bench-train-room-1015-view-0",
+    "scene": "worlds/bench-train-room-1015-view-0/output/scene/19-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 13.648,
+      "orbit+35": 13.8,
+      "forward": 14.824
+    },
+    "psnr_db_mean": 14.091,
+    "lpips": {
+      "orbit-35": 0.4579,
+      "orbit+35": 0.5797,
+      "forward": 0.3544
+    },
+    "lpips_mean": 0.464
+  },
+  {
+    "world": "bench-train-room-1023-view-0",
+    "scene": "worlds/bench-train-room-1023-view-0/output/scene/9-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 19.791,
+      "orbit+35": 18.487,
+      "forward": 19.327
+    },
+    "psnr_db_mean": 19.202,
+    "lpips": {
+      "orbit-35": 0.2131,
+      "orbit+35": 0.2306,
+      "forward": 0.1562
+    },
+    "lpips_mean": 0.2
+  },
+  {
+    "world": "bench-train-room-1028-view-0",
+    "scene": "worlds/bench-train-room-1028-view-0/output/scene/9-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 14.564,
+      "orbit+35": 14.968,
+      "forward": 16.152
+    },
+    "psnr_db_mean": 15.228,
+    "lpips": {
+      "orbit-35": 0.3642,
+      "orbit+35": 0.3614,
+      "forward": 0.3483
+    },
+    "lpips_mean": 0.358
+  },
+  {
+    "world": "bench-train-room-1030-view-0",
+    "scene": "worlds/bench-train-room-1030-view-0/output/scene/7-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 13.676,
+      "orbit+35": 14.6,
+      "forward": 17.782
+    },
+    "psnr_db_mean": 15.353,
+    "lpips": {
+      "orbit-35": 0.4305,
+      "orbit+35": 0.3303,
+      "forward": 0.319
+    },
+    "lpips_mean": 0.3599
+  },
+  {
+    "world": "bench-train-room-1036-view-0",
+    "scene": "worlds/bench-train-room-1036-view-0/output/scene/9-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 19.409,
+      "orbit+35": 16.087,
+      "forward": 19.907
+    },
+    "psnr_db_mean": 18.468,
+    "lpips": {
+      "orbit-35": 0.3296,
+      "orbit+35": 0.3968,
+      "forward": 0.3263
+    },
+    "lpips_mean": 0.3509
+  },
+  {
+    "world": "bench-train-room-1045-view-0",
+    "scene": "worlds/bench-train-room-1045-view-0/output/scene/8-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 19.387,
+      "orbit+35": 22.604,
+      "forward": 21.27
+    },
+    "psnr_db_mean": 21.087,
+    "lpips": {
+      "orbit-35": 0.2285,
+      "orbit+35": 0.181,
+      "forward": 0.1626
+    },
+    "lpips_mean": 0.1907
+  },
+  {
+    "world": "bench-train-room-1052-view-0",
+    "scene": "worlds/bench-train-room-1052-view-0/output/scene/7-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 17.694,
+      "orbit+35": 16.309,
+      "forward": 17.948
+    },
+    "psnr_db_mean": 17.317,
+    "lpips": {
+      "orbit-35": 0.3439,
+      "orbit+35": 0.3938,
+      "forward": 0.3166
+    },
+    "lpips_mean": 0.3514
+  },
+  {
+    "world": "bench-train-room-1058-view-0",
+    "scene": "worlds/bench-train-room-1058-view-0/output/scene/8-primitive-scene-folin",
+    "psnr_db": {
+      "orbit-35": 18.597,
+      "orbit+35": 16.422,
+      "forward": 22.069
+    },
+    "psnr_db_mean": 19.029,
+    "lpips": {
+      "orbit-35": 0.4406,
+      "orbit+35": 0.401,
+      "forward": 0.2571
+    },
+    "lpips_mean": 0.3662
+  }
+]

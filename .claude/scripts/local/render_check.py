@@ -104,7 +104,7 @@ def main():
     parser.add_argument("--light-basis", type=int, default=1, help="1: fit ceiling and side lights too; 0: window and dominant fill only")
     parser.add_argument("--fit-scale", type=float, default=0.25, help="render size of the light basis relative to the photo")
     parser.add_argument("--fit-samples", type=int, default=16)
-    parser.add_argument("--fit-objective", choices=("linear", "srgb"), default="linear",
+    parser.add_argument("--fit-objective", choices=("linear", "srgb"), default="srgb",
                         help="linear: least squares on linear luminance, then a median-log exposure; srgb: the light powers and the exposure minimize the error after the sRGB response")
     parser.add_argument("--no-emit", default="", help="comma-separated material names whose emission is turned off (experiments)")
     parser.add_argument("--tag", default="", help="suffix for the output files (experiments)")
@@ -353,6 +353,9 @@ def main():
     rl = render @ LUMA
     ok = (photo.max(-1) < 0.97) & (pl_full > 0.002) & (rl > 1e-5) & ~emitter_mask(layout, size)
     # Exposure only: the fit-size render has fewer samples, so rescale by the median log ratio on mid-tones.
+    # srgb (default; novel views train 17.49 -> 17.52 dB, val 16.36 -> 16.60 dB, home-office source 12.8 -> 16.5 dB):
+    # a linear least-squares fit followed by a median-log exposure has two objectives, and the exposure step then
+    # pulls the window the fit made white back to gray (home-office exposure 0.68).
     exposure = float(np.exp(np.median(np.log(pl_full[ok]) - np.log(rl[ok])))) if ok.sum() > 100 else 1.0
     if args.fit_objective == "srgb" and ok.sum() > 100:
         # The same objective as the fit: the exposure only removes the scale the fit-size render missed.
