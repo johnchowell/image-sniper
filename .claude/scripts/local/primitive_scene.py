@@ -616,6 +616,7 @@ def build_parser():
     parser.add_argument("--roughness", type=float, default=0.8,
                         help="constant roughness of every material; -1 estimates it from the light stage's non-diffuse light (novel views: "
                              "0.8 is better on LPIPS on train and val, and on PSNR on val)")
+    parser.add_argument("--generated-stretch", type=int, default=0, help="1: registration also scales the asset along its generation view axis (single-view depth collapse)")
     parser.add_argument("--free-weight", type=float, default=0.15, help="registration: cost (m) of the asset's surface fraction in seen-through space or outside the prior's cube")
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
     parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
@@ -1207,7 +1208,8 @@ def object_geometry(obj, inst, mask, view, args, exclude=None):
                 import fast_simplification
                 Va, Fa = fast_simplification.simplify(np.asarray(asset.vertices, np.float64), np.asarray(asset.faces, np.int32), target_count=8000)
                 asset = trimesh.Trimesh(vertices=Va, faces=Fa, process=True)
-            generated, reg = generated_object.register(asset, center, size, axes, core, mask, exclude, view, supported, args.depth_noise, args.free_weight)
+            generated, reg = generated_object.register(asset, center, size, axes, core, mask, exclude, view, supported, args.depth_noise, args.free_weight,
+                                                           stretch=bool(getattr(args, "generated_stretch", 0)))
             generated_info.update(reg)
     if generated is not None and args.generated == "mesh":
         vox = float(max(args.voxel_m, shape_prior.PAD * size.max() / args.voxels))
