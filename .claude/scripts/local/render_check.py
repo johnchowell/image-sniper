@@ -104,6 +104,8 @@ def main():
     parser.add_argument("--light-basis", type=int, default=1, help="1: fit ceiling and side lights too; 0: window and dominant fill only")
     parser.add_argument("--fit-scale", type=float, default=0.25, help="render size of the light basis relative to the photo")
     parser.add_argument("--fit-samples", type=int, default=16)
+    parser.add_argument("--fit-objective", choices=("linear", "srgb"), default="linear",
+                        help="linear: least squares on linear luminance, then a median-log exposure; srgb: the light powers and the exposure minimize the error after the sRGB response")
     parser.add_argument("--no-emit", default="", help="comma-separated material names whose emission is turned off (experiments)")
     parser.add_argument("--tag", default="", help="suffix for the output files (experiments)")
     parser.add_argument("--cameras", help="JSON {views: [{name, matrix_world_from_camera_opencv (layout frame), fov_x_deg}]}: "
@@ -288,6 +290,30 @@ def main():
                 w[k] = max(0.0, w[k] - (Gm[k] @ w - h[k]) / diag[k])
         return w
 
+    def d_srgb(x):
+        x = np.clip(x, 1e-6, None)
+        return np.where(x <= 0.0031308, 12.92, np.where(x >= 1, 0.0, 1.055 / 2.4 * np.power(x, 1 / 2.4 - 1)))
+
+    def fit_free(A, known, target):
+        """Non-negative powers for the free basis terms. In the srgb objective, Gauss-Newton steps on the error
+        after the response (the PSNR objective), each step a non-negative least squares on the linearized model."""
+        w = nnls(A, target - known)
+        if args.fit_objective != "srgb":
+            return w
+        s = linear_to_srgb(target)
+        cost = lambda v: float(np.mean((linear_to_srgb(known + A @ v) - s) ** 2))
+        for _ in range(12):
+            R = known + A @ w
+            D = d_srgb(R)[:, None]
+            step = nnls(D * A, s - linear_to_srgb(R) + D[:, 0] * (A @ w), iters=600) - w
+            t, c0 = 1.0, cost(w)
+            while t > 1 / 64 and cost(w + t * step) >= c0:
+                t /= 2
+            if t <= 1 / 64:
+                break
+            w = np.maximum(0.0, w + t * step)
+        return w
+
     weights = {n: 0.0 for n in names}
     weights["window"] = 1.0
     # The window's strength is what the camera sees through it: set from the glass pixels through the response,
@@ -298,7 +324,7 @@ def main():
     for _ in range(6):
         target = pl[mid]
         known = sum(B[mid, names.index(n)] * v for n, v in fixed.items()) if fixed else 0.0
-        w = nnls(B[mid][:, free], target - known)
+        w = fit_free(B[mid][:, free], known, target)
         for k, v in zip(free, w):
             weights[names[k]] = float(v)
         for n, v in fixed.items():
@@ -325,6 +351,11 @@ def main():
     ok = (photo.max(-1) < 0.97) & (pl_full > 0.002) & (rl > 1e-5) & ~emitter_mask(layout, size)
     # Exposure only: the fit-size render has fewer samples, so rescale by the median log ratio on mid-tones.
     exposure = float(np.exp(np.median(np.log(pl_full[ok]) - np.log(rl[ok])))) if ok.sum() > 100 else 1.0
+    if args.fit_objective == "srgb" and ok.sum() > 100:
+        # The same objective as the fit: the exposure only removes the scale the fit-size render missed.
+        ps = linear_to_srgb(pl_full[ok])
+        grid = exposure * np.exp(np.linspace(-1.0, 1.0, 201))
+        exposure = float(grid[np.argmin([np.mean((linear_to_srgb(g * rl[ok]) - ps) ** 2) for g in grid])])
     tone = lambda img: img * exposure
     render_srgb = linear_to_srgb(tone(render))
     diff = np.abs(render_srgb - photo).mean(-1)
@@ -383,7 +414,7 @@ def main():
     write_png(stem + "-check.png", sheet)
     write_png(stem + "-render.png", (render_srgb * 255).round().astype(np.uint8))
     json.dump({"scene": glb, "psnr_db": round(psnr, 2), "mean_abs_err": round(float(diff.mean()), 4), "exposure": exposure, "light_weights_w": {n: round(v * unit(n), 2) for n, v in weights.items()},
-               "samples": args.samples, "size": size, "fill": args.fill, "window_strength": args.window_strength, "light_power": args.light_power},
+               "samples": args.samples, "size": size, "fit_objective": args.fit_objective, "fill": args.fill, "window_strength": args.window_strength, "light_power": args.light_power},
               open(stem + "-check.json", "w"), indent=2)
     # The fitted light rig in the layout frame (for viewers): area lights with power, the window emission strength.
     to_layout = lambda v: [round(v.x, 4), round(v.z, 4), round(-v.y, 4)]
