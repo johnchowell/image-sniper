@@ -616,7 +616,9 @@ def build_parser():
     parser.add_argument("--roughness", type=float, default=0.8,
                         help="constant roughness of every material; -1 estimates it from the light stage's non-diffuse light (novel views: "
                              "0.8 is better on LPIPS on train and val, and on PSNR on val)")
-    parser.add_argument("--generated-stretch", type=int, default=0, help="1: registration also scales the asset along its generation view axis (single-view depth collapse)")
+    # Only assets with depth < 0.25 width get the stretch. Train: 8 objects change, cash register
+    # chamfer 0.062 -> 0.047, recall_hidden higher. Val: all metrics tie (recall 0.4752 -> 0.4755).
+    parser.add_argument("--generated-stretch", type=int, default=1, help="1: registration also scales the asset along its generation view axis (single-view depth collapse)")
     parser.add_argument("--free-weight", type=float, default=0.15, help="registration: cost (m) of the asset's surface fraction in seen-through space or outside the prior's cube")
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
     parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
