@@ -93,7 +93,9 @@ def register(mesh, center, size, axes, core, mask, exclude, view, supported, dep
 
     depth = float(np.ptp(Pc[:, 2]))
     width = float(max(np.ptp(Pc[:, 0]), height))
-    # Stretch candidates up to the asset's width-to-depth ratio: a box-like object at most (a card stays a card if the view says so).
+    # Only a collapsed asset (depth under a quarter of its width) is stretched: on a normal asset the extra freedom
+    # fits depth noise (train: 66 objects better, 57 worse). Candidates up to a box-like depth at most.
+    stretch = stretch and depth < 0.25 * width
     stretches = [1.0] + ([f for f in (1.5, 2.5, 4.0, 8.0) if f * depth <= 1.2 * width] if stretch else [])
     candidates = []
     for theta in np.radians(np.arange(0, 360, 15)):
