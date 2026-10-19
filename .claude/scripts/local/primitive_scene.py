@@ -619,6 +619,7 @@ def build_parser():
     # Only assets with depth < 0.25 width get the stretch. Train: 8 objects change, cash register
     # chamfer 0.062 -> 0.047, recall_hidden higher. Val: all metrics tie (recall 0.4752 -> 0.4755).
     parser.add_argument("--generated-stretch", type=int, default=1, help="1: registration also scales the asset along its generation view axis (single-view depth collapse)")
+    parser.add_argument("--crease-deg", type=float, default=0, help="object shading normals: faces that meet at less than this angle shade smooth (0: flat)")
     parser.add_argument("--free-weight", type=float, default=0.15, help="registration: cost (m) of the asset's surface fraction in seen-through space or outside the prior's cube")
     parser.add_argument("--clutter-min-px", type=int, default=400, help="smallest unexplained part that becomes a primitive")
     parser.add_argument("--clutter-depth-m", type=float, default=0.4, help="largest depth assumed for a clutter part")
@@ -934,11 +935,37 @@ def carve(center, size, axes, mask, exclude, view, args):
     return occ, lo, vox
 
 
+def crease_normals(mesh, crease_deg):
+    """Per-corner normals (order of faces.ravel()): the area-weighted mean of the normals of the faces around the
+    corner's vertex that meet the corner's face at less than crease_deg. Curved surfaces shade smooth, hard edges
+    stay hard."""
+    F, fn = mesh.faces, mesh.face_normals
+    weighted = fn * mesh.area_faces[:, None]
+    corner_v, corner_f = F.ravel(), np.repeat(np.arange(len(F)), 3)
+    order = np.argsort(corner_v, kind="stable")
+    starts = np.r_[0, np.nonzero(np.diff(corner_v[order]))[0] + 1]
+    counts = np.diff(np.r_[starts, len(order)])
+    cos = math.cos(math.radians(crease_deg))
+    N = np.zeros((len(corner_v), 3))
+    for d in np.unique(counts):
+        group = order[starts[counts == d][:, None] + np.arange(d)]  # (groups, d) corners sharing a vertex
+        fa, fb = corner_f[group][:, :, None], corner_f[group][:, None, :]
+        near = np.einsum("gijk,gijk->gij", fn[fa].repeat(d, 2), fn[fb].repeat(d, 1)) >= cos
+        N[group] = np.einsum("gij,gijk->gik", near, weighted[fb].repeat(d, 1))
+    return N / np.maximum(np.linalg.norm(N, axis=1, keepdims=True), 1e-12)
+
+
 def textured_object(mesh, inst, mask, maps, view, args, alpha_mask, supported):
     """Projective texture on the faces the camera saw (photo albedo crop, alpha from the mask), the object's median
     albedo on hidden faces (back, bottom, occluded), so nothing is pasted twice."""
     mesh = mesh.subdivide_to_size(args.uv_grid_m, max_iter=8)  # projective UVs are affine per triangle: keep them small
+    normals = None
+    if args.crease_deg > 0:  # per-face UVs split every vertex: the shading normals come from the welded mesh
+        mesh.merge_vertices()
+        normals = crease_normals(mesh, args.crease_deg)
     mesh.unmerge_vertices()
+    if normals is not None:
+        mesh.vertex_normals = normals
     x0, y0, x1, y1 = inst["image_bbox_px"]
     pad = 8
     x0, y0, x1, y1 = max(0, x0 - pad), max(0, y0 - pad), min(view.W, x1 + pad), min(view.H, y1 + pad)
