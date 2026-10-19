@@ -336,6 +336,9 @@ def main():
             weights["window"] = fixed["window"] = max(0.0, float(np.median(want / B[seen_glass, 0])))
         # Clipped window pixels must render at least white after the response.
         win = clipped & (weights["window"] * B[:, 0] > 0.5 * R)
+        R = B @ np.array([weights[n] for n in names])
+        window_fit = {"glass_px": int(glass.sum()), "seen_glass_px": int(seen_glass.sum()), "clipped_glass_px": int((clipped & glass).sum()),
+                      "clipped_window_px": int(win.sum()), "clipped_glass_render": round(float(np.median(R[clipped & glass])), 4) if (clipped & glass).any() else None}
         if win.sum() > 20 and weights["window"] > 0:
             need = 1.0  # render luminance that maps to white
             have = np.median(R[win])
@@ -414,7 +417,7 @@ def main():
     write_png(stem + "-check.png", sheet)
     write_png(stem + "-render.png", (render_srgb * 255).round().astype(np.uint8))
     json.dump({"scene": glb, "psnr_db": round(psnr, 2), "mean_abs_err": round(float(diff.mean()), 4), "exposure": exposure, "light_weights_w": {n: round(v * unit(n), 2) for n, v in weights.items()},
-               "samples": args.samples, "size": size, "fit_objective": args.fit_objective, "fill": args.fill, "window_strength": args.window_strength, "light_power": args.light_power},
+               "samples": args.samples, "size": size, "fit_objective": args.fit_objective, "window_fit": window_fit, "fill": args.fill, "window_strength": args.window_strength, "light_power": args.light_power},
               open(stem + "-check.json", "w"), indent=2)
     # The fitted light rig in the layout frame (for viewers): area lights with power, the window emission strength.
     to_layout = lambda v: [round(v.x, 4), round(v.z, 4), round(-v.y, 4)]
