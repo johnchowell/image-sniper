@@ -201,6 +201,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
   const sunlitPatches = [];
   const furniturePatches = [];
   const unplaced = [];
+  const irregular = [];
   for (const emitter of light.json.emitters) {
     if (emitter.kind !== "light_source") continue;
     const cells = [];
@@ -217,6 +218,16 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     if (topObject && validCells.length >= 10 && topObjectVotes >= 0.5 * validCells.length) {
       highlights.push({ region: emitter.id, object_id: topObject });
       continue;
+    }
+    // Windows and lamps are rectangles in the image (or close to it); a sunlit patch cast through a window frame
+    // onto a wall or a white object is not.
+    if (params.light_min_bbox_fill > 0) {
+      const xs = cells.map((cell) => cell % gw), ys = cells.map((cell) => Math.floor(cell / gw));
+      const box = (Math.max(...xs) - Math.min(...xs) + 1) * (Math.max(...ys) - Math.min(...ys) + 1);
+      if (cells.length / box < params.light_min_bbox_fill) {
+        irregular.push({ region: emitter.id, bbox_fill: round(cells.length / box, 3), cells: cells.length });
+        continue;
+      }
     }
     const seen = new Uint8Array(cellCount);
     for (const cell of cells) seen[cell] = 1;
@@ -503,6 +514,7 @@ export function analyzeLighting({ light, grid, normals, hasNormal, planeNormalOf
     highlights_on_objects: highlights,
     sunlit_patches: sunlitPatches,
     furniture_patches: furniturePatches,
+    irregular_light_regions: irregular,
     openings,
     unplaced_light_regions: unplaced
   };

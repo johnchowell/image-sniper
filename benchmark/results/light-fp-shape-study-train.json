@@ -1,0 +1,33 @@
+{
+  "study": "false window emitters after layout (task 37): can a shape or edge cue separate true windows from sunlit patches and white furniture?",
+  "split": "train",
+  "regions": 99,
+  "true_regions": 65,
+  "auc_true_high": {
+    "bbox_fill": 0.825,
+    "rect_fill": 0.791,
+    "ring_dark": 0.505,
+    "frame": 0.416,
+    "edge": 0.596,
+    "straight": 0.563,
+    "tex": 0.521,
+    "frac": 0.697,
+    "touch": 0.427
+  },
+  "emitter_quad": {
+    "emitters": 94,
+    "auc_true_high": {
+      "qfill": 0.679,
+      "qfill_raw": 0.727,
+      "occ": 0.401
+    },
+    "note": "fill of the projected emitter rectangle with pixels in front of its plane left out; the depth puts occluders on the plane (occ median 0), so the cue is weaker than image bbox fill"
+  },
+  "rule_bbox_fill_lt_0.3": {
+    "fp_regions_removed": 11,
+    "fp_area_removed": 0.2974,
+    "fp_area_total": 1.1375,
+    "tp_regions_lost": 3
+  },
+  "decision": "not shipped: the best cue (image bbox fill) has AUC 0.83 with overlap from occluded true windows; the gain does not justify a rule"
+}

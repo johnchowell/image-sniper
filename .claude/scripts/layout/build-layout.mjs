@@ -73,6 +73,9 @@ export const DEFAULT_PARAMS = {
   light_merge_gap_m: 0.25,
   light_wall_behind_min_m: 0.15,
   light_wall_behind_max_m: 1.2,
+  // A light region that fills less than this fraction of its image bounding box is not a window (sunlit wall
+  // patches, white furniture); 0 keeps every region. Train study: bbox fill AUC 0.83 for true windows.
+  light_min_bbox_fill: 0,
   light_extent_margin_m: 0.3,
   opening_min_fraction: 0.002,
   opening_window_min_luma_ratio: 1.15,
