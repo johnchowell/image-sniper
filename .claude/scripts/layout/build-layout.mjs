@@ -64,8 +64,6 @@ export const DEFAULT_PARAMS = {
   // objects 10% narrow across the view (train median). 0.005 vs 0.02, box IoU: train +0.024 [+0.018, +0.031], val
   // +0.017 [+0.007, +0.026]; truncated val +0.020 [+0.008, +0.031]. 0.002 ties 0.005; 0 keeps outliers (center error +0.02 m).
   object_rect_trim: 0.005,
-  // 1: a box top is at most the height the mask's top row can show (see silhouetteTop).
-  object_top_silhouette: 0,
   // 1: a box's extent along the view (only its front face is seen) grows to the typical depth of its kind
   // (DEPTH_PRIOR_M), away from the camera, up to the wall behind it. vs 0, box IoU: train +0.035 [+0.021, +0.050],
   // val +0.022 [+0.002, +0.058]; train depth error -0.018 [-0.039, -0.001]; every other metric ties.
@@ -826,23 +824,6 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
     }
   }
 
-  // Highest point the mask's top row can show: its rays from the camera, between the nearest and the farthest kept
-  // point. A box top above it would project above the silhouette (points seen through glass, flying pixels).
-  const silhouetteTop = (gridMask, kept) => {
-    let row = Infinity;
-    for (let cell = 0; cell < cellCount; cell += 1) if (gridMask[cell]) row = Math.min(row, Math.floor(cell / gw));
-    if (!(row > 0)) return Infinity;  // cut by the image top: the true top is not seen
-    const zs = kept.map((cell) => cellPoint(cell)[2]);
-    const depths = [Math.min(...zs), Math.max(...zs)];
-    const ry = (row * step - intrinsics.cy) / intrinsics.fy;
-    let bound = -Infinity;
-    for (let gx = 0; gx < gw; gx += 1) {
-      if (!gridMask[row * gw + gx]) continue;
-      const rx = ((gx + 0.5) * step - intrinsics.cx) / intrinsics.fx;
-      for (const z of depths) bound = Math.max(bound, toLayout([rx * z, ry * z, z])[1]);
-    }
-    return bound;
-  };
   // Object primitives: one gravity-aligned oriented box per mask instance.
   const objects = [];
   for (const [order, object] of objectMasks.entries()) {
@@ -870,8 +851,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
       const rect = minAreaRect(sample.map((p) => p[0]), sample.map((p) => p[2]), params.object_rect_trim, 1 - params.object_rect_trim);
       const ys = sortedValues(layoutPoints.map((p) => p[1]));
       let bottom = percentile(ys, 0.02);
-      let top = percentile(ys, params.object_top_percentile);
-      if (params.object_top_silhouette) top = Math.min(top, silhouetteTop(instance.gridMask, kept));
+      const top = percentile(ys, params.object_top_percentile);
       const objectHeight = top - bottom;
       const snap = Math.max(params.support_snap_min_m, params.support_snap_fraction * objectHeight);
       let support = "none_detected";
