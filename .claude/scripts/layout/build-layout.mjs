@@ -60,6 +60,8 @@ export const DEFAULT_PARAMS = {
   // +0.0026 [0.0, +0.0056]; truncated objects train +0.0051, val +0.0030 [+0.0004, +0.0066]. Taller anchor boxes
   // pull the metric scale down a little: log scale bias train +0.0017, val +0.0011. 1.0: depth delta1 worse.
   object_top_percentile: 0.995,
+  // Footprint rect: the share of an object's points trimmed off each side, on both footprint axes.
+  object_rect_trim: 0.02,
   // 1: a box's extent along the view (only its front face is seen) grows to the typical depth of its kind
   // (DEPTH_PRIOR_M), away from the camera, up to the wall behind it. vs 0, box IoU: train +0.035 [+0.021, +0.050],
   // val +0.022 [+0.002, +0.058]; train depth error -0.018 [-0.039, -0.001]; every other metric ties.
@@ -844,7 +846,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
       const layoutPoints = kept.map((cell) => toLayout(cellPoint(cell)));
       const sampleStride = Math.max(1, Math.floor(layoutPoints.length / 4000));
       const sample = layoutPoints.filter((_, k) => k % sampleStride === 0);
-      const rect = minAreaRect(sample.map((p) => p[0]), sample.map((p) => p[2]));
+      const rect = minAreaRect(sample.map((p) => p[0]), sample.map((p) => p[2]), params.object_rect_trim, 1 - params.object_rect_trim);
       const ys = sortedValues(layoutPoints.map((p) => p[1]));
       let bottom = percentile(ys, 0.02);
       const top = percentile(ys, params.object_top_percentile);
