@@ -60,8 +60,10 @@ export const DEFAULT_PARAMS = {
   // +0.0026 [0.0, +0.0056]; truncated objects train +0.0051, val +0.0030 [+0.0004, +0.0066]. Taller anchor boxes
   // pull the metric scale down a little: log scale bias train +0.0017, val +0.0011. 1.0: depth delta1 worse.
   object_top_percentile: 0.995,
-  // Footprint rect: the share of an object's points trimmed off each side, on both footprint axes.
-  object_rect_trim: 0.02,
+  // Footprint rect: the share of an object's points trimmed off each side, on both footprint axes. 0.02 made whole
+  // objects 10% narrow across the view (train median). 0.005 vs 0.02, box IoU: train +0.024 [+0.018, +0.031], val
+  // +0.017 [+0.007, +0.026]; truncated val +0.020 [+0.008, +0.031]. 0.002 ties 0.005; 0 keeps outliers (center error +0.02 m).
+  object_rect_trim: 0.005,
   // 1: a box's extent along the view (only its front face is seen) grows to the typical depth of its kind
   // (DEPTH_PRIOR_M), away from the camera, up to the wall behind it. vs 0, box IoU: train +0.035 [+0.021, +0.050],
   // val +0.022 [+0.002, +0.058]; train depth error -0.018 [-0.039, -0.001]; every other metric ties.
