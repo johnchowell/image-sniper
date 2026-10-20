@@ -1,0 +1,162 @@
+[
+  {
+    "world": "bench-val-room-1061-view-0",
+    "scene": "worlds/bench-val-room-1061-view-0/output/scene/13-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 16.784,
+      "orbit+35": 16.658,
+      "forward": 15.974
+    },
+    "psnr_db_mean": 16.472,
+    "lpips": {
+      "orbit-35": 0.3011,
+      "orbit+35": 0.2688,
+      "forward": 0.2304
+    },
+    "lpips_mean": 0.2668
+  },
+  {
+    "world": "bench-val-room-1062-view-0",
+    "scene": "worlds/bench-val-room-1062-view-0/output/scene/12-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 15.621,
+      "orbit+35": 14.031,
+      "forward": 17.916
+    },
+    "psnr_db_mean": 15.856,
+    "lpips": {
+      "orbit-35": 0.3896,
+      "orbit+35": 0.4096,
+      "forward": 0.2833
+    },
+    "lpips_mean": 0.3608
+  },
+  {
+    "world": "bench-val-room-1063-view-0",
+    "scene": "worlds/bench-val-room-1063-view-0/output/scene/12-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 19.029,
+      "orbit+35": 17.081,
+      "forward": 17.781
+    },
+    "psnr_db_mean": 17.964,
+    "lpips": {
+      "orbit-35": 0.2104,
+      "orbit+35": 0.2583,
+      "forward": 0.1614
+    },
+    "lpips_mean": 0.21
+  },
+  {
+    "world": "bench-val-room-1064-view-0",
+    "scene": "worlds/bench-val-room-1064-view-0/output/scene/10-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 16.872,
+      "orbit+35": 15.493,
+      "forward": 19.599
+    },
+    "psnr_db_mean": 17.321,
+    "lpips": {
+      "orbit-35": 0.2584,
+      "orbit+35": 0.2797,
+      "forward": 0.1644
+    },
+    "lpips_mean": 0.2342
+  },
+  {
+    "world": "bench-val-room-1065-view-0",
+    "scene": "worlds/bench-val-room-1065-view-0/output/scene/10-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 18.049,
+      "orbit+35": 16.933,
+      "forward": 20.557
+    },
+    "psnr_db_mean": 18.513,
+    "lpips": {
+      "orbit-35": 0.2365,
+      "orbit+35": 0.3189,
+      "forward": 0.1899
+    },
+    "lpips_mean": 0.2484
+  },
+  {
+    "world": "bench-val-room-1066-view-0",
+    "scene": "worlds/bench-val-room-1066-view-0/output/scene/10-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 16.379,
+      "orbit+35": 14.882,
+      "forward": 15.217
+    },
+    "psnr_db_mean": 15.493,
+    "lpips": {
+      "orbit-35": 0.2675,
+      "orbit+35": 0.381,
+      "forward": 0.2856
+    },
+    "lpips_mean": 0.3114
+  },
+  {
+    "world": "bench-val-room-1067-view-0",
+    "scene": "worlds/bench-val-room-1067-view-0/output/scene/10-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 14.963,
+      "orbit+35": 13.512,
+      "forward": 16.36
+    },
+    "psnr_db_mean": 14.945,
+    "lpips": {
+      "orbit-35": 0.415,
+      "orbit+35": 0.5161,
+      "forward": 0.2971
+    },
+    "lpips_mean": 0.4094
+  },
+  {
+    "world": "bench-val-room-1068-view-0",
+    "scene": "worlds/bench-val-room-1068-view-0/output/scene/10-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 16.03,
+      "orbit+35": 16.462,
+      "forward": 16.858
+    },
+    "psnr_db_mean": 16.45,
+    "lpips": {
+      "orbit-35": 0.291,
+      "orbit+35": 0.3184,
+      "forward": 0.2443
+    },
+    "lpips_mean": 0.2846
+  },
+  {
+    "world": "bench-val-room-1069-view-0",
+    "scene": "worlds/bench-val-room-1069-view-0/output/scene/11-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 16.434,
+      "orbit+35": 16.786,
+      "forward": 15.604
+    },
+    "psnr_db_mean": 16.275,
+    "lpips": {
+      "orbit-35": 0.3547,
+      "orbit+35": 0.3457,
+      "forward": 0.295
+    },
+    "lpips_mean": 0.3318
+  },
+  {
+    "world": "bench-val-room-1071-view-0",
+    "scene": "worlds/bench-val-room-1071-view-0/output/scene/11-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 16.337,
+      "orbit+35": 16.126,
+      "forward": 18.196
+    },
+    "psnr_db_mean": 16.886,
+    "lpips": {
+      "orbit-35": 0.3018,
+      "orbit+35": 0.2771,
+      "forward": 0.2183
+    },
+    "lpips_mean": 0.2657
+  }
+]

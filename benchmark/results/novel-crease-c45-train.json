@@ -1,0 +1,162 @@
+[
+  {
+    "world": "bench-train-room-1006-view-0",
+    "scene": "worlds/bench-train-room-1006-view-0/output/scene/12-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 15.783,
+      "orbit+35": 16.649,
+      "forward": 15.654
+    },
+    "psnr_db_mean": 16.029,
+    "lpips": {
+      "orbit-35": 0.3137,
+      "orbit+35": 0.31,
+      "forward": 0.2998
+    },
+    "lpips_mean": 0.3078
+  },
+  {
+    "world": "bench-train-room-1010-view-0",
+    "scene": "worlds/bench-train-room-1010-view-0/output/scene/12-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 16.93,
+      "orbit+35": 20.104,
+      "forward": 19.731
+    },
+    "psnr_db_mean": 18.922,
+    "lpips": {
+      "orbit-35": 0.2932,
+      "orbit+35": 0.2829,
+      "forward": 0.2117
+    },
+    "lpips_mean": 0.2626
+  },
+  {
+    "world": "bench-train-room-1015-view-0",
+    "scene": "worlds/bench-train-room-1015-view-0/output/scene/24-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 15.436,
+      "orbit+35": 13.451,
+      "forward": 15.0
+    },
+    "psnr_db_mean": 14.629,
+    "lpips": {
+      "orbit-35": 0.4244,
+      "orbit+35": 0.5611,
+      "forward": 0.3596
+    },
+    "lpips_mean": 0.4484
+  },
+  {
+    "world": "bench-train-room-1023-view-0",
+    "scene": "worlds/bench-train-room-1023-view-0/output/scene/15-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 20.048,
+      "orbit+35": 18.414,
+      "forward": 19.195
+    },
+    "psnr_db_mean": 19.219,
+    "lpips": {
+      "orbit-35": 0.2138,
+      "orbit+35": 0.232,
+      "forward": 0.1595
+    },
+    "lpips_mean": 0.2018
+  },
+  {
+    "world": "bench-train-room-1028-view-0",
+    "scene": "worlds/bench-train-room-1028-view-0/output/scene/14-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 15.033,
+      "orbit+35": 15.198,
+      "forward": 16.204
+    },
+    "psnr_db_mean": 15.478,
+    "lpips": {
+      "orbit-35": 0.3562,
+      "orbit+35": 0.3624,
+      "forward": 0.3377
+    },
+    "lpips_mean": 0.3521
+  },
+  {
+    "world": "bench-train-room-1030-view-0",
+    "scene": "worlds/bench-train-room-1030-view-0/output/scene/12-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 13.804,
+      "orbit+35": 14.718,
+      "forward": 17.745
+    },
+    "psnr_db_mean": 15.422,
+    "lpips": {
+      "orbit-35": 0.4302,
+      "orbit+35": 0.3267,
+      "forward": 0.3014
+    },
+    "lpips_mean": 0.3528
+  },
+  {
+    "world": "bench-train-room-1036-view-0",
+    "scene": "worlds/bench-train-room-1036-view-0/output/scene/17-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 19.701,
+      "orbit+35": 16.171,
+      "forward": 19.869
+    },
+    "psnr_db_mean": 18.58,
+    "lpips": {
+      "orbit-35": 0.3695,
+      "orbit+35": 0.4399,
+      "forward": 0.3757
+    },
+    "lpips_mean": 0.395
+  },
+  {
+    "world": "bench-train-room-1045-view-0",
+    "scene": "worlds/bench-train-room-1045-view-0/output/scene/16-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 18.815,
+      "orbit+35": 22.856,
+      "forward": 21.28
+    },
+    "psnr_db_mean": 20.984,
+    "lpips": {
+      "orbit-35": 0.2459,
+      "orbit+35": 0.2087,
+      "forward": 0.1625
+    },
+    "lpips_mean": 0.2057
+  },
+  {
+    "world": "bench-train-room-1052-view-0",
+    "scene": "worlds/bench-train-room-1052-view-0/output/scene/15-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 18.359,
+      "orbit+35": 15.802,
+      "forward": 18.638
+    },
+    "psnr_db_mean": 17.6,
+    "lpips": {
+      "orbit-35": 0.3421,
+      "orbit+35": 0.3877,
+      "forward": 0.3088
+    },
+    "lpips_mean": 0.3462
+  },
+  {
+    "world": "bench-train-room-1058-view-0",
+    "scene": "worlds/bench-train-room-1058-view-0/output/scene/19-primitive-scene-crc45",
+    "psnr_db": {
+      "orbit-35": 16.249,
+      "orbit+35": 14.463,
+      "forward": 13.723
+    },
+    "psnr_db_mean": 14.812,
+    "lpips": {
+      "orbit-35": 0.5225,
+      "orbit+35": 0.5459,
+      "forward": 0.5182
+    },
+    "lpips_mean": 0.5289
+  }
+]

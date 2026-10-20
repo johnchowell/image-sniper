@@ -1,0 +1,162 @@
+[
+  {
+    "world": "bench-train-room-1006-view-0",
+    "scene": "worlds/bench-train-room-1006-view-0/output/scene/11-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 15.785,
+      "orbit+35": 16.648,
+      "forward": 15.657
+    },
+    "psnr_db_mean": 16.03,
+    "lpips": {
+      "orbit-35": 0.315,
+      "orbit+35": 0.3124,
+      "forward": 0.2989
+    },
+    "lpips_mean": 0.3088
+  },
+  {
+    "world": "bench-train-room-1010-view-0",
+    "scene": "worlds/bench-train-room-1010-view-0/output/scene/11-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 16.928,
+      "orbit+35": 20.111,
+      "forward": 19.739
+    },
+    "psnr_db_mean": 18.926,
+    "lpips": {
+      "orbit-35": 0.2938,
+      "orbit+35": 0.284,
+      "forward": 0.2112
+    },
+    "lpips_mean": 0.263
+  },
+  {
+    "world": "bench-train-room-1015-view-0",
+    "scene": "worlds/bench-train-room-1015-view-0/output/scene/23-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 15.465,
+      "orbit+35": 13.459,
+      "forward": 15.006
+    },
+    "psnr_db_mean": 14.643,
+    "lpips": {
+      "orbit-35": 0.4238,
+      "orbit+35": 0.5609,
+      "forward": 0.36
+    },
+    "lpips_mean": 0.4482
+  },
+  {
+    "world": "bench-train-room-1023-view-0",
+    "scene": "worlds/bench-train-room-1023-view-0/output/scene/14-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 20.047,
+      "orbit+35": 18.415,
+      "forward": 19.199
+    },
+    "psnr_db_mean": 19.22,
+    "lpips": {
+      "orbit-35": 0.2134,
+      "orbit+35": 0.232,
+      "forward": 0.1592
+    },
+    "lpips_mean": 0.2015
+  },
+  {
+    "world": "bench-train-room-1028-view-0",
+    "scene": "worlds/bench-train-room-1028-view-0/output/scene/13-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 15.029,
+      "orbit+35": 15.196,
+      "forward": 16.199
+    },
+    "psnr_db_mean": 15.475,
+    "lpips": {
+      "orbit-35": 0.3571,
+      "orbit+35": 0.3626,
+      "forward": 0.34
+    },
+    "lpips_mean": 0.3532
+  },
+  {
+    "world": "bench-train-room-1030-view-0",
+    "scene": "worlds/bench-train-room-1030-view-0/output/scene/11-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 13.809,
+      "orbit+35": 14.71,
+      "forward": 17.747
+    },
+    "psnr_db_mean": 15.422,
+    "lpips": {
+      "orbit-35": 0.4377,
+      "orbit+35": 0.3286,
+      "forward": 0.3148
+    },
+    "lpips_mean": 0.3604
+  },
+  {
+    "world": "bench-train-room-1036-view-0",
+    "scene": "worlds/bench-train-room-1036-view-0/output/scene/16-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 19.706,
+      "orbit+35": 16.178,
+      "forward": 19.868
+    },
+    "psnr_db_mean": 18.584,
+    "lpips": {
+      "orbit-35": 0.3673,
+      "orbit+35": 0.4408,
+      "forward": 0.3756
+    },
+    "lpips_mean": 0.3946
+  },
+  {
+    "world": "bench-train-room-1045-view-0",
+    "scene": "worlds/bench-train-room-1045-view-0/output/scene/15-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 18.816,
+      "orbit+35": 22.85,
+      "forward": 21.279
+    },
+    "psnr_db_mean": 20.982,
+    "lpips": {
+      "orbit-35": 0.2455,
+      "orbit+35": 0.2089,
+      "forward": 0.1626
+    },
+    "lpips_mean": 0.2057
+  },
+  {
+    "world": "bench-train-room-1052-view-0",
+    "scene": "worlds/bench-train-room-1052-view-0/output/scene/14-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 18.363,
+      "orbit+35": 15.797,
+      "forward": 18.641
+    },
+    "psnr_db_mean": 17.6,
+    "lpips": {
+      "orbit-35": 0.3413,
+      "orbit+35": 0.3858,
+      "forward": 0.3122
+    },
+    "lpips_mean": 0.3464
+  },
+  {
+    "world": "bench-train-room-1058-view-0",
+    "scene": "worlds/bench-train-room-1058-view-0/output/scene/18-primitive-scene-crc0",
+    "psnr_db": {
+      "orbit-35": 16.23,
+      "orbit+35": 14.465,
+      "forward": 13.736
+    },
+    "psnr_db_mean": 14.81,
+    "lpips": {
+      "orbit-35": 0.5224,
+      "orbit+35": 0.5471,
+      "forward": 0.5193
+    },
+    "lpips_mean": 0.5296
+  }
+]
