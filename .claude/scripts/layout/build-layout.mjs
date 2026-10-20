@@ -55,6 +55,7 @@ export const DEFAULT_PARAMS = {
   support_snap_fraction: 0.1,
   hidden_base: 1,
   hidden_base_min_top_m: 0.2,
+  object_top_percentile: 0.98,
   // 1: a box's extent along the view (only its front face is seen) grows to the typical depth of its kind
   // (DEPTH_PRIOR_M), away from the camera, up to the wall behind it. vs 0, box IoU: train +0.035 [+0.021, +0.050],
   // val +0.022 [+0.002, +0.058]; train depth error -0.018 [-0.039, -0.001]; every other metric ties.
@@ -842,7 +843,7 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
       const rect = minAreaRect(sample.map((p) => p[0]), sample.map((p) => p[2]));
       const ys = sortedValues(layoutPoints.map((p) => p[1]));
       let bottom = percentile(ys, 0.02);
-      const top = percentile(ys, 0.98);
+      const top = percentile(ys, params.object_top_percentile);
       const objectHeight = top - bottom;
       const snap = Math.max(params.support_snap_min_m, params.support_snap_fraction * objectHeight);
       let support = "none_detected";
