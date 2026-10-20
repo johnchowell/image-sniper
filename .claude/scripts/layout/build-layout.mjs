@@ -55,7 +55,11 @@ export const DEFAULT_PARAMS = {
   support_snap_fraction: 0.1,
   hidden_base: 1,
   hidden_base_min_top_m: 0.2,
-  object_top_percentile: 0.98,
+  // Box top: a percentile of the object's point heights. 0.98 cuts thin tall parts (a gothic bed's posts are under
+  // 2% of its points: 0.89 m box for a 1.53 m bed). 0.995 vs 0.98, box IoU: train +0.0043 [+0.0029, +0.0058], val
+  // +0.0026 [0.0, +0.0056]; truncated objects train +0.0051, val +0.0030 [+0.0004, +0.0066]. Taller anchor boxes
+  // pull the metric scale down a little: log scale bias train +0.0017, val +0.0011. 1.0: depth delta1 worse.
+  object_top_percentile: 0.995,
   // 1: a box's extent along the view (only its front face is seen) grows to the typical depth of its kind
   // (DEPTH_PRIOR_M), away from the camera, up to the wall behind it. vs 0, box IoU: train +0.035 [+0.021, +0.050],
   // val +0.022 [+0.002, +0.058]; train depth error -0.018 [-0.039, -0.001]; every other metric ties.
