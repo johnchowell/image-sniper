@@ -110,7 +110,8 @@ def depth_stage(worlds, timings):
 def masks_current(world):
     """True when index-0 masks exist and were made with the current detection settings."""
     requests = glob.glob(os.path.join(REPO, "worlds", world, "output", "layout", ".0-layout__mask-*-request.json"))
-    want = {"mask_threshold": layout_inputs.BOX_THRESHOLD, "assignment": layout_inputs.assignment_settings()}
+    want = {"mask_threshold": layout_inputs.BOX_THRESHOLD, "assignment": layout_inputs.assignment_settings(),
+            "mask_switch": layout_inputs.mask_switch_settings()}
     return bool(requests) and all({k: json.load(open(r)).get(k) for k in want} == want for r in requests)
 
 

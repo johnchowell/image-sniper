@@ -27,6 +27,12 @@ EXTRA_PER_OBJECT = 0
 ASSIGNMENT = "global"
 MERGE_CLUSTERS = True
 VERIFY_WEIGHT = 1.0  # weight of the crop classifier's log p(name | crop); 0 does not load it
+# SAM's single output on a box can be a part (a gothic bed's frame without the mattress, mask IoU 0.30) while one of
+# its 3 multimask outputs is the whole object (0.96). A multimask output replaces it when its cutout matches the name
+# better (SigLIP 2 logit margin) and it is stable. Train: 7 of 224 masks change, all better, mean IoU 0.9186 ->
+# 0.9261 [CI +0.0009, +0.0169]; margins 1.5-3.0 give the same. Val: no mask changes (no part-vs-whole case).
+MASK_SWITCH_MARGIN = 2.0
+MASK_SWITCH_STABILITY = 0.8
 
 
 def confirmed_objects(world):
@@ -224,6 +230,42 @@ def load_mask_models():
     return processor, detector, predictor, verifier
 
 
+def cutout_logits(verifier, rgb, box, masks, name):
+    """SigLIP 2 image-text logit of each mask's cutout (box padded 10%, pixels outside the mask gray) for the name."""
+    processor, model = verifier
+    H, W = rgb.shape[:2]
+    x0, y0, x1, y1 = box
+    px, py = 0.1 * (x1 - x0), 0.1 * (y1 - y0)
+    c = [int(max(0, x0 - px)), int(max(0, y0 - py)), int(min(W, x1 + px)), int(min(H, y1 + py))]
+    crops = [Image.fromarray(np.where(m[..., None], rgb, 128).astype(np.uint8)[c[1]:c[3], c[0]:c[2]]) for m in masks]
+    with torch.no_grad():
+        inputs = processor(text=[f"a photo of a {name}."], images=crops, return_tensors="pt", padding="max_length", max_length=64)
+        return model(**inputs).logits_per_image[:, 0].double().numpy()
+
+
+def box_mask(predictor, verifier, rgb, box, name):
+    """SAM 2.1 mask for a box: the single output, or a multimask output whose cutout matches the name by more than
+    MASK_SWITCH_MARGIN and whose stability (area above logit 1 / area above logit -1) is at least
+    MASK_SWITCH_STABILITY. Returns the mask and which output it is."""
+    with torch.no_grad():
+        single, _, _ = predictor.predict(box=box, multimask_output=False, return_logits=True)
+        if verifier is None:
+            return single[0] > 0, "single"
+        multi, _, _ = predictor.predict(box=box, multimask_output=True, return_logits=True)
+    logits = [single[0]] + list(multi)
+    scores = cutout_logits(verifier, rgb, box, [m > 0 for m in logits], name)
+    best = 0
+    for k in range(1, len(logits)):
+        stability = (logits[k] > 1).sum() / max((logits[k] > -1).sum(), 1)
+        if scores[k] - scores[0] > MASK_SWITCH_MARGIN and stability >= MASK_SWITCH_STABILITY and scores[k] > scores[best]:
+            best = k
+    return logits[best] > 0, "single" if best == 0 else f"multi-{best - 1}"
+
+
+def mask_switch_settings():
+    return {"margin": MASK_SWITCH_MARGIN, "stability": MASK_SWITCH_STABILITY} if VERIFY_WEIGHT else None
+
+
 def assignment_settings():
     return {"mode": ASSIGNMENT, "merge_clusters": MERGE_CLUSTERS, "verifier": VERIFIER if VERIFY_WEIGHT else None,
             "verify_weight": VERIFY_WEIGHT}
@@ -231,18 +273,18 @@ def assignment_settings():
 
 def mask_step(models, image, rgb, objects, out_rel, index, source, threshold, extra):
     """Text -> boxes (Grounding DINO, all names compete) -> masks (SAM 2.1); one request file per object."""
-    predictor = models[2]
+    predictor, verifier = models[2], models[3]
     predictor.set_image(rgb)
     found = {}
     prompt, detections = detect_jointly(models, image, objects, threshold, extra) if objects else ("", {})
     for obj in objects:
-        downloaded, kept_scores, kept_boxes = [], [], []
+        downloaded, kept_scores, kept_boxes, outputs = [], [], [], []
         for k, (box, box_score) in enumerate(detections[obj["id"]], start=1):
-            with torch.no_grad():
-                masks, _, _ = predictor.predict(box=box, multimask_output=False)
+            mask, output = box_mask(predictor, verifier, rgb, box, obj["name"])
             path = f"{out_rel}/{index}-layout-mask-{obj['id']}-{k}.png"
-            Image.fromarray((masks[0] > 0).astype(np.uint8) * 255).save(path)
+            Image.fromarray(mask.astype(np.uint8) * 255).save(path)
             downloaded.append({"label": f"mask-{k}", "path": path})
+            outputs.append(output)
             kept_scores.append(round(box_score, 4))
             kept_boxes.append([round(float(v), 1) for v in box])
         write_request(os.path.join(out_rel, f".{index}-layout__mask-{obj['id']}-request.json"), {
@@ -252,7 +294,8 @@ def mask_step(models, image, rgb, objects, out_rel, index, source, threshold, ex
             "assignment": assignment_settings(),
             "mask_threshold": threshold,
             "input_files": [source], "output_files": [d["path"] for d in downloaded], "downloaded_files": downloaded,
-            "result": {"scores": kept_scores, "boxes_px": kept_boxes},
+            "mask_switch": mask_switch_settings(),
+            "result": {"scores": kept_scores, "boxes_px": kept_boxes, "mask_outputs": outputs},
         })
         found[obj["id"]] = len(downloaded)
     return found
