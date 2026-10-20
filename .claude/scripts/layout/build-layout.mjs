@@ -53,7 +53,6 @@ export const DEFAULT_PARAMS = {
   exterior_wall_min_gap_m: 0.5,
   support_snap_min_m: 0.08,
   support_snap_fraction: 0.1,
-  support_own_max_fraction: 1,
   hidden_base: 1,
   hidden_base_min_top_m: 0.2,
   // 1: a box's extent along the view (only its front face is seen) grows to the typical depth of its kind
@@ -851,15 +850,8 @@ async function buildLayoutOnce({ world, index, params, depthScale }) {
         bottom = 0;
         support = floorPlane ? "floor" : "floor_estimate";
       } else {
-        // A surface mostly inside the object's own mask is its top (a bed's mattress), not what it stands on.
-        const own = (plane) => {
-          const inliers = rawPlanes[structure.indexOf(plane)].inliers;
-          let inside = 0;
-          for (const cell of inliers) inside += instance.gridMask[cell] ? 1 : 0;
-          return inside > params.support_own_max_fraction * inliers.length;
-        };
         const surface = structure.find((plane) =>
-          plane.class === "horizontal_surface" && !own(plane) &&
+          plane.class === "horizontal_surface" &&
           Math.abs(bottom - plane.center[1]) < snap &&
           Math.abs(rect.center[0] - plane.center[0]) <= plane.size[0] / 2 &&
           Math.abs(rect.center[1] - plane.center[2]) <= plane.size[1] / 2);
