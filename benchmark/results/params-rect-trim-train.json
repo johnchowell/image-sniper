@@ -1,0 +1,264 @@
+{
+  "t005": {
+    "params": {
+      "object_rect_trim": 0.005
+    },
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.0766,
+      "pitch_err_deg": 0.33,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.0801,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.9439,
+      "scale_err_median": 0.066,
+      "log_scale_bias": 0.0619
+    },
+    "structure": {
+      "floor_found_aligned": 0.9831,
+      "wall_found_aligned": 0.8871,
+      "ceiling_found_aligned": 1.0,
+      "wall_found": 0.6935,
+      "class_correct": 1.0,
+      "floor_precision": 0.9833,
+      "wall_precision": 0.8714,
+      "ceiling_precision": 0.9394,
+      "wall_predicted_per_view": 2.3333,
+      "normal_err_deg_median": 0.622,
+      "offset_err_m_median": 0.0811,
+      "offset_err_aligned_m_median": 0.057
+    },
+    "objects": {
+      "recall": 0.8517,
+      "recall_of_listed": 0.8517,
+      "listed_fraction": 1.0,
+      "precision": 0.918,
+      "recall_by_size": {
+        "under_0.2pct": 0.5714,
+        "0.2_to_1pct": 0.7969,
+        "1_to_5pct": 0.8592,
+        "over_5pct": 0.9346
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.7887,
+      "center_err_aligned_m_median": 0.14,
+      "center_err_aligned_m_median_truncated": 0.1966,
+      "center_err_aligned_m_median_whole": 0.1078,
+      "center_err_m_median": 0.2938,
+      "height_rel_err_aligned_median": 0.0628,
+      "box_iou_aligned_mean": 0.3651,
+      "box_iou_aligned_mean_truncated": 0.3499,
+      "depth_rel_err_aligned_median": 0.1862,
+      "depth_rel_err_aligned_median_truncated": 0.2169,
+      "height_rel_err_aligned_median_whole": 0.0533,
+      "truncation_flag_accuracy": 0.9598,
+      "support_accuracy": 0.9509
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5698,
+      "light_source_iou_final_mean": 0.693,
+      "false_light_fraction_final_mean": 0.0175,
+      "window_located": 0.8627,
+      "window_located_clipped": 0.8,
+      "window_located_rolloff": 0.9231,
+      "window_rect_iou_aligned_mean": 0.603,
+      "window_rect_iou_mean": 0.4053,
+      "window_normal_err_deg_median": 0.7713,
+      "window_width_rel_err_aligned_median": 0.1332,
+      "window_center_err_aligned_m_median": 0.1677,
+      "light_sources_per_view": 1.35
+    },
+    "plate": {
+      "psnr_furniture_px_mean": 18.6851,
+      "psnr_unedited_source_mean": 10.7237,
+      "views": 2
+    },
+    "environment": {
+      "absrel_hidden_metric_mean": 0.4774,
+      "absrel_hidden_aligned_mean": 0.3934,
+      "views": 2
+    }
+  },
+  "t01": {
+    "params": {
+      "object_rect_trim": 0.01
+    },
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.0766,
+      "pitch_err_deg": 0.33,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.0801,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.9439,
+      "scale_err_median": 0.066,
+      "log_scale_bias": 0.0619
+    },
+    "structure": {
+      "floor_found_aligned": 0.9831,
+      "wall_found_aligned": 0.8871,
+      "ceiling_found_aligned": 1.0,
+      "wall_found": 0.6935,
+      "class_correct": 1.0,
+      "floor_precision": 0.9833,
+      "wall_precision": 0.8714,
+      "ceiling_precision": 0.9394,
+      "wall_predicted_per_view": 2.3333,
+      "normal_err_deg_median": 0.622,
+      "offset_err_m_median": 0.0811,
+      "offset_err_aligned_m_median": 0.057
+    },
+    "objects": {
+      "recall": 0.8517,
+      "recall_of_listed": 0.8517,
+      "listed_fraction": 1.0,
+      "precision": 0.918,
+      "recall_by_size": {
+        "under_0.2pct": 0.5714,
+        "0.2_to_1pct": 0.7969,
+        "1_to_5pct": 0.8592,
+        "over_5pct": 0.9346
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.7887,
+      "center_err_aligned_m_median": 0.1478,
+      "center_err_aligned_m_median_truncated": 0.1996,
+      "center_err_aligned_m_median_whole": 0.1083,
+      "center_err_m_median": 0.2969,
+      "height_rel_err_aligned_median": 0.0628,
+      "box_iou_aligned_mean": 0.357,
+      "box_iou_aligned_mean_truncated": 0.3399,
+      "depth_rel_err_aligned_median": 0.1982,
+      "depth_rel_err_aligned_median_truncated": 0.2287,
+      "height_rel_err_aligned_median_whole": 0.0533,
+      "truncation_flag_accuracy": 0.9598,
+      "support_accuracy": 0.9509
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5698,
+      "light_source_iou_final_mean": 0.693,
+      "false_light_fraction_final_mean": 0.0175,
+      "window_located": 0.8627,
+      "window_located_clipped": 0.8,
+      "window_located_rolloff": 0.9231,
+      "window_rect_iou_aligned_mean": 0.603,
+      "window_rect_iou_mean": 0.4053,
+      "window_normal_err_deg_median": 0.7713,
+      "window_width_rel_err_aligned_median": 0.1332,
+      "window_center_err_aligned_m_median": 0.1677,
+      "light_sources_per_view": 1.35
+    },
+    "plate": {
+      "psnr_furniture_px_mean": 18.6851,
+      "psnr_unedited_source_mean": 10.7237,
+      "views": 2
+    },
+    "environment": {
+      "absrel_hidden_metric_mean": 0.4774,
+      "absrel_hidden_aligned_mean": 0.3934,
+      "views": 2
+    }
+  },
+  "default": {
+    "params": {},
+    "views": 60,
+    "scored": 60,
+    "camera": {
+      "height_err_m": 0.0766,
+      "pitch_err_deg": 0.33,
+      "roll_err_deg": 0.1402,
+      "fov_err_deg": 2.9401
+    },
+    "depth": {
+      "absrel_metric": 0.0801,
+      "absrel_scaled": 0.0263,
+      "delta1_metric": 0.9439,
+      "scale_err_median": 0.066,
+      "log_scale_bias": 0.0619
+    },
+    "structure": {
+      "floor_found_aligned": 0.9831,
+      "wall_found_aligned": 0.8871,
+      "ceiling_found_aligned": 1.0,
+      "wall_found": 0.6935,
+      "class_correct": 1.0,
+      "floor_precision": 0.9833,
+      "wall_precision": 0.8714,
+      "ceiling_precision": 0.9394,
+      "wall_predicted_per_view": 2.3333,
+      "normal_err_deg_median": 0.622,
+      "offset_err_m_median": 0.0811,
+      "offset_err_aligned_m_median": 0.057
+    },
+    "objects": {
+      "recall": 0.8517,
+      "recall_of_listed": 0.8517,
+      "listed_fraction": 1.0,
+      "precision": 0.918,
+      "recall_by_size": {
+        "under_0.2pct": 0.5714,
+        "0.2_to_1pct": 0.7969,
+        "1_to_5pct": 0.8592,
+        "over_5pct": 0.9346
+      },
+      "unnamed_small_objects": 5,
+      "mask_iou_mean": 0.7887,
+      "center_err_aligned_m_median": 0.1515,
+      "center_err_aligned_m_median_truncated": 0.2021,
+      "center_err_aligned_m_median_whole": 0.1108,
+      "center_err_m_median": 0.3002,
+      "height_rel_err_aligned_median": 0.0628,
+      "box_iou_aligned_mean": 0.3408,
+      "box_iou_aligned_mean_truncated": 0.3243,
+      "depth_rel_err_aligned_median": 0.214,
+      "depth_rel_err_aligned_median_truncated": 0.2411,
+      "height_rel_err_aligned_median_whole": 0.0533,
+      "truncation_flag_accuracy": 0.9598,
+      "support_accuracy": 0.9509
+    },
+    "light": {
+      "albedo_si_rmse_mean": 0.3222,
+      "decomposition_r2_mean": 0.9168,
+      "views_with_windows": 46,
+      "windows": 51,
+      "light_source_iou_stage_mean": 0.5698,
+      "light_source_iou_final_mean": 0.693,
+      "false_light_fraction_final_mean": 0.0175,
+      "window_located": 0.8627,
+      "window_located_clipped": 0.8,
+      "window_located_rolloff": 0.9231,
+      "window_rect_iou_aligned_mean": 0.603,
+      "window_rect_iou_mean": 0.4053,
+      "window_normal_err_deg_median": 0.7713,
+      "window_width_rel_err_aligned_median": 0.1332,
+      "window_center_err_aligned_m_median": 0.1677,
+      "light_sources_per_view": 1.35
+    },
+    "plate": {
+      "psnr_furniture_px_mean": 18.6851,
+      "psnr_unedited_source_mean": 10.7237,
+      "views": 2
+    },
+    "environment": {
+      "absrel_hidden_metric_mean": 0.4774,
+      "absrel_hidden_aligned_mean": 0.3934,
+      "views": 2
+    }
+  }
+}
